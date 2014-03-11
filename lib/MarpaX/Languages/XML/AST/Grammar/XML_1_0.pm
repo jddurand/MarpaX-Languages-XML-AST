@@ -11,7 +11,6 @@ use Marpa::R2 2.082000;
 # VERSION
 
 our $DATA = do {local $/; <DATA>};
-our $NEWLINE_REGEXP = qr/(?>\x0D\x0A|\v)/;   # For croak logging
 
 #
 # We will systematically pause before every lexeme: grammar is changed on the fly and we
