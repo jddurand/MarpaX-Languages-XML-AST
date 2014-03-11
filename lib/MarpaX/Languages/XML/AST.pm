@@ -5,7 +5,7 @@ package MarpaX::Languages::XML::AST;
 
 # ABSTRACT: Translate XML source to an AST
 
-use MarpaX::Languages::ECMAScript::AST::Grammar qw//;
+use MarpaX::Languages::XML::AST::Grammar qw//;
 
 use Log::Any qw/$log/;
 
@@ -79,7 +79,12 @@ sub new {
 sub _init {
     my ($self, $grammarName, %opts) = @_;
 
-    $self->{_grammar} = MarpaX::Languages::ECMAScript::AST::Grammar->new($grammarName, %opts);
+    $self->{_grammar} = MarpaX::Languages::XML::AST::Grammar->new($grammarName, %opts);
+}
+
+sub parse {
+  my $self = shift;
+  return $self->{_grammar}->parse(@_);
 }
 
 1;

@@ -3,9 +3,9 @@ use warnings FATAL => 'all';
 
 package MarpaX::Languages::XML::AST::Grammar;
 
-# ABSTRACT: XML grammar written in Marpa BNF
+# ABSTRACT: Proxy class for XML grammars
 
-use MarpaX::Languages::ECMAScript::AST::XML::XML_1_0;
+use MarpaX::Languages::XML::AST::Grammar::XML_1_0;
 use Carp qw/croak/;
 
 # VERSION
@@ -55,20 +55,8 @@ sub new {
   } else {
     croak "Unsupported grammar name $grammarName";
   }
-  bless($self, $class);
 
-  return $self;
-}
-
-=head2 grammar($self)
-
-Returns the grammar object associated to grammarName.
-
-=cut
-
-sub grammar {
-    my ($self) = @_;
-    return $self->{_grammar};
+  return $self->{_grammar};
 }
 
 1;
