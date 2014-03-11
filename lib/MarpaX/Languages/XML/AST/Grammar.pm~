@@ -1,8 +1,0 @@
-use strict;
-use warnings FATAL => 'all';
-
-package MarpaX::Languages::XML::AST::Grammar;
-
-# ABSTRACT: XML grammar written in Marpa BNF
-
-use MarpaX::Languages::ECMAScript::AST::XML::XML_1_0;
