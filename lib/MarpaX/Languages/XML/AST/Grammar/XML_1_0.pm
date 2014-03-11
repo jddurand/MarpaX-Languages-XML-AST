@@ -2,6 +2,7 @@ use strict;
 use warnings FATAL => 'all';
 
 package MarpaX::Languages::XML::AST::Grammar::XML_1_0;
+use MarpaX::Languages::XML::AST::Util qw/:all/;
 use Carp qw/croak/;
 use Marpa::R2 2.082000;
 
@@ -10,6 +11,7 @@ use Marpa::R2 2.082000;
 # VERSION
 
 our $DATA = do {local $/; <DATA>};
+our $NEWLINE_REGEXP = qr/(?>\x0D\x0A|\v)/;   # For croak logging
 
 #
 # We will systematically pause before every lexeme: grammar is changed on the fly and we
@@ -153,7 +155,7 @@ our %G = ();
 foreach (qw/document extSubset extSubsetDecl Name Names Nmtoken Nmtokens NotationDecl PublicID Char/) {
   my $top = $_;
   $DATA =~ s/(:start\s*::=\s*)(.*)/$1$top/g;
-  print STDERR "Compiling $top production\n";
+  #print STDERR "Compiling $top production\n";
   $G{$top} = Marpa::R2::Scanless::G->new({source => \$DATA});
 }
 #
@@ -235,7 +237,6 @@ sub _doEvents {
   foreach (@{$recce->events()}) {
     my ($name) = @{$_};
     if (exists($RE{$name})) {
-      printf STDERR "[%5d] ^ %s\n", $pos, $name;
       #
       # This is a prediction event. By definition 100% of the prediction events are for 100% of the lexemes.
       #
@@ -250,12 +251,11 @@ sub _doEvents {
   }
 
   if (! %alternatives) {
-    croak "No alternative at position $pos: " . substr($input, $pos, 10) . "...\n" . "Current progress:\n" . $recce->show_progress() . "\n";
+    logCroak($recce, $input, "No alternative at position $pos", $pos);
   }
   foreach (keys %alternatives) {
     my $name = $_;
     if ($alternatives{$name}{length} == $longest) {
-      printf STDERR "[%5d]=> %s \"%s\"\n", $pos, $name, $alternatives{$name}{value};
       $recce->lexeme_alternative($name, $alternatives{$name}{value});
     }
   }
@@ -266,7 +266,6 @@ sub _doEvents {
   foreach (@{$recce->events()}) {
     my ($name) = @{$_};
     if (! exists($RE{$name})) {
-      printf STDERR "[%5d] ! %s\n", $pos, $name;
     }
   }
 }
@@ -277,6 +276,7 @@ sub parse {
   my $recce = Marpa::R2::Scanless::R->new( { grammar => $G{document} } );
   my $pos = $recce->read(\$input);
   my $max = length($input);
+  $self->{_elements} = [];
   while ($pos < $max) {
     $self->_doEvents($input, $pos, $recce);
     $pos = $recce->resume();
