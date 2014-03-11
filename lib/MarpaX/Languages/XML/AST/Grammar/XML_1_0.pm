@@ -233,6 +233,7 @@ sub _doEvents {
   my %alternatives = ();
   pos($input) = $pos;
   my $longest = 0;
+  my $value = '';
   foreach (@{$recce->events()}) {
     my ($name) = @{$_};
     if (exists($RE{$name})) {
@@ -244,6 +245,7 @@ sub _doEvents {
         $alternatives{$name}{length} = length($alternatives{$name}{value});
         if ($alternatives{$name}{length} > $longest) {
           $longest = $alternatives{$name}{length};
+	  $value = $alternatives{$name}{value};
         }
       }
     }
@@ -264,7 +266,25 @@ sub _doEvents {
   #
   foreach (@{$recce->events()}) {
     my ($name) = @{$_};
-    if (! exists($RE{$name})) {
+    if ($name eq 'TagNameEvent') {
+	#
+	# If not element, yet, then this is the root
+	#
+	if (! @{$self->{_elementStack}}) {
+	    push(@{$self->{_elementStack}}, $value);
+	    #
+	    # For faster lookup
+	    #
+	    $self->{_elementHash}->{$value} = $pos;
+	}
+	if ($self->{_doctypedeclName} && $self->{_doctypedeclName} ne $self->{_elementStack}->[0]) {
+	    # Validity constraint: Root Element Type
+	    # The Name in the document type declaration must match
+	    # the element type of the root element.
+	    logCroak($recce, $input, "The Name in the document type declaration must match the element type <$self->{_elementStack}->[0]> of the root element", $pos);
+	}
+    } elsif ($name eq 'doctypedeclNameEvent') {
+	$self->{_doctypedeclName}  = $value;
     }
   }
 }
@@ -275,7 +295,9 @@ sub parse {
   my $recce = Marpa::R2::Scanless::R->new( { grammar => $G{document} } );
   my $pos = $recce->read(\$input);
   my $max = length($input);
-  $self->{_elements} = [];
+  $self->{_elementStack} = [];
+  $self->{_elementHash} = {};
+  $self->{_doctypedeclName} = '';
   while ($pos < $max) {
     $self->_doEvents($input, $pos, $recce);
     $pos = $recce->resume();
@@ -404,10 +426,10 @@ VersionNum    ::= VERSIONNUM
 Misc          ::= Comment
                 | PI
                 | S
-doctypedecl   ::= DOCTYPE_BEG S Name              S_maybe                                     DOCTYPE_END
-                | DOCTYPE_BEG S Name              S_maybe LBRACKET intSubset RBRACKET S_maybe DOCTYPE_END
-                | DOCTYPE_BEG S Name S ExternalID S_maybe                                     DOCTYPE_END
-                | DOCTYPE_BEG S Name S ExternalID S_maybe LBRACKET intSubset RBRACKET S_maybe DOCTYPE_END
+doctypedecl   ::= DOCTYPE_BEG S Name (<doctypedeclNameEvent>) S_maybe                                     DOCTYPE_END
+                | DOCTYPE_BEG S Name (<doctypedeclNameEvent>) S_maybe LBRACKET intSubset RBRACKET S_maybe DOCTYPE_END
+                | DOCTYPE_BEG S Name (<doctypedeclNameEvent>) S ExternalID S_maybe                                     DOCTYPE_END
+                | DOCTYPE_BEG S Name (<doctypedeclNameEvent>) S ExternalID S_maybe LBRACKET intSubset RBRACKET S_maybe DOCTYPE_END
 DeclSep       ::= PEReference
                 | S
 intSubset     ::= intSubset_unit_any
@@ -565,6 +587,8 @@ VersionInfo_maybe ::=
 
 event 'TagNameEvent' = nulled <TagNameEvent>
 TagNameEvent ::=
+event 'doctypedeclNameEvent' = nulled <doctypedeclNameEvent>
+doctypedeclNameEvent ::=
 #
 # Dummy lexemes: tokenization is done is user space
 #
