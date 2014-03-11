@@ -15,5 +15,5 @@ done_testing(2);
 
 __DATA__
 <?xml version="1.0"?>
-<!DOCTYPE greetings SYSTEM "hello.dtd">
+<!DOCTYPE greetings>
 <greeting>Hello, world!</greeting>
