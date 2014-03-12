@@ -277,11 +277,14 @@ sub _doEvents {
 	    #
 	    $self->{_elementHash}->{$value} = $pos;
 	}
-	if ($self->{_doctypedeclName} && $self->{_doctypedeclName} ne $self->{_elementStack}->[0]) {
+	if (! $self->{_rootName}) {
+	    $self->{_rootName} = $value;
+	}
+	if ($self->{_doctypedeclName} && $self->{_doctypedeclName} ne $self->{_rootName}) {
 	    # Validity constraint: Root Element Type
 	    # The Name in the document type declaration must match
 	    # the element type of the root element.
-	    logCroak($recce, $input, "The Name in the document type declaration must match the element type <$self->{_elementStack}->[0]> of the root element", $pos);
+	    logCroak($recce, $input, "The Name in the document type declaration must match the element type <$self->{_rootName}> of the root element", $pos);
 	}
     } elsif ($name eq 'doctypedeclNameEvent') {
 	$self->{_doctypedeclName}  = $value;
@@ -298,6 +301,7 @@ sub parse {
   $self->{_elementStack} = [];
   $self->{_elementHash} = {};
   $self->{_doctypedeclName} = '';
+  $self->{_rootName} = '';
   while ($pos < $max) {
     $self->_doEvents($input, $pos, $recce);
     $pos = $recce->resume();
