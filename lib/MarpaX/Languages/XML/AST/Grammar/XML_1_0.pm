@@ -252,7 +252,7 @@ sub _doEvents {
   }
 
   if (! %alternatives) {
-    logCroak($recce, $input, "No alternative at position $pos", $pos);
+    logCroak($recce, $input, "No alternative", $pos);
   }
   foreach (keys %alternatives) {
     my $name = $_;

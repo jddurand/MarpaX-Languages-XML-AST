@@ -33,9 +33,9 @@ sub logCroak {
 
     my $line_columnp = eval { _lineAndCol($recce, $pos) };
     if (! $@) {
-	croak("$msg, " . _showLineAndCol(@{$line_columnp}, $input));
+	croak("$msg, at position $pos, " . _showLineAndCol(@{$line_columnp}, $input));
     } else {
-	croak($msg);
+	croak("$msg, at position $pos");
     }
 }
 
@@ -70,7 +70,7 @@ sub _showLineAndCol {
     #
     $content =~ s/\s/ /g;
 
-    return "line $nbnewlines, column $col\n\n$content\n$pointer";
+    return "line $nbnewlines, column $col:\n\n$content\n$pointer";
 }
 
 sub _lineAndCol {
