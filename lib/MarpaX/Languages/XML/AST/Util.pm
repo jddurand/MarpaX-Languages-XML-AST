@@ -15,7 +15,7 @@ our $NEWLINE_REGEXP = qr/(?>\x0D\x0A|\v)/;
 
 # CONTRIBUTORS
 
-our @EXPORT_OK = qw/logCroak/;
+our @EXPORT_OK = qw/logCroak lineAndCol showLineAndCol/;
 our %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
 =head1 DESCRIPTION
@@ -31,15 +31,16 @@ This modules implements some function utilities.
 sub logCroak {
     my ($recce, $input, $msg, $pos) = @_;
 
-    my $line_columnp = eval { _lineAndCol($recce, $pos) };
+    my $line_columnp = eval { lineAndCol($recce, $pos) };
     if (! $@) {
-	croak("$msg, at position $pos, " . _showLineAndCol(@{$line_columnp}, $input));
+	croak("$msg, at position $pos, " . showLineAndCol(@{$line_columnp}, $input));
     } else {
 	croak("$msg, at position $pos");
     }
+    print STDERR "CROAK done\n";
 }
 
-sub _showLineAndCol {
+sub showLineAndCol {
     my ($line, $col, $input) = @_;
 
     my $pointer = ($col > 0 ? '-' x ($col-1) : '') . '^';
@@ -73,7 +74,7 @@ sub _showLineAndCol {
     return "line $nbnewlines, column $col:\n\n$content\n$pointer";
 }
 
-sub _lineAndCol {
+sub lineAndCol {
     my ($recce, $pos) = @_;
 
     return [ $recce->line_column($pos) ];
