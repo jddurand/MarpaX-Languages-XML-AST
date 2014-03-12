@@ -139,7 +139,7 @@ sub _doEvents {
   foreach (@alternatives) {
     my $name = $_;
     my $lp = lineAndCol($recce, $pos);
-    printf STDERR "%-10s %s\n", "L$lp->[0]c$lp->[1]", $name;
+    #printf STDERR "%-10s %s \"%s\"\n", "L$lp->[0]c$lp->[1]", $name, $value;
     $recce->lexeme_alternative($name, $value);
   }
   $recce->lexeme_complete($pos, $longest);
@@ -177,8 +177,7 @@ Nmtoken       ::= NMTOKEN
 Nmtokens      ::= Nmtoken+ separator => x20
 EntityValue   ::= DQUOTE EntityValueInteriorDquoteUnitAny DQUOTE
                 | SQUOTE EntityValueInteriorSquoteUnitAny SQUOTE
-AttValue      ::= DQUOTE AttValueInteriorDquoteUnitAny DQUOTE
-                | SQUOTE AttValueInteriorSquoteUnitAny SQUOTE
+AttValue      ::= ATTVALUE
 SystemLiteral ::= SYSTEMLITERAL
 PubidLiteral  ::= PUBIDLITERAL
 CharData      ::= CHARDATA
@@ -300,10 +299,6 @@ EntityValueInteriorDquoteUnit ::= ENTITYCHARDQUOTE | PEReference | Reference
 EntityValueInteriorDquoteUnitAny ::= EntityValueInteriorDquoteUnit*
 EntityValueInteriorSquoteUnit ::= ENTITYCHARSQUOTE | PEReference | Reference
 EntityValueInteriorSquoteUnitAny ::= EntityValueInteriorSquoteUnit*
-AttValueInteriorDquoteUnit ::= ATTCHARDQUOTE | Reference
-AttValueInteriorDquoteUnitAny ::= AttValueInteriorDquoteUnit*
-AttValueInteriorSquoteUnit ::= ATTCHARSQUOTE | Reference
-AttValueInteriorSquoteUnitAny ::= AttValueInteriorSquoteUnit*
 XMLDeclMaybe ::= XMLDecl
 XMLDeclMaybe ::=
 MiscAny ::= Misc*
@@ -448,8 +443,7 @@ NOTATION_BEG     ~ _DUMMY
 NOTATION_END     ~ _DUMMY
 ENTITYCHARDQUOTE ~ _DUMMY
 ENTITYCHARSQUOTE ~ _DUMMY
-ATTCHARDQUOTE    ~ _DUMMY
-ATTCHARSQUOTE    ~ _DUMMY
+ATTVALUE         ~ _DUMMY
 #
 # G0 events
 # ---------
@@ -537,5 +531,4 @@ ATTCHARSQUOTE    ~ _DUMMY
 :lexeme ~ NOTATION_END     pause => before event => 'NOTATION_END'
 :lexeme ~ ENTITYCHARDQUOTE pause => before event => 'ENTITYCHARDQUOTE'
 :lexeme ~ ENTITYCHARSQUOTE pause => before event => 'ENTITYCHARSQUOTE'
-:lexeme ~ ATTCHARDQUOTE    pause => before event => 'ATTCHARDQUOTE'
-:lexeme ~ ATTCHARSQUOTE    pause => before event => 'ATTCHARSQUOTE'
+:lexeme ~ ATTVALUE         pause => before event => 'ATTVALUE'

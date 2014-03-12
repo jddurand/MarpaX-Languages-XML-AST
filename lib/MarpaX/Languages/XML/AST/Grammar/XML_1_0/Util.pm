@@ -44,6 +44,11 @@ our $REG_TOK_ENTITYCHARDQUOTE = qr/\G(?:[^%&"])/;
 our $REG_TOK_ENTITYCHARSQUOTE = qr/\G(?:[^%&'])/;
 our $REG_TOK_ATTCHARDQUOTE    = qr/\G(?:[^<&"])/;
 our $REG_TOK_ATTCHARSQUOTE    = qr/\G(?:[^<&'])/;
+
+our $REG_TOK_REFERENCE        = qr/\G(?:${REG_TOK_ENTITYREF}|${REG_TOK_CHARREF})/;
+our $REG_ATTVALUE_DQUOTE_UNIT = qr/(?:[^<&"]|${REG_TOK_REFERENCE})/;
+our $REG_ATTVALUE_SQUOTE_UNIT = qr/(?:[^<&']|${REG_TOK_REFERENCE})/;
+our $REG_TOK_ATTVALUE         = qr/\G(?:(?:"${REG_ATTVALUE_DQUOTE_UNIT}*")|(?:'${REG_ATTVALUE_SQUOTE_UNIT}*'))/;
 #
 # For speedup
 #
@@ -69,24 +74,6 @@ our $SUB_TOK_ENTITYCHARSQUOTE = sub {
   my $c = substr($_[0], $_[1], 1);
   my $ordc = ord($c);
   if ($ordc == $ORD_PERCENT || $ordc == $ORD_AND || $ordc == $ORD_SQUOTE) {
-    return undef;
-  } else {
-    return $c;
-  }
-};
-our $SUB_TOK_ATTCHARDQUOTE = sub {
-  my $c = substr($_[0], $_[1], 1);
-  my $ordc = ord($c);
-  if ($ordc == $ORD_LEFT || $ordc == $ORD_AND || $ordc == $ORD_DQUOTE) {
-    return undef;
-  } else {
-    return $c;
-  }
-};
-our $SUB_TOK_ATTCHARSQUOTE = sub {
-  my $c = substr($_[0], $_[1], 1);
-  my $ordc = ord($c);
-  if ($ordc == $ORD_LEFT || $ordc == $ORD_AND || $ordc == $ORD_SQUOTE) {
     return undef;
   } else {
     return $c;
@@ -273,8 +260,7 @@ our %TOKEN = (
            NOTATION_END     => sub { return &$STR_process(@_, $STR_TOK_NOTATION_END) },
            ENTITYCHARDQUOTE => sub { return &$SUB_TOK_ENTITYCHARDQUOTE(@_) },
            ENTITYCHARSQUOTE => sub { return &$SUB_TOK_ENTITYCHARSQUOTE(@_) },
-           ATTCHARDQUOTE    => sub { return &$SUB_TOK_ATTCHARDQUOTE(@_) },
-           ATTCHARSQUOTE    => sub { return &$SUB_TOK_ATTCHARSQUOTE(@_) },
+           ATTVALUE         => sub { return &$REG_process(@_, $REG_TOK_ATTVALUE) },
           );
 
 1;
