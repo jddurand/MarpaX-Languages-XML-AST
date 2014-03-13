@@ -31,6 +31,7 @@ our $REG_TOK_NMTOKEN          = qr/\G(?:${REG_NAMECHAR}+)/;
 our $REG_TOK_SYSTEMLITERAL    = qr/\G(?:(?:"[^"]*")|(?:'[^']*'))/;
 our $REG_TOK_PUBIDLITERAL     = qr/\G(?:(?:"${REG_PUBIDCHAR_DQUOTE}*")|(?:'${REG_PUBIDCHAR_SQUOTE}*'))/;
 our $REG_TOK_CHARDATA         = qr/\G(?:[^<&]*)/;
+our $REG_TOK_CDATA            = qr/\G(?:[^<&]*)/;
 our $REG_TOK_COMMENT          = qr/\G(?:(?:${REG_CHARCOMMENT})|(?:\-${REG_CHARCOMMENT}))*/;
 our $REG_TOK_PITARGET         = qr/\G(?:${REG_NAME})/;
 our $REG_TOK_PI_INTERIOR      = qr/\G(?:${REG_CHAR})/;
@@ -44,11 +45,6 @@ our $REG_TOK_ENTITYCHARDQUOTE = qr/\G(?:[^%&"])/;
 our $REG_TOK_ENTITYCHARSQUOTE = qr/\G(?:[^%&'])/;
 our $REG_TOK_ATTCHARDQUOTE    = qr/\G(?:[^<&"])/;
 our $REG_TOK_ATTCHARSQUOTE    = qr/\G(?:[^<&'])/;
-
-our $REG_TOK_REFERENCE        = qr/\G(?:${REG_TOK_ENTITYREF}|${REG_TOK_CHARREF})/;
-our $REG_ATTVALUE_DQUOTE_UNIT = qr/(?:[^<&"]|${REG_TOK_REFERENCE})/;
-our $REG_ATTVALUE_SQUOTE_UNIT = qr/(?:[^<&']|${REG_TOK_REFERENCE})/;
-our $REG_TOK_ATTVALUE         = qr/\G(?:(?:"${REG_ATTVALUE_DQUOTE_UNIT}*")|(?:'${REG_ATTVALUE_SQUOTE_UNIT}*'))/;
 #
 # For speedup
 #
@@ -74,6 +70,24 @@ our $SUB_TOK_ENTITYCHARSQUOTE = sub {
   my $c = substr($_[0], $_[1], 1);
   my $ordc = ord($c);
   if ($ordc == $ORD_PERCENT || $ordc == $ORD_AND || $ordc == $ORD_SQUOTE) {
+    return undef;
+  } else {
+    return $c;
+  }
+};
+our $SUB_TOK_ATTCHARDQUOTE = sub {
+  my $c = substr($_[0], $_[1], 1);
+  my $ordc = ord($c);
+  if ($ordc == $ORD_LEFT || $ordc == $ORD_AND || $ordc == $ORD_DQUOTE) {
+    return undef;
+  } else {
+    return $c;
+  }
+};
+our $SUB_TOK_ATTCHARSQUOTE = sub {
+  my $c = substr($_[0], $_[1], 1);
+  my $ordc = ord($c);
+  if ($ordc == $ORD_LEFT || $ordc == $ORD_AND || $ordc == $ORD_SQUOTE) {
     return undef;
   } else {
     return $c;
@@ -123,7 +137,7 @@ our $STR_TOK_COMMA            = ',';
 our $STR_TOK_PCDATA           = '#PCDATA';
 our $STR_TOK_ATTLIST_BEG      = '<!ATTLIST';
 our $STR_TOK_ATTLIST_END      = '>';
-our $STR_TOK_CDATA            = 'CDATA';
+our $STR_TOK_STRINGTYPE       = 'CDATA';
 our $STR_TOK_TYPE_ID          = 'ID';
 our $STR_TOK_TYPE_IDREF       = 'IDREF';
 our $STR_TOK_TYPE_IDREFS      = 'IDREFS';
@@ -184,6 +198,7 @@ our %TOKEN = (
            SYSTEMLITERAL    => sub { return &$REG_process(@_, $REG_TOK_SYSTEMLITERAL) },
            PUBIDLITERAL     => sub { return &$REG_process(@_, $REG_TOK_PUBIDLITERAL) },
            CHARDATA         => sub { return &$REG_process(@_, $REG_TOK_CHARDATA) },
+           CDATA            => sub { return &$REG_process(@_, $REG_TOK_CDATA) },
            COMMENT_BEG      => sub { return &$STR_process(@_, $STR_TOK_COMMENT_BEG) },
            COMMENT_END      => sub { return &$STR_process(@_, $STR_TOK_COMMENT_END) },
            COMMENT          => sub { return &$REG_process(@_, $REG_TOK_COMMENT) },
@@ -228,7 +243,7 @@ our %TOKEN = (
            PCDATA           => sub { return &$STR_process(@_, $STR_TOK_PCDATA) },
            ATTLIST_BEG      => sub { return &$STR_process(@_, $STR_TOK_ATTLIST_BEG) },
            ATTLIST_END      => sub { return &$STR_process(@_, $STR_TOK_ATTLIST_END) },
-           CDATA            => sub { return &$STR_process(@_, $STR_TOK_CDATA) },
+           STRINGTYPE       => sub { return &$STR_process(@_, $STR_TOK_STRINGTYPE) },
            TYPE_ID          => sub { return &$STR_process(@_, $STR_TOK_TYPE_ID) },
            TYPE_IDREF       => sub { return &$STR_process(@_, $STR_TOK_TYPE_IDREF) },
            TYPE_IDREFS      => sub { return &$STR_process(@_, $STR_TOK_TYPE_IDREFS) },
@@ -260,7 +275,8 @@ our %TOKEN = (
            NOTATION_END     => sub { return &$STR_process(@_, $STR_TOK_NOTATION_END) },
            ENTITYCHARDQUOTE => sub { return &$SUB_TOK_ENTITYCHARDQUOTE(@_) },
            ENTITYCHARSQUOTE => sub { return &$SUB_TOK_ENTITYCHARSQUOTE(@_) },
-           ATTVALUE         => sub { return &$REG_process(@_, $REG_TOK_ATTVALUE) },
+           ATTCHARDQUOTE    => sub { return &$SUB_TOK_ATTCHARDQUOTE(@_) },
+           ATTCHARSQUOTE    => sub { return &$SUB_TOK_ATTCHARSQUOTE(@_) },
           );
 
 1;

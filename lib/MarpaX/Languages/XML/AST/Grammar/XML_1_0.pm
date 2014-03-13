@@ -139,16 +139,19 @@ sub _doEvents {
   foreach (@alternatives) {
     my $name = $_;
     my $lp = lineAndCol($recce, $pos);
-    #printf STDERR "%-10s %s \"%s\"\n", "L$lp->[0]c$lp->[1]", $name, $value;
+    printf STDERR "%-10s %s \"%s\"\n", "L$lp->[0]c$lp->[1]", $name, $value;
     $recce->lexeme_alternative($name, $value);
   }
   $recce->lexeme_complete($pos, $longest);
+
+  return $pos+$longest;
 }
 
 sub parse {
   my ($self, $input) = @_;
 
-  my $recce = Marpa::R2::Scanless::R->new( { grammar => $G{document} } );
+  my $recce = Marpa::R2::Scanless::R->new( { grammar => $G{document}, trace_terminals => 1 } );
+  my $fake_input = ' ';
   my $pos = $recce->read(\$input);
   my $max = length($input);
   $self->{_elementStack} = [];
@@ -156,8 +159,13 @@ sub parse {
   $self->{_doctypedeclName} = '';
   $self->{_rootName} = '';
   while ($pos < $max) {
-    $self->_doEvents($input, $pos, $recce);
-    $pos = $recce->resume();
+    $pos = $self->_doEvents($input, $pos, $recce);
+    #eval {$pos = $recce->resume()};
+    if ($@) {
+	print STDERR "$@";
+	print STDERR $recce->show_progress();
+	exit;
+    }
   }
 }
 
@@ -175,34 +183,37 @@ Name          ::= NAME
 Names         ::= Name+ separator => x20
 Nmtoken       ::= NMTOKEN
 Nmtokens      ::= Nmtoken+ separator => x20
-EntityValue   ::= DQUOTE EntityValueInteriorDquoteUnitAny DQUOTE
-                | SQUOTE EntityValueInteriorSquoteUnitAny SQUOTE
-AttValue      ::= ATTVALUE
+EntityValue   ::= Dquote EntityValueInteriorDquoteUnitAny Dquote
+                | Squote EntityValueInteriorSquoteUnitAny Squote
+AttValue      ::= Dquote AttValueInteriorDquoteUnitAny Dquote
+                | Squote AttValueInteriorSquoteUnitAny Squote
 SystemLiteral ::= SYSTEMLITERAL
 PubidLiteral  ::= PUBIDLITERAL
 CharData      ::= CHARDATA
-Comment       ::= COMMENT_BEG COMMENT COMMENT_END
+Comment       ::= CommentBeg CommentInterior CommentEnd
 PITarget      ::= PITARGET
-PI            ::= PI_BEG PITarget               PI_END
-                | PI_BEG PITarget S PI_INTERIOR PI_END
-CDSect        ::= CDSTART CData CDEND
-CData         ::= CHARDATA*
+PI            ::= PiBeg PITarget               PiEnd
+                | PiBeg PITarget WhiteSpace PiInterior PiEnd
+CDSect        ::= CDStart CData CDEnd
+CDStart       ::= CDSTART
+CData         ::= CDATA
+CDEnd         ::= CDEND
 prolog        ::= XMLDeclMaybe MiscAny
                 | XMLDeclMaybe MiscAny doctypedecl MiscAny
-XMLDecl       ::= XML_BEG VersionInfo EncodingDeclMaybe SDDeclMaybe SMaybe XML_END
-VersionInfo   ::= S VERSION Eq SQUOTE VersionNum SQUOTE
-                | S VERSION Eq DQUOTE VersionNum DQUOTE
-Eq            ::= SMaybe EQUAL SMaybe
+XMLDecl       ::= XmlBeg VersionInfo EncodingDeclMaybe SDDeclMaybe SMaybe XmlEnd
+VersionInfo   ::= WhiteSpace Version Eq Squote VersionNum Squote
+                | WhiteSpace Version Eq Dquote VersionNum Dquote
+Eq            ::= SMaybe Equal SMaybe
 VersionNum    ::= VERSIONNUM
 Misc          ::= Comment
                 | PI
-                | S
-doctypedecl   ::= DOCTYPE_BEG S Name (<doctypedeclNameEvent>) SMaybe                                     DOCTYPE_END
-                | DOCTYPE_BEG S Name (<doctypedeclNameEvent>) SMaybe LBRACKET intSubset RBRACKET SMaybe DOCTYPE_END
-                | DOCTYPE_BEG S Name (<doctypedeclNameEvent>) S ExternalID SMaybe                                     DOCTYPE_END
-                | DOCTYPE_BEG S Name (<doctypedeclNameEvent>) S ExternalID SMaybe LBRACKET intSubset RBRACKET SMaybe DOCTYPE_END
+                | WhiteSpace
+doctypedecl   ::= DoctypeBeg WhiteSpace Name SMaybe                                     DoctypeEnd
+                | DoctypeBeg WhiteSpace Name SMaybe Lbracket intSubset Rbracket SMaybe DoctypeEnd
+                | DoctypeBeg WhiteSpace Name WhiteSpace ExternalID SMaybe                                     DoctypeEnd
+                | DoctypeBeg WhiteSpace Name WhiteSpace ExternalID SMaybe Lbracket intSubset Rbracket SMaybe DoctypeEnd
 DeclSep       ::= PEReference
-                | S
+                | WhiteSpace
 intSubset     ::= intSubsetUnitAny
 markupdecl    ::= elementdecl
                 | AttlistDecl
@@ -213,20 +224,20 @@ markupdecl    ::= elementdecl
 extSubset     ::=          extSubsetDecl
                 | TextDecl extSubsetDecl
 extSubsetDecl ::= extSubsetDeclUnitAny
-SDDecl        ::= S STANDALONE Eq SQUOTE YES SQUOTE
-                | S STANDALONE Eq SQUOTE NO  SQUOTE
-                | S STANDALONE Eq DQUOTE YES DQUOTE
-                | S STANDALONE Eq DQUOTE NO  DQUOTE
+SDDecl        ::= WhiteSpace Standalone Eq Squote Yes Squote
+                | WhiteSpace Standalone Eq Squote No  Squote
+                | WhiteSpace Standalone Eq Dquote Yes Dquote
+                | WhiteSpace Standalone Eq Dquote No  Dquote
 element       ::= EmptyElemTag
                 | STag content ETag
-STag          ::= STAG_BEG Name <TagNameEvent> STagInteriorAny SMaybe STAG_END
+STag          ::= STagBeg Name STagInteriorAny SMaybe STagEnd
 Attribute     ::= Name Eq AttValue
-ETag          ::= ETAG_BEG Name SMaybe ETAG_END
+ETag          ::= ETagBeg Name SMaybe ETagEnd
 content       ::= CharDataMaybe ContentInteriorAny
-EmptyElemTag  ::= EMPTYELEMTAG_BEG Name <TagNameEvent> EmptyElemTagInteriorAny SMaybe EMPTYELEMTAG_END
-elementdecl   ::= ELEMENTDECL_BEG S Name S contentspec SMaybe ELEMENTDECL_END
-contentspec   ::= EMPTY
-                | ANY
+EmptyElemTag  ::= EmptyElemTagBeg Name EmptyElemTagInteriorAny SMaybe EmptyElemTagEnd
+elementdecl   ::= ElementDeclBeg WhiteSpace Name WhiteSpace contentspec SMaybe ElementDeclEnd
+contentspec   ::= Empty
+                | Any
                 | Mixed
                 | children
 children      ::= choice QuantifierMaybe
@@ -234,35 +245,35 @@ children      ::= choice QuantifierMaybe
 cp            ::= Name QuantifierMaybe
                 | choice QuantifierMaybe
                 | seq QuantifierMaybe
-choice        ::= LPAREN SMaybe cp ChoiceInteriorMany SMaybe RPAREN
-seq           ::= LPAREN SMaybe cp SeqInteriorAny SMaybe RPAREN
-Mixed         ::= LPAREN SMaybe PCDATA MixedInteriorAny SMaybe RPARENSTAR
-                | LPAREN SMaybe PCDATA SMaybe RPAREN
-AttlistDecl   ::= ATTLIST_BEG S Name AttDefAny SMaybe ATTLIST_END
-AttDef        ::= S Name S AttType S DefaultDecl
+choice        ::= Lparen SMaybe cp ChoiceInteriorMany SMaybe Rparen
+seq           ::= Lparen SMaybe cp SeqInteriorAny SMaybe Rparen
+Mixed         ::= Lparen SMaybe Pcdata MixedInteriorAny SMaybe RparenStar
+                | Lparen SMaybe Pcdata SMaybe Rparen
+AttlistDecl   ::= AttlistBeg WhiteSpace Name AttDefAny SMaybe AttlistEnd
+AttDef        ::= WhiteSpace Name WhiteSpace AttType WhiteSpace DefaultDecl
 AttType       ::= StringType
                 | TokenizedType
                 | EnumeratedType
-StringType    ::= CDATA
-TokenizedType ::= TYPE_ID
-                | TYPE_IDREF
-                | TYPE_IDREFS
-                | TYPE_ENTITY
-                | TYPE_ENTITIES
-                | TYPE_NMTOKEN
-                | TYPE_NMTOKENS
+StringType    ::= STRINGTYPE
+TokenizedType ::= TypeId
+                | TypeIdref
+                | TypeIdrefs
+                | TypeEntity
+                | TypeEntities
+                | TypeNmtoken
+                | TypeNmtokens
 EnumeratedType ::= NotationType
                 | Enumeration
-NotationType  ::= NOTATION S LPAREN SMaybe Name NotationTypeInteriorAny SMaybe RPAREN
-Enumeration   ::= LPAREN SMaybe Nmtoken EnumerationInteriorAny SMaybe RPAREN
-DefaultDecl   ::= REQUIRED
-                | IMPLIED
+NotationType  ::= Notation WhiteSpace Lparen SMaybe Name NotationTypeInteriorAny SMaybe Rparen
+Enumeration   ::= Lparen SMaybe Nmtoken EnumerationInteriorAny SMaybe Rparen
+DefaultDecl   ::= Required
+                | Implied
                 |         AttValue
-                | FIXED S AttValue
+                | Fixed WhiteSpace AttValue
 conditionalSect ::= includeSect
                   | ignoreSect
-includeSect   ::= SECT_BEG SMaybe INCLUDE SMaybe LBRACKET extSubsetDecl SECT_END
-ignoreSect    ::= SECT_BEG SMaybe IGNORE SMaybe LBRACKET ignoreSectContentsAny SECT_END
+includeSect   ::= SectBeg SMaybe Include SMaybe Lbracket extSubsetDecl SectEnd
+ignoreSect    ::= SectBeg SMaybe TOKIgnore SMaybe Lbracket ignoreSectContentsAny SectEnd
 ignoreSectContents ::= Ignore ignoreSectContentsInteriorAny
 Ignore        ::=  IGNORE_INTERIOR
 CharRef       ::= CHARREF
@@ -272,33 +283,41 @@ EntityRef     ::= ENTITYREF
 PEReference   ::= PEREFERENCE
 EntityDecl    ::= GEDecl
                 | PEDecl
-GEDecl	      ::= EDECL_BEG S Name S EntityDef SMaybe EDECL_END
-PEDecl        ::= EDECL_BEG S PERCENT S Name S PEDef SMaybe EDECL_END
+GEDecl	      ::= EdeclBeg WhiteSpace Name WhiteSpace EntityDef SMaybe EdeclEnd
+PEDecl        ::= EdeclBeg WhiteSpace Percent WhiteSpace Name WhiteSpace PEDef SMaybe EdeclEnd
 EntityDef     ::= EntityValue
                 | ExternalID
                 | ExternalID NDataDecl
 PEDef         ::= EntityValue
                 | ExternalID
-ExternalID    ::= SYSTEM S SystemLiteral
-                | PUBLIC S PubidLiteral S SystemLiteral
-NDataDecl     ::= S NDATA S Name
-TextDecl      ::= XML_BEG VersionInfoMaybe EncodingDecl SMaybe XML_END
+ExternalID    ::= System WhiteSpace SystemLiteral
+                | Public WhiteSpace PubidLiteral WhiteSpace SystemLiteral
+NDataDecl     ::= WhiteSpace Ndata WhiteSpace Name
+TextDecl      ::= XmlBeg VersionInfoMaybe EncodingDecl SMaybe XmlEnd
 extParsedEnt  ::=          content
                 | TextDecl content
-EncodingDecl  ::= S ENCODING Eq DQUOTE EncName DQUOTE
-                | S ENCODING Eq SQUOTE EncName SQUOTE
+EncodingDecl  ::= WhiteSpace Encoding Eq Dquote EncName Dquote
+                | WhiteSpace Encoding Eq Squote EncName Squote
 EncName       ::= ENCNAME
-NotationDecl  ::= NOTATION_BEG S Name S ExternalID SMaybe NOTATION_END
-                | NOTATION_BEG S Name S PublicID   SMaybe NOTATION_END
-PublicID      ::= PUBLIC S PubidLiteral
+NotationDecl  ::= NotationBeg WhiteSpace Name WhiteSpace ExternalID SMaybe NotationEnd
+                | NotationBeg WhiteSpace Name WhiteSpace PublicID   SMaybe NotationEnd
+PublicID      ::= PUBLIC WhiteSpace PubidLiteral
 #
 # G1 helpers
 #
 x20      ::= X20
-EntityValueInteriorDquoteUnit ::= ENTITYCHARDQUOTE | PEReference | Reference
+EntityCharDquote ::= ENTITYCHARDQUOTE
+EntityCharSquote ::= ENTITYCHARSQUOTE
+EntityValueInteriorDquoteUnit ::= EntityCharDquote | PEReference | Reference
 EntityValueInteriorDquoteUnitAny ::= EntityValueInteriorDquoteUnit*
-EntityValueInteriorSquoteUnit ::= ENTITYCHARSQUOTE | PEReference | Reference
+EntityValueInteriorSquoteUnit ::= EntityCharSquote | PEReference | Reference
 EntityValueInteriorSquoteUnitAny ::= EntityValueInteriorSquoteUnit*
+AttCharDquote ::= ATTCHARDQUOTE
+AttCharSquote ::= ATTCHARSQUOTE
+AttValueInteriorDquoteUnit ::= AttCharDquote | Reference
+AttValueInteriorDquoteUnitAny ::= AttValueInteriorDquoteUnit*
+AttValueInteriorSquoteUnit ::= AttCharSquote | Reference
+AttValueInteriorSquoteUnitAny ::= AttValueInteriorSquoteUnit*
 XMLDeclMaybe ::= XMLDecl
 XMLDeclMaybe ::=
 MiscAny ::= Misc*
@@ -306,7 +325,7 @@ EncodingDeclMaybe ::= EncodingDecl
 EncodingDeclMaybe ::=
 SDDeclMaybe ::= SDDecl
 SDDeclMaybe ::=
-SMaybe ::= S
+SMaybe ::= WhiteSpace
 SMaybe ::=
 ContentInterior ::= element CharDataMaybe
                    | Reference CharDataMaybe
@@ -321,44 +340,106 @@ extSubsetDeclUnit ::= markupdecl
                      | conditionalSect
                      | DeclSep
 extSubsetDeclUnitAny ::= extSubsetDeclUnit*
-STagInterior ::= S Attribute
+STagInterior ::= WhiteSpace Attribute
 STagInteriorAny ::= STagInterior*
 CharDataMaybe ::= CharData
 CharDataMaybe ::=
-EmptyElemTagInterior ::= S Attribute
+EmptyElemTagInterior ::= WhiteSpace Attribute
 EmptyElemTagInteriorAny ::= EmptyElemTagInterior*
-Quantifier ::= QUESTION_MARK
-             | STAR
-             | PLUS
+Quantifier ::= QuestionMark
+             | Star
+             | Plus
 QuantifierMaybe ::= Quantifier
 QuantifierMaybe ::=
-ChoiceInterior ::= SMaybe PIPE SMaybe cp
+ChoiceInterior ::= SMaybe Pipe SMaybe cp
 ChoiceInteriorMany ::= ChoiceInterior+
-SeqInterior ::= SMaybe COMMA SMaybe cp
+SeqInterior ::= SMaybe Comma SMaybe cp
 SeqInteriorAny ::= SeqInterior*
-MixedInterior ::= SMaybe PIPE SMaybe Name
+MixedInterior ::= SMaybe Pipe SMaybe Name
 MixedInteriorAny ::= MixedInterior*
 AttDefAny ::= AttDef*
-NotationTypeInterior ::= SMaybe PIPE SMaybe Name
+NotationTypeInterior ::= SMaybe Pipe SMaybe Name
 NotationTypeInteriorAny ::= NotationTypeInterior*
-EnumerationInterior ::= SMaybe PIPE SMaybe Nmtoken
+EnumerationInterior ::= SMaybe Pipe SMaybe Nmtoken
 EnumerationInteriorAny ::= EnumerationInterior*
 ignoreSectContentsAny ::= ignoreSectContents*
-ignoreSectContentsInterior ::= SECT_BEG ignoreSectContents SECT_END Ignore
+ignoreSectContentsInterior ::= SectBeg ignoreSectContents SectEnd Ignore
 ignoreSectContentsInteriorAny ::= ignoreSectContentsInterior*
 VersionInfoMaybe ::= VersionInfo
 VersionInfoMaybe ::=
+WhiteSpace ::= S
+CommentBeg ::= COMMENT_BEG
+CommentEnd ::= COMMENT_END
+CommentInterior ::= COMMENT
+PiInterior ::= PI_INTERIOR
+XmlBeg ::= XML_BEG
+XmlEnd ::= XML_END
+Version ::= VERSION
+Squote ::= SQUOTE
+Dquote ::= DQUOTE
+Equal ::= EQUAL
+DoctypeBeg ::= DOCTYPE_BEG
+DoctypeEnd ::= DOCTYPE_END
+Lbracket ::= LBRACKET
+Rbracket ::= RBRACKET
+Standalone ::= STANDALONE
+Yes ::= YES
+No ::= NO
+STagBeg ::= STAG_BEG
+STagEnd ::= STAG_END
+ETagBeg ::= ETAG_BEG
+ETagEnd ::= ETAG_END
+EmptyElemTagBeg ::= EMPTYELEMTAG_BEG
+EmptyElemTagEnd ::= EMPTYELEMTAG_END
+ElementDeclBeg ::= ELEMENTDECL_BEG
+ElementDeclEnd ::= ELEMENTDECL_END
+Empty ::= EMPTY
+Any ::= ANY
+QuestionMark ::= QUESTION_MARK
+Star ::= STAR
+Plus ::= PLUS
+Lparen ::= LPAREN
+Rparen ::= RPAREN
+RparenStar ::= RPARENSTAR
+Pipe ::= PIPE
+Comma ::= COMMA
+AttlistBeg ::= ATTLIST_BEG
+AttlistEnd ::= ATTLIST_END
+TypeId ::= TYPE_ID
+TypeIdref ::= TYPE_IDREF
+TypeIdrefs ::= TYPE_IDREFS
+TypeEntity ::= TYPE_ENTITY
+TypeEntities ::= TYPE_ENTITIES
+TypeNmtoken ::= TYPE_NMTOKEN
+TypeNmtokens ::= TYPE_NMTOKENS
+Notation ::= NOTATION
+NotationBeg ::= NOTATION_BEG
+NotationEnd ::= NOTATION_END
+Required ::= REQUIRED
+Implied ::= IMPLIED
+Fixed ::= FIXED
+SectBeg ::= SECT_BEG
+SectEnd ::= SECT_END
+Include ::= INCLUDE
+EdeclBeg ::= EDECL_BEG
+EdeclEnd ::= EDECL_END
+Percent ::= PERCENT
+System ::= SYSTEM
+Public ::= PUBLIC
+Ndata ::= NDATA
+Encoding ::= ENCODING
+TOKIgnore ::= IGNORE
+Pcdata ::= PCDATA
+PiBeg ::= PI_BEG
+PiEnd ::= PI_END
 #
-# G1 event helpers
-# ----------------
-event 'TagNameEvent' = nulled <TagNameEvent>
-TagNameEvent ::=
-event 'doctypedeclNameEvent' = nulled <doctypedeclNameEvent>
-doctypedeclNameEvent ::=
-#
-# Lexemes
+# G1 prediction events
+# Take care, we made sure that all these events are on LHS that are consuming exactly one
+# single lexeme, unique per LHS. In such a case, the lexemes read never happen, i.e.
+# this is a way to prevent Marpa to pre-read the stream. And that's why it is OK to
+# make all lexemes definitions like [^\s\S] i.e. nothing
 # -------
-_DUMMY           ~ [\s\S]
+_DUMMY           ~ [^\s\S]
 X20              ~ _DUMMY
 S                ~ _DUMMY
 NAME             ~ _DUMMY
@@ -367,6 +448,7 @@ NMTOKEN          ~ _DUMMY
 SYSTEMLITERAL    ~ _DUMMY
 PUBIDLITERAL     ~ _DUMMY
 CHARDATA         ~ _DUMMY
+CDATA            ~ _DUMMY
 COMMENT_BEG      ~ _DUMMY
 COMMENT_END      ~ _DUMMY
 COMMENT          ~ _DUMMY
@@ -411,7 +493,7 @@ RPARENSTAR       ~ _DUMMY
 PCDATA           ~ _DUMMY
 ATTLIST_BEG      ~ _DUMMY
 ATTLIST_END      ~ _DUMMY
-CDATA            ~ _DUMMY
+STRINGTYPE       ~ _DUMMY
 TYPE_ID          ~ _DUMMY
 TYPE_IDREF       ~ _DUMMY
 TYPE_IDREFS      ~ _DUMMY
@@ -443,92 +525,93 @@ NOTATION_BEG     ~ _DUMMY
 NOTATION_END     ~ _DUMMY
 ENTITYCHARDQUOTE ~ _DUMMY
 ENTITYCHARSQUOTE ~ _DUMMY
-ATTVALUE         ~ _DUMMY
-#
-# G0 events
-# ---------
-:lexeme ~ X20              pause => before event => 'X20'
-:lexeme ~ S                pause => before event => 'S'
-:lexeme ~ NAME             pause => before event => 'NAME'
-:lexeme ~ CHAR             pause => before event => 'CHAR'
-:lexeme ~ NMTOKEN          pause => before event => 'NMTOKEN'
-:lexeme ~ SYSTEMLITERAL    pause => before event => 'SYSTEMLITERAL'
-:lexeme ~ PUBIDLITERAL     pause => before event => 'PUBIDLITERAL'
-:lexeme ~ CHARDATA         pause => before event => 'CHARDATA'
-:lexeme ~ COMMENT_BEG      pause => before event => 'COMMENT_BEG'
-:lexeme ~ COMMENT_END      pause => before event => 'COMMENT_END'
-:lexeme ~ COMMENT          pause => before event => 'COMMENT'
-:lexeme ~ PI_BEG           pause => before event => 'PI_BEG'
-:lexeme ~ PI_END           pause => before event => 'PI_END'
-:lexeme ~ PITARGET         pause => before event => 'PITARGET'
-:lexeme ~ PI_INTERIOR      pause => before event => 'PI_INTERIOR'
-:lexeme ~ CDSTART          pause => before event => 'CDSTART'
-:lexeme ~ CDEND            pause => before event => 'CDEND'
-:lexeme ~ XML_BEG          pause => before event => 'XML_BEG'
-:lexeme ~ XML_END          pause => before event => 'XML_END'
-:lexeme ~ VERSION          pause => before event => 'VERSION'
-:lexeme ~ DQUOTE           pause => before event => 'DQUOTE'
-:lexeme ~ SQUOTE           pause => before event => 'SQUOTE'
-:lexeme ~ EQUAL            pause => before event => 'EQUAL'
-:lexeme ~ VERSIONNUM       pause => before event => 'VERSIONNUM'
-:lexeme ~ DOCTYPE_BEG      pause => before event => 'DOCTYPE_BEG'
-:lexeme ~ DOCTYPE_END      pause => before event => 'DOCTYPE_END'
-:lexeme ~ LBRACKET         pause => before event => 'LBRACKET'
-:lexeme ~ RBRACKET         pause => before event => 'RBRACKET'
-:lexeme ~ STANDALONE       pause => before event => 'STANDALONE'
-:lexeme ~ YES              pause => before event => 'YES'
-:lexeme ~ NO               pause => before event => 'NO'
-:lexeme ~ STAG_BEG         pause => before event => 'STAG_BEG'
-:lexeme ~ STAG_END         pause => before event => 'STAG_END'
-:lexeme ~ ETAG_BEG         pause => before event => 'ETAG_BEG'
-:lexeme ~ ETAG_END         pause => before event => 'ETAG_END'
-:lexeme ~ EMPTYELEMTAG_BEG pause => before event => 'EMPTYELEMTAG_BEG'
-:lexeme ~ EMPTYELEMTAG_END pause => before event => 'EMPTYELEMTAG_END'
-:lexeme ~ ELEMENTDECL_BEG  pause => before event => 'ELEMENTDECL_BEG'
-:lexeme ~ ELEMENTDECL_END  pause => before event => 'ELEMENTDECL_END'
-:lexeme ~ EMPTY            pause => before event => 'EMPTY'
-:lexeme ~ ANY              pause => before event => 'ANY'
-:lexeme ~ QUESTION_MARK    pause => before event => 'QUESTION_MARK'
-:lexeme ~ STAR             pause => before event => 'STAR'
-:lexeme ~ PLUS             pause => before event => 'PLUS'
-:lexeme ~ LPAREN           pause => before event => 'LPAREN'
-:lexeme ~ RPAREN           pause => before event => 'RPAREN'
-:lexeme ~ PIPE             pause => before event => 'PIPE'
-:lexeme ~ COMMA            pause => before event => 'COMMA'
-:lexeme ~ RPARENSTAR       pause => before event => 'RPARENSTAR'
-:lexeme ~ PCDATA           pause => before event => 'PCDATA'
-:lexeme ~ ATTLIST_BEG      pause => before event => 'ATTLIST_BEG'
-:lexeme ~ ATTLIST_END      pause => before event => 'ATTLIST_END'
-:lexeme ~ CDATA            pause => before event => 'CDATA'
-:lexeme ~ TYPE_ID          pause => before event => 'TYPE_ID'
-:lexeme ~ TYPE_IDREF       pause => before event => 'TYPE_IDREF'
-:lexeme ~ TYPE_IDREFS      pause => before event => 'TYPE_IDREFS'
-:lexeme ~ TYPE_ENTITY      pause => before event => 'TYPE_ENTITY'
-:lexeme ~ TYPE_ENTITIES    pause => before event => 'TYPE_ENTITIES'
-:lexeme ~ TYPE_NMTOKEN     pause => before event => 'TYPE_NMTOKEN'
-:lexeme ~ TYPE_NMTOKENS    pause => before event => 'TYPE_NMTOKENS'
-:lexeme ~ NOTATION         pause => before event => 'NOTATION'
-:lexeme ~ REQUIRED         pause => before event => 'REQUIRED'
-:lexeme ~ IMPLIED          pause => before event => 'IMPLIED'
-:lexeme ~ FIXED            pause => before event => 'FIXED'
-:lexeme ~ SECT_BEG         pause => before event => 'SECT_BEG'
-:lexeme ~ INCLUDE          pause => before event => 'INCLUDE'
-:lexeme ~ SECT_END         pause => before event => 'SECT_END'
-:lexeme ~ IGNORE           pause => before event => 'IGNORE'
-:lexeme ~ IGNORE_INTERIOR  pause => before event => 'IGNORE_INTERIOR'
-:lexeme ~ CHARREF          pause => before event => 'CHARREF'
-:lexeme ~ ENTITYREF        pause => before event => 'ENTITYREF'
-:lexeme ~ PEREFERENCE      pause => before event => 'PEREFERENCE'
-:lexeme ~ EDECL_BEG        pause => before event => 'EDECL_BEG'
-:lexeme ~ EDECL_END        pause => before event => 'EDECL_END'
-:lexeme ~ PERCENT          pause => before event => 'PERCENT'
-:lexeme ~ SYSTEM           pause => before event => 'SYSTEM'
-:lexeme ~ PUBLIC           pause => before event => 'PUBLIC'
-:lexeme ~ NDATA            pause => before event => 'NDATA'
-:lexeme ~ ENCODING         pause => before event => 'ENCODING'
-:lexeme ~ ENCNAME          pause => before event => 'ENCNAME'
-:lexeme ~ NOTATION_BEG     pause => before event => 'NOTATION_BEG'
-:lexeme ~ NOTATION_END     pause => before event => 'NOTATION_END'
-:lexeme ~ ENTITYCHARDQUOTE pause => before event => 'ENTITYCHARDQUOTE'
-:lexeme ~ ENTITYCHARSQUOTE pause => before event => 'ENTITYCHARSQUOTE'
-:lexeme ~ ATTVALUE         pause => before event => 'ATTVALUE'
+ATTCHARDQUOTE    ~ _DUMMY
+ATTCHARSQUOTE    ~ _DUMMY
+
+event X20              = predicted x20
+event S                = predicted WhiteSpace
+event NAME             = predicted Name
+event CHAR             = predicted Char
+event NMTOKEN          = predicted Nmtoken
+event SYSTEMLITERAL    = predicted SystemLiteral
+event PUBIDLITERAL     = predicted PubidLiteral
+event CHARDATA         = predicted CharData
+event CDATA            = predicted CData
+event COMMENT_BEG      = predicted CommentBeg
+event COMMENT_END      = predicted CommentEnd
+event COMMENT          = predicted CommentInterior
+event PI_BEG           = predicted PiBeg
+event PI_END           = predicted PiEnd
+event PITARGET         = predicted PITarget
+event PI_INTERIOR      = predicted PiInterior
+event CDSTART          = predicted CDStart
+event CDEND            = predicted CDEnd
+event XML_BEG          = predicted XmlBeg
+event XML_END          = predicted XmlEnd
+event VERSION          = predicted Version
+event DQUOTE           = predicted Dquote
+event SQUOTE           = predicted Squote
+event EQUAL            = predicted Equal
+event VERSIONNUM       = predicted VersionNum
+event DOCTYPE_BEG      = predicted DoctypeBeg
+event DOCTYPE_END      = predicted DoctypeEnd
+event LBRACKET         = predicted Lbracket
+event RBRACKET         = predicted Rbracket
+event STANDALONE       = predicted Standalone
+event YES              = predicted Yes
+event NO               = predicted No
+event STAG_BEG         = predicted STagBeg
+event STAG_END         = predicted STagEnd
+event ETAG_BEG         = predicted ETagBeg
+event ETAG_END         = predicted ETagEnd
+event EMPTYELEMTAG_BEG = predicted EmptyElemTagBeg
+event EMPTYELEMTAG_END = predicted EmptyElemTagEnd
+event ELEMENTDECL_BEG  = predicted ElementDeclBeg
+event ELEMENTDECL_END  = predicted ElementDeclEnd
+event EMPTY            = predicted Empty
+event ANY              = predicted Any
+event QUESTION_MARK    = predicted QuestionMark
+event STAR             = predicted Star
+event PLUS             = predicted Plus
+event LPAREN           = predicted Lparen
+event RPAREN           = predicted Rparen
+event PIPE             = predicted Pipe
+event COMMA            = predicted Comma
+event RPARENSTAR       = predicted RparenStar
+event PCDATA           = predicted Pcdata
+event ATTLIST_BEG      = predicted AttlistBeg
+event ATTLIST_END      = predicted AttlistEnd
+event STRINGTYPE       = predicted StringType
+event TYPE_ID          = predicted TypeId
+event TYPE_IDREF       = predicted TypeIdref
+event TYPE_IDREFS      = predicted TypeIdrefs
+event TYPE_ENTITY      = predicted TypeEntity
+event TYPE_ENTITIES    = predicted TypeEntities
+event TYPE_NMTOKEN     = predicted TypeNmtoken
+event TYPE_NMTOKENS    = predicted TypeNmtokens
+event NOTATION         = predicted Notation
+event REQUIRED         = predicted Required
+event IMPLIED          = predicted Implied
+event FIXED            = predicted Fixed
+event SECT_BEG         = predicted SectBeg
+event INCLUDE          = predicted Include
+event SECT_END         = predicted SectEnd
+event IGNORE           = predicted TOKIgnore
+event IGNORE_INTERIOR  = predicted Ignore
+event CHARREF          = predicted CharRef
+event ENTITYREF        = predicted EntityRef
+event PEREFERENCE      = predicted PEReference
+event EDECL_BEG        = predicted EdeclBeg
+event EDECL_END        = predicted EdeclEnd
+event PERCENT          = predicted Percent
+event SYSTEM           = predicted System
+event PUBLIC           = predicted Public
+event NDATA            = predicted Ndata
+event ENCODING         = predicted Encoding
+event ENCNAME          = predicted EncName
+event NOTATION_BEG     = predicted NotationBeg
+event NOTATION_END     = predicted NotationEnd
+event ENTITYCHARDQUOTE = predicted EntityCharDquote
+event ENTITYCHARSQUOTE = predicted EntityCharSquote
+event ATTCHARDQUOTE    = predicted AttCharDquote
+event ATTCHARSQUOTE    = predicted AttCharSquote
