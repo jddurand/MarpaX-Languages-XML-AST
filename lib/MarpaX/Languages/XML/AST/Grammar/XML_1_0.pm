@@ -109,18 +109,25 @@ sub new {
   return $self;
 }
 
+my %stats = ();
 sub _doEvents {
   my ($self, $input, $pos, $recce) = @_;
 
   my @alternatives = ();
   my $longest = -1;
   my $value = '';
+  pos($input) = $pos;
   foreach (@{$recce->events()}) {
     my ($name) = @{$_};
+    #printf STDERR "? $name\n";
     #
     # We made sure that we are paused only on lexemes
     #
+    my $start = Time::HiRes::gettimeofday();
     my $token = $TOKEN{$name}($input, $pos);
+    my $end = Time::HiRes::gettimeofday();
+    $stats{$name}{calls}++;
+    $stats{$name}{time} += ($end - $start);
     if (defined($token)) {
       my $length = length($token);
       if ($length > $longest) {
@@ -138,8 +145,8 @@ sub _doEvents {
   }
   foreach (@alternatives) {
     my $name = $_;
-    my $lp = lineAndCol($recce, $pos);
-    printf STDERR "%-10s %s \"%s\"\n", "L$lp->[0]c$lp->[1]", $name, $value;
+    #my $lp = lineAndCol($recce, $pos);
+    #printf STDERR "%-10s %s \"%s\"\n", "L$lp->[0]c$lp->[1]", $name, $value;
     $recce->lexeme_alternative($name, $value);
   }
   $recce->lexeme_complete($pos, $longest);
@@ -147,10 +154,19 @@ sub _doEvents {
   return $pos+$longest;
 }
 
+use Time::HiRes;
+END {
+  printf STDERR "%-20s %10s %s\n", "Lexeme", "Calls", "Time";
+  printf STDERR "%-20s %10s %s\n", "------", "-----", "----";
+  foreach (sort {$stats{$a}{time} <=> $stats{$b}{time}} keys %stats) {
+    printf STDERR "%-20s %10s %s\n", $_, $stats{$_}{calls}, $stats{$_}{time};
+  }
+}
+
 sub parse {
   my ($self, $input) = @_;
 
-  my $recce = Marpa::R2::Scanless::R->new( { grammar => $G{document}, trace_terminals => 1 } );
+  my $recce = Marpa::R2::Scanless::R->new( { grammar => $G{document} } );
   my $fake_input = ' ';
   my $pos = $recce->read(\$input);
   my $max = length($input);
@@ -183,10 +199,8 @@ Name          ::= NAME
 Names         ::= Name+ separator => x20
 Nmtoken       ::= NMTOKEN
 Nmtokens      ::= Nmtoken+ separator => x20
-EntityValue   ::= Dquote EntityValueInteriorDquoteUnitAny Dquote
-                | Squote EntityValueInteriorSquoteUnitAny Squote
-AttValue      ::= Dquote AttValueInteriorDquoteUnitAny Dquote
-                | Squote AttValueInteriorSquoteUnitAny Squote
+EntityValue   ::= ENTITYVALUE
+AttValue      ::= ATTVALUE
 SystemLiteral ::= SYSTEMLITERAL
 PubidLiteral  ::= PUBIDLITERAL
 CharData      ::= CHARDATA
@@ -306,18 +320,6 @@ PublicID      ::= PUBLIC WhiteSpace PubidLiteral
 # G1 helpers
 #
 x20      ::= X20
-EntityCharDquote ::= ENTITYCHARDQUOTE
-EntityCharSquote ::= ENTITYCHARSQUOTE
-EntityValueInteriorDquoteUnit ::= EntityCharDquote | PEReference | Reference
-EntityValueInteriorDquoteUnitAny ::= EntityValueInteriorDquoteUnit*
-EntityValueInteriorSquoteUnit ::= EntityCharSquote | PEReference | Reference
-EntityValueInteriorSquoteUnitAny ::= EntityValueInteriorSquoteUnit*
-AttCharDquote ::= ATTCHARDQUOTE
-AttCharSquote ::= ATTCHARSQUOTE
-AttValueInteriorDquoteUnit ::= AttCharDquote | Reference
-AttValueInteriorDquoteUnitAny ::= AttValueInteriorDquoteUnit*
-AttValueInteriorSquoteUnit ::= AttCharSquote | Reference
-AttValueInteriorSquoteUnitAny ::= AttValueInteriorSquoteUnit*
 XMLDeclMaybe ::= XMLDecl
 XMLDeclMaybe ::=
 MiscAny ::= Misc*
@@ -523,10 +525,8 @@ ENCODING         ~ _DUMMY
 ENCNAME          ~ _DUMMY
 NOTATION_BEG     ~ _DUMMY
 NOTATION_END     ~ _DUMMY
-ENTITYCHARDQUOTE ~ _DUMMY
-ENTITYCHARSQUOTE ~ _DUMMY
-ATTCHARDQUOTE    ~ _DUMMY
-ATTCHARSQUOTE    ~ _DUMMY
+ATTVALUE         ~ _DUMMY
+ENTITYVALUE      ~ _DUMMY
 
 event X20              = predicted x20
 event S                = predicted WhiteSpace
@@ -611,7 +611,5 @@ event ENCODING         = predicted Encoding
 event ENCNAME          = predicted EncName
 event NOTATION_BEG     = predicted NotationBeg
 event NOTATION_END     = predicted NotationEnd
-event ENTITYCHARDQUOTE = predicted EntityCharDquote
-event ENTITYCHARSQUOTE = predicted EntityCharSquote
-event ATTCHARDQUOTE    = predicted AttCharDquote
-event ATTCHARSQUOTE    = predicted AttCharSquote
+event ATTVALUE         = predicted AttValue
+event ENTITYVALUE      = predicted EntityValue
