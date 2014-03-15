@@ -16,7 +16,7 @@ sub new {
     my $self = {
 	_input   => $opts{input},                    # File handle or object or scalar
 	_data    => [],                              # Array of cached data
-	_length  => $opts{length} || 1024*1024*1024, # Number of characters of every cached data
+	_length  => $opts{length} || 1*1024*1024,    # Number of characters of every cached data
 	_mapend  => [],                              # Mapped position of each last data (exclusive)
 	_mapbeg  => [],                              # Mapped position of each first data (inclusive)
 	_eof     => 0,                               # Last buffer reached
