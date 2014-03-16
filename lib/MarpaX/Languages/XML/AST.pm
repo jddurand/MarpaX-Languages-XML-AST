@@ -82,9 +82,15 @@ sub _init {
     $self->{_grammar} = MarpaX::Languages::XML::AST::Grammar->new($grammarName, %opts);
 }
 
+=head2 parse($class, $input)
+
+Parses the input. Takes as parameter a required input, that can be a true scalar, or an object assumed to have a compatible read() method (c.f. perldoc -f read). The whole content of the input will be used, from position zero up to its end or an error.
+
+=cut
+
 sub parse {
-  my $self = shift;
-  return $self->{_grammar}->parse(@_);
+  my ($self, $input) = @_;
+  return $self->{_grammar}->parse($input);
 }
 
 1;
