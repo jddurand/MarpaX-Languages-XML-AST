@@ -376,7 +376,7 @@ sub stringsToSub {
     my $content = join("\n", @content) . "\n";
     my $rc = eval "sub {\n$content\n}\n";
     if ($@) {
-	die "Oups, $@";
+	croak "Oups, $@";
     }
     return $rc;
 }
