@@ -4,15 +4,28 @@ use warnings FATAL => 'all';
 use Test::More;
 use IO::String;
 use File::Temp qw/tempfile/;
+    use Log::Log4perl qw/:easy/;
+    use Log::Any::Adapter;
+    use Log::Any qw/$log/;
+    #
+    # Init log
+    #
+    our $defaultLog4perlConf = '
+    log4perl.rootLogger              = TRACE, Screen
+    log4perl.appender.Screen         = Log::Log4perl::Appender::Screen
+    log4perl.appender.Screen.stderr  = 0
+    log4perl.appender.Screen.layout  = PatternLayout
+    log4perl.appender.Screen.layout.ConversionPattern = %d %-5p %6P %m{chomp}%n
+    ';
+    Log::Log4perl::init(\$defaultLog4perlConf);
+    Log::Any::Adapter->set('Log4perl');
 
 BEGIN {
     use_ok( 'MarpaX::Languages::XML::AST::StreamIn' ) || print "Bail out!\n";
 }
 
-my $this = '<?';
-my $s = MarpaX::Languages::XML::AST::StreamIn->new(input => $this);
-my $stringsToSub_fetchc = $s->stringsToSub_fetchc(
-    {
+my %stringsToSub = 
+    (
 	X20              => "\x{20}",
 	COMMENT_BEG      => '<!--',
 	COMMENT_END      => '-->',
@@ -79,15 +92,14 @@ my $stringsToSub_fetchc = $s->stringsToSub_fetchc(
 	ENCODING         => 'encoding',
 	NOTATION_BEG     => '<!NOTATION',
 	NOTATION_END     => '>'
-
-    });
-my @rc = $s->$stringsToSub_fetchc(0);
-ok($#rc == 3, "stringsToSub_fetchc returned 3 elements");
+    );
+my $this = '<?';
+my $s = MarpaX::Languages::XML::AST::StreamIn->new(input => $this);
+my $stringsToSub = $s->stringsToSub(\%stringsToSub);
+my @rc = $s->$stringsToSub(0, \%stringsToSub);
+ok($#rc == 1, "stringsToSub returned 2 elements");
 ok($rc[0] eq '<?', "\$rc[0] is '<?'");
-ok($rc[1] eq 'EMPTYELEMTAG_BEG', "\$rc[0] is 'EMPTYELEMTAG_BEG'");
-ok($rc[2] eq 'STAG_BEG', "\$rc[0] is 'STAG_BEG'");
-ok($rc[3] eq 'PI_BEG', "\$rc[0] is 'PI_BEG'");
-
+ok($rc[1] eq 'PI_BEG', "\$rc[1] is 'PI_BEG'");
 #
 # SCALAR test
 #
@@ -140,7 +152,7 @@ foreach (0..3) {
 }
 close(FILE) || warn "Cannot close $filename, $!";
 
-done_testing(36);
+done_testing(34);
 
 __DATA__
 0123

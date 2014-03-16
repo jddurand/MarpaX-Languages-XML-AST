@@ -301,116 +301,84 @@ sub substr {
     return $rc;
 }
 
-#
-# fetchc() method
-#
 # $hashp keys are string names
 # $hashp values are string values
 # This will generate a routine that is assuming in input:
-# ($stream, $pos)
+# ($stream, $pos, $hashp)
 # and will return the matched buffer followed by the name of matched strings in an array.
 # The routine will loop on $stream->fetchc().
 #
-sub stringsToSub_fetchc {
+sub stringsToSub {
     my ($self, $hashp) = @_;
 
     #
-    # Get the longest string value length
+    # Get a length2Strings hash with index {length}{stringValue} and values an array ref of stringName
     #
-    my $max = 0;
-    foreach (values %{$hashp}) {
-	my $length = length($_);
-	if ($length > $max) {
-	    $max = $length;
+    my %length2Strings = ();
+    foreach (keys %{$hashp}) {
+	my $stringName = $_;
+	my $stringValue = $hashp->{$stringName};
+	my $length = length($stringValue);
+	if (! exists($length2Strings{$length})) {
+	    $length2Strings{$length} = {};
+	}
+	if (! exists($length2Strings{$length}->{$stringValue})) {
+	    $length2Strings{$length}->{$stringValue} = [];
+	}
+	push(@{$length2Strings{$length}->{$stringValue}}, $stringName);
+    }
+    #
+    # Issue some warnings
+    #
+    foreach (keys %length2Strings) {
+	my $length = $_;
+	foreach (keys %{$length2Strings{$length}}) {
+	    my $stringValue = $_;
+	    if ($#{$length2Strings{$length}->{$stringValue}} > 0) {
+		$log->warnf('More than one candidate for string \'%s\': %s', $stringValue, [ sort @{$length2Strings{$length}->{$stringValue}} ]);
+	    }
 	}
     }
-    $max -= 1;
+    #
+    # Loop on sorted lengths
+    #
     my @content = ();
-    push(@content, "  my (\$stream, \$pos) = \@_;
-
-  my \$c;
-  my \$buf = '';
-  my \@rc = ();");
-    push(@content, $self->_generateInnerStringSub_fetchc($max, $hashp));
-    push(@content, "  return (\$buf, \@rc);");
-    my $content = join("\n", @content);
+    push(@content, '  my ($stream, $pos, $hashp) = @_;');
+    push(@content, '');
+    my $i = 0;
+    foreach (sort {$b <=> $a} keys %length2Strings) {
+	my $length = $_;
+	if ($i++ == 0) {
+	    #
+	    # First time, no need to check if string is undef
+	    #
+	    push(@content, '  my $string = $stream->substr($pos, ' . $length . ');');
+	} else {
+	    push(@content, '  if (! defined($string)) {');
+	    push(@content, '    $string = $stream->substr($pos, ' . $length . ');');
+	    push(@content, '  } else {');
+	    push(@content, '    CORE::substr($string, -1, 1, \'\');');
+	    push(@content, '  }');
+	}
+	push(@content, '  if (defined($string)) {');
+	foreach (keys %{$length2Strings{$length}}) {
+	    my $stringValue = $_;
+	    #
+	    # Take any stringName, if many they are guaranteed to all have the same value
+	    #
+	    my $stringName = $length2Strings{$length}->{$stringValue}->[0];
+	    push(@content, '    if ($string eq $hashp->{\'' . $stringName . '\'}) {');
+	    push(@content, '      return ($hashp->{\'' . $stringName . '\'}, ' . join(', ', map {"'$_'"} @{$length2Strings{$length}->{$stringValue}}) . ');');
+	    push(@content, '    }');
+	}
+	push(@content, '  }');
+    }
+    my $content = join("\n", @content) . "\n";
     my $rc = eval "sub {\n$content\n}\n";
     if ($@) {
 	die "Oups, $@";
     }
     return $rc;
-}
-
-sub _generateInnerStringSub_fetchc {
-    my ($self, $max, $hashp, $ipos, $prevIndent) = @_;
-
-    $ipos //= 0;         # Loop in input stream
-    $prevIndent //= '';
-
-    my $indent = $prevIndent . '  ';
-    #
-    # We are matching character at position $ipos
-    #
-    my @content = ();;
-    push(@content, "${indent}if (defined((\$c = \$stream->fetchc(\$pos++)))) {");
-    #
-    # Get all possible characters at position $ipos
-    #
-    my %wanted = ();
-    foreach (keys %{$hashp}) {
-	if (length($hashp->{$_}) > $ipos) {
-	    $wanted{CORE::substr($hashp->{$_}, $ipos, 1)}{$_}++;
-	}
-    }
-    #
-    # In %wanted we have all possible characters at position $ipos,
-    # and in $wanted{$c} we have all corresponding string names
-    #
-    my $i = 0;
-    foreach (sort keys %wanted) {
-	my $wantedc = $_;
-	my @candidates = sort keys %{$wanted{$wantedc}};
-	my @prettyCandidates = map {$_ . "[$ipos]"} @candidates;
-	my $charWantedc = sprintf('"\\x{%x}"', ord($wantedc));
-	if ($i == 0) {
-	    push(@content, "${indent}  if (\$c eq $charWantedc) { # @prettyCandidates");
-	} else {
-	    push(@content, "${indent}  elsif (\$c eq $charWantedc) { # @prettyCandidates");
-	}
-	push(@content, "${indent}    \$buf .= \$c;");
-	#
-	# If this position matches and if it is the end of some
-	# string values, then it is a match
-	#
-	my @nextCandidates = ();
-	my @foundCandidates = ();
-	my $foundString = undef;
-	foreach (@candidates) {
-	    my $stringName = $_;
-	    if (($ipos+1) == length($hashp->{$stringName})) {
-		push(@content, "${indent}    push(\@rc, '$stringName');");
-		push(@foundCandidates, $stringName);
-		$foundString //= $hashp->{$stringName};
-	    } else {
-		push(@nextCandidates, $stringName);
-	    }
-	}
-	if ($#foundCandidates > 0) {
-	    $log->tracef('More than one candidate for string \'%s\': %s', $foundString, \@foundCandidates);
-	}
-	if (@nextCandidates) {
-	    my %hash = map {$_ => $hashp->{$_}} @nextCandidates;
-	    my $content = $self->_generateInnerStringSub_fetchc($max, \%hash, $ipos+1, $indent . '  ');
-	    push(@content, $content);
-	}
-	push(@content, "${indent}  }");
-	$i++;
-    }
-
-    push(@content, "${indent}}");
-
-    my $content = join("\n", @content);
-    return $content;
 }
 
 1;
