@@ -37,7 +37,6 @@ sub logCroak {
     } else {
 	croak("$msg, at position $pos");
     }
-    print STDERR "CROAK done\n";
 }
 
 sub showLineAndCol {
