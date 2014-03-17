@@ -255,19 +255,32 @@ sub substr {
     my $start = ($offset < 0) ? ($self->{_maxpos} + $offset) : $offset;
     my $end = defined($length) ? (($length < 0) ? ($self->{_maxpos} + $length) : ($start + $length - 1)) : $self->{_maxpos};
 
+    #
+    # Make sure end is reachable, take last offset if end is beyond eof
+    #
+    if (! defined($self->fetchc($end))) {
+	#
+	# This is okay only if we hitted eof, in which end is overwriten
+	#
+	if (! $self->{_eof}) {
+	    $log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is not available', $offset, $length, $start, $end, $end);
+	    return undef;
+	}
+	$log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is beyond eof: [%d-%d] applied', $offset, $length, $start, $end, $end, $start, $self->{_maxpos});
+	$end = $self->{_maxpos};
+    }
+    #
+    # Make sure start is not beyond end
+    #
     if ($start > $end) {
 	$log->warnf('substr(%s, %s) converted to range [%d-%d]', $offset, $length, $start, $end);
 	return undef;
     }
     #
-    # Make sure $start and $end are reachable
+    # Make sure start is reachable
     #
     if (! defined($self->fetchc($start))) {
 	$log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is not available', $offset, $length, $start, $end, $start);
-	return undef;
-    }
-    if (! defined($self->fetchc($end))) {
-	$log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is not available', $offset, $length, $start, $end, $end);
 	return undef;
     }
     #
@@ -350,17 +363,17 @@ sub stringsToSub {
 	my $length = $_;
 	if ($i++ == 0) {
 	    #
-	    # First time, no need to check if string is undef
+	    # First time
 	    #
 	    push(@content, '  my $string = $stream->substr($pos, ' . $length . ');');
+	    push(@content, '  if (defined($string)) {');
+	    push(@content, '    my $length = length($string);');	    
 	} else {
-	    push(@content, '  if (! defined($string)) {');
-	    push(@content, '    $string = $stream->substr($pos, ' . $length . ');');
-	    push(@content, '  } else {');
-	    push(@content, '    CORE::substr($string, -1, 1, \'\');');
-	    push(@content, '  }');
+	    push(@content, '    if ($length > ' . $length . ') {');
+	    push(@content, '      CORE::substr($string, ' . $length . ', $length - ' . $length . ', \'\');');
+	    push(@content, '      $length = ' . $length . ';');
+	    push(@content, '    }');
 	}
-	push(@content, '  if (defined($string)) {');
 	foreach (keys %{$length2Strings{$length}}) {
 	    my $stringValue = $_;
 	    #
@@ -371,8 +384,8 @@ sub stringsToSub {
 	    push(@content, '      return ($hashp->{\'' . $stringName . '\'}, ' . join(', ', map {"'$_'"} @{$length2Strings{$length}->{$stringValue}}) . ');');
 	    push(@content, '    }');
 	}
-	push(@content, '  }');
     }
+    push(@content, '  }');
     my $content = join("\n", @content) . "\n";
     my $rc = eval "sub {\n$content\n}\n";
     if ($@) {

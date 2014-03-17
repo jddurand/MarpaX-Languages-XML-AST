@@ -78,7 +78,7 @@ my %stringsToSub =
 	NOTATION_BEG     => '<!NOTATION',
 	NOTATION_END     => '>'
     );
-my $this = '<?';
+my $this = '<?ffffffffffffffffffffffff';
 my $s = MarpaX::Languages::XML::AST::StreamIn->new(input => $this);
 my $stringsToSub = $s->stringsToSub(\%stringsToSub);
 my @rc = $s->$stringsToSub(0, \%stringsToSub);
