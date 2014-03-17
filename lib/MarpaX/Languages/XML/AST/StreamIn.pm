@@ -317,9 +317,13 @@ sub substr {
 # $hashp keys are string names
 # $hashp values are string values
 # This will generate a routine that is assuming in input:
-# ($stream, $pos, $hashp)
-# and will return the matched buffer followed by the name of matched strings in an array.
-# The routine will loop on $stream->fetchc().
+# ($stream, $pos, $hashp, $string)
+# where $string is the eventual buffer known by the application at position $pos.
+# If $string is defined and need to be expanded, the generated stub will do so.
+# Take care: for optimisation, all variables are manipulated directly from the stack.
+# This mean that eventual expansion of $string will be seen visible by the application.
+# The generated stub will return an array of string names that matched in an array.
+# The match itself is not return because it is already known by the application via $hashp.
 #
 sub stringsToSub {
     my ($self, $hashp) = @_;
@@ -356,7 +360,7 @@ sub stringsToSub {
     # Loop on sorted lengths
     #
     my @content = ();
-    push(@content, '  my ($stream, $pos, $hashp) = @_;');
+    push(@content, '  # my ($stream, $pos, $hashp, $string) = @_;');
     push(@content, '');
     my $i = 0;
     foreach (sort {$b <=> $a} keys %length2Strings) {
@@ -365,9 +369,21 @@ sub stringsToSub {
 	    #
 	    # First time
 	    #
-	    push(@content, '  my $string = $stream->substr($pos, ' . $length . ');');
+	    push(@content, '  my ($string, $length);');
+	    push(@content, '  if (defined($_[3])) {');
+	    push(@content, '    $length = length($_[3]);');
+	    push(@content, '    if ($length < ' . $length . ') {');
+	    push(@content, '      my $more = $_[0]->substr($_[1] + $length, ' . $length . ' - $length);');
+	    push(@content, '      if (defined($more)) {');
+	    push(@content, '        $_[3] .= $more;');
+	    push(@content, '      }');
+	    push(@content, '    }');
+	    push(@content, '    $string = $_[3];');
+	    push(@content, '  } else {');
+	    push(@content, '    $string = $_[0]->substr($_[1], ' . $length . ');');
+	    push(@content, '  }');
 	    push(@content, '  if (defined($string)) {');
-	    push(@content, '    my $length = length($string);');	    
+	    push(@content, '    $length = length($string);');	    
 	} else {
 	    push(@content, '    if ($length > ' . $length . ') {');
 	    push(@content, '      CORE::substr($string, ' . $length . ', $length - ' . $length . ', \'\');');
@@ -380,8 +396,8 @@ sub stringsToSub {
 	    # Take any stringName, if many they are guaranteed to all have the same value
 	    #
 	    my $stringName = $length2Strings{$length}->{$stringValue}->[0];
-	    push(@content, '    if ($string eq $hashp->{\'' . $stringName . '\'}) {');
-	    push(@content, '      return ($hashp->{\'' . $stringName . '\'}, ' . join(', ', map {"'$_'"} @{$length2Strings{$length}->{$stringValue}}) . ');');
+	    push(@content, '    if ($string eq $_[2]->{\'' . $stringName . '\'}) {');
+	    push(@content, '      return (' . join(', ', map {"'$_'"} @{$length2Strings{$length}->{$stringValue}}) . ');');
 	    push(@content, '    }');
 	}
     }

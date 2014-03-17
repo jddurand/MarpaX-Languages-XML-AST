@@ -78,13 +78,38 @@ my %stringsToSub =
 	NOTATION_BEG     => '<!NOTATION',
 	NOTATION_END     => '>'
     );
+#
+# Test of string match stub
+#
 my $this = '<?ffffffffffffffffffffffff';
 my $s = MarpaX::Languages::XML::AST::StreamIn->new(input => $this);
 my $stringsToSub = $s->stringsToSub(\%stringsToSub);
+#
+# With no knowledge of buffer in advance
+#
 my @rc = $s->$stringsToSub(0, \%stringsToSub);
-ok($#rc == 1, "stringsToSub returned 2 elements");
-ok($rc[0] eq '<?', "\$rc[0] is '<?'");
-ok($rc[1] eq 'PI_BEG', "\$rc[1] is 'PI_BEG'");
+ok($#rc == 0, "stringsToSub returned 1 element");
+ok($rc[0] eq 'PI_BEG', "\$rc[1] is 'PI_BEG'");
+#
+# With partial knowledge of buffer in advance. Should be extended up to the max length in expected tokens. Here: 10.
+#
+my $partial = substr($this, 0, 6);
+my $wasPartial = $partial;
+@rc = $s->$stringsToSub(0, \%stringsToSub, $partial);
+my $wantedPartial = '<?ffffffff';
+ok($partial eq $wantedPartial, "partial knowledge of string expanded on the stack from \"$wasPartial\" to \"$wantedPartial\" ?");
+ok($#rc == 0, "stringsToSub returned 1 element");
+ok($rc[0] eq 'PI_BEG', "\$rc[1] is 'PI_BEG'");
+#
+# With bigger than needed knowledge of buffer in advance. Should be extended up to the max length in expected tokens. Here: 10.
+#
+$partial = $this . '!!!!';
+$wasPartial = $partial;
+@rc = $s->$stringsToSub(0, \%stringsToSub, $partial);
+$wantedPartial = $partial;
+ok($partial eq $wantedPartial, "partial knowledge of string not expanded on the stack: was \"$wasPartial\", is now \"$wantedPartial\" ?");
+ok($#rc == 0, "stringsToSub returned 1 element");
+ok($rc[0] eq 'PI_BEG', "\$rc[1] is 'PI_BEG'");
 #
 # SCALAR test
 #
