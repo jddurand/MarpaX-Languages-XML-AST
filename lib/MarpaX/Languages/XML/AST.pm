@@ -84,7 +84,7 @@ sub _init {
 
 =head2 parse($class, $input)
 
-Parses the input. Takes as parameter a required input, that can be a true scalar, or an object assumed to have a compatible read() method (c.f. perldoc -f read). The whole content of the input will be used, from position zero up to its end or an error.
+Parses the input. Takes as parameter a required input, that can an object assumed to have a perl's compatible read() method (c.f. perldoc -f read), or a reference that maps to a physical fileno(), or a scalar. The whole content of the input will be used, from position zero up to its end or an error.
 
 =cut
 
