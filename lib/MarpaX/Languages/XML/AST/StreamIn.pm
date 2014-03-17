@@ -34,6 +34,11 @@ sub new {
     return $self;
 }
 
+sub length {
+  my ($stream) = @_;
+  return $stream->{_length};
+}
+
 #
 # Check input capability and fetch first buffer
 #
@@ -94,7 +99,7 @@ sub _read {
 	# Assumed to be a true scalar - no real read, fake a single whole buffer
 	#
 	$self->{_data}->[$idata] = $self->{_input};
-	$n = length($self->{_input});
+	$n = CORE::length($self->{_input});
 	$self->{_eof} = 1;
     }
     if ($self->{_blessed} || $self->{_fileno} >= 0) {
@@ -335,7 +340,7 @@ sub stringsToSub {
     foreach (keys %{$hashp}) {
 	my $stringName = $_;
 	my $stringValue = $hashp->{$stringName};
-	my $length = length($stringValue);
+	my $length = CORE::length($stringValue);
 	if (! exists($length2Strings{$length})) {
 	    $length2Strings{$length} = {};
 	}
@@ -371,7 +376,7 @@ sub stringsToSub {
 	    #
 	    push(@content, '  my ($string, $length);');
 	    push(@content, '  if (defined($_[3])) {');
-	    push(@content, '    $length = length($_[3]);');
+	    push(@content, '    $length = CORE::length($_[3]);');
 	    push(@content, '    if ($length < ' . $length . ') {');
 	    push(@content, '      my $more = $_[0]->substr($_[1] + $length, ' . $length . ' - $length);');
 	    push(@content, '      if (defined($more)) {');
@@ -383,7 +388,7 @@ sub stringsToSub {
 	    push(@content, '    $string = $_[0]->substr($_[1], ' . $length . ');');
 	    push(@content, '  }');
 	    push(@content, '  if (defined($string)) {');
-	    push(@content, '    $length = length($string);');	    
+	    push(@content, '    $length = CORE::length($string);');	    
 	} else {
 	    push(@content, '    if ($length > ' . $length . ') {');
 	    push(@content, '      CORE::substr($string, ' . $length . ', $length - ' . $length . ', \'\');');
