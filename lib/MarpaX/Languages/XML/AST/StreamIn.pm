@@ -189,6 +189,87 @@ sub fetchc {
     }
 }
 
+sub mapbeg {
+    my ($self, $n) = @_;
+    return $self->{_mapbeg}->[$n];
+}
+
+sub mapend {
+    my ($self, $n) = @_;
+    return $self->{_mapend}->[$n];
+}
+
+sub eof {
+    my ($self) = @_;
+    return $self->{_eof};
+}
+
+sub ndata {
+    my ($self) = @_;
+    return $self->{_ndata};
+}
+
+sub lastpos {
+    my ($self) = @_;
+    return $self->{_lastpos};
+}
+
+sub maxpos {
+    my ($self) = @_;
+    return $self->{_maxpos};
+}
+
+#
+# $n assumed to be >= 0
+# This routine can recurse, but at max once
+#
+sub fetchb {
+    my ($self, $n) = @_;
+
+    if ($self->{_ndata} <= 0) {
+	#
+	# No data cached
+	#
+	if ($self->{_eof}) {
+	    #
+	    # But EOF marked: nothing else is available
+	    #
+	    return undef;
+	} else {
+	    #
+	    # Buffer next data
+	    # This is where we technically disallow to go backwards.
+	    #
+	    $self->_read($self->{_lastpos} + 1);
+	    return $self->fetchb($n);
+	}
+    } else {
+	if ($n >= $self->{_ndata}) {
+	    #
+	    # Attempt to fetch a buffer beyond last cached data: need to append another buffer
+	    # Although this is not likely to happen, we prevent deep recursion
+	    # by doing the loop ourself
+	    #
+	    while (($n >= $self->{_ndata}) && ! $self->{_eof}) {
+		$self->_read($self->{_lastpos} + 1, 1);
+	    }
+	}
+	if ($n >= $self->{_ndata}) {
+	    #
+	    # Not found - a priori $self->{_eof} should be marked
+	    #
+	    if (! $self->{_eof}) {
+		croak "Fetch of buffer $n fail and eof is not reached";
+	    } else {
+		return undef;
+	    }
+	} else {
+	    # $log->tracef('Buffer %d and maps to [%d-%d]', $n, $self->{_mapbeg}->[$n], $self->{_mapend}->[$n]);
+	    return $self->{_data}->[$n];
+	}
+    }
+}
+
 #
 # $pos assumed to be >= 0
 #
@@ -225,6 +306,29 @@ sub donec {
 }
 
 #
+# $n assumed to be >= 0
+#
+sub doneb {
+    my ($self, $n) = @_;
+    #
+    # We want to forget (FOREVER) buffer at position $n
+    # Eventually previous buffers will be destroyed.
+    #
+    if ($n < $self->{_ndata}) {
+	if ($n > 0) {
+	    $log->tracef('Deleting buffers No %d to %d', 0, $n);
+	} else {
+	    $log->tracef('Deleting buffer No %d', $n);
+	}
+	my $ndata = $n + 1;
+	splice(@{$self->{_data}}, 0, $ndata);
+	splice(@{$self->{_mapbeg}}, 0, $ndata);
+	splice(@{$self->{_mapend}}, 0, $ndata);
+	$self->{_ndata} -= $ndata;
+    }
+}
+
+#
 # getc is an alias to fetchc and donec
 # $pos assumed to be >= 0
 #
@@ -235,6 +339,22 @@ sub getc {
 	$self->donec($pos);
     }
     return $c;
+}
+
+#
+# getb is an alias to fetchb and doneb
+# $n assumed to be >= 0
+#
+sub getb {
+    my ($self, $n) = @_;
+
+    $n //= 0;
+
+    my $b;
+    if (defined($b = $self->fetchb($n))) {
+	$self->doneb($n);
+    }
+    return $b;
 }
 
 #
