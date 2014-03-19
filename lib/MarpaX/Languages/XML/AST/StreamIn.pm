@@ -24,7 +24,8 @@ sub new {
 	_fileno  => -1,                              # >= 0 if input appears to be a true filehandle
 	_ndata   => 0,                               # Number of cached buffers
 	_lastpos => undef,                           # Last position ever reached (does not mean it is available)
-	_maxpos  => undef                            # Max pos in input (inclusive), setted only when eof
+	_maxpos  => undef,                           # Max pos in input (inclusive), setted only when eof
+        _doRead  => undef,                           # read call method pointer
     };
 
     bless($self, $class);
@@ -51,12 +52,15 @@ sub _init {
 	}
 	$log->tracef('Input is a blessed object that can read()');
 	$self->{_blessed} = 1;
+        $self->{_doRead} = \&_read_blessed;
     } else {
 	$self->{_fileno} = fileno($self->{_input}) // -1;
 	if ($self->{_fileno} >= 0) {
 	    $log->tracef('Input is a file handle with fileno %d', $self->{_fileno});
+            $self->{_doRead} = \&_read_fileno;
 	} else {
 	    $log->tracef('Input is assumed to be a scalar');
+            $self->{_doRead} = \&_read_scalar;
 	}
     }
     #
@@ -66,12 +70,49 @@ sub _init {
 }
 
 #
+# Read callbacks: for performance, modification is done on the stack
+#
+sub _read_blessed {
+  # my ($input, $data, $length, $eof) = @_;
+  $_[1] //= '';
+  my $n = $_[0]->read($_[1], $_[2]) || 0;
+  if ($n <= 0) {
+    $log->tracef('EOF');
+    $_[3] = 1;
+    $n = 0;
+  } elsif ($n < $_[2]) {
+    $log->tracef('EOF after %d characters', $n);
+    $_[3] = 1;
+  }
+}
+
+sub _read_fileno {
+  # my ($input, $data, $length, $eof) = @_;
+  $_[1] //= '';
+  my $n = read($_[0], $_[1], $_[2]) || 0;
+  if ($n <= 0) {
+    $log->tracef('EOF');
+    $_[3] = 1;
+    $n = 0;
+  } elsif ($n < $_[2]) {
+    $log->tracef('EOF after %d characters', $n);
+    $_[3] = 1;
+  }
+}
+
+sub _read_scalar {
+  # my ($input, $data, $length, $eof) = @_;
+  $_[1] = $_[0];
+  $_[3] = 1;
+  return CORE::length($_[1]);
+}
+
+#
 # Read buffer
 #
 sub _read {
     my ($self, $pos, $append) = @_;
 
-    my $n;
     my $idata = $#{$self->{_data}};
     if ($idata < 0) {
 	#
@@ -87,38 +128,14 @@ sub _read {
     # not bytes. I.e. it is the responsability of the caller to
     # position correctly eventual io layers.
     #
-    if ($self->{_blessed}) {
-	$log->tracef('Asking input for %d characters from assumed position %d in buffer No %d', $self->{_length}, $pos, $idata);
-	$n = $self->{_input}->read($self->{_data}->[$idata], $self->{_length}) || 0;
-    } elsif ($self->{_fileno} >= 0) {
-	$log->tracef('Reading %d characters from assumed position %d in buffer No %d', $self->{_length}, $pos, $idata);
-	$n = read($self->{_input}, $self->{_data}->[$idata], $self->{_length}) || 0;
-    } else {
-	$log->tracef('Mapping scalar into buffer No %d, faking EOF', $idata);
-	#
-	# Assumed to be a true scalar - no real read, fake a single whole buffer
-	#
-	$self->{_data}->[$idata] = $self->{_input};
-	$n = CORE::length($self->{_input});
-	$self->{_eof} = 1;
-    }
-    if ($self->{_blessed} || $self->{_fileno} >= 0) {
-	if ($n <= 0) {
-	    $log->tracef('EOF');
-	    $self->{_eof} = 1;
-	    $n = 0;
-	} elsif ($n < $self->{_length}) {
-	    $log->tracef('EOF after %d characters', $n);
-	    $self->{_eof} = 1;
-	}
-    }
+    my $n = $self->{_doRead}->($self->{_input}, $self->{_data}->[$idata], $self->{_length}, $self->{_eof});
     if ($append && $idata > 0) {
 	$self->{_mapbeg}->[$idata] =  $self->{_mapend}->[$idata-1];
     } else {
 	$self->{_mapbeg}->[$idata] =  $pos;
     }
     $self->{_mapend}->[$idata] =  $self->{_mapbeg}->[$idata] + $n;
-    $log->tracef('Buffer No %d maps to positions [%d-%d[', $idata, $self->{_mapbeg}->[$idata], $self->{_mapend}->[$idata]);
+    # $log->tracef('Buffer No %d maps to positions [%d-%d[', $idata, $self->{_mapbeg}->[$idata], $self->{_mapend}->[$idata]);
     $self->{_lastpos} = $self->{_mapend}->[$idata] - 1;
     $self->{_ndata} = $idata + 1;
     if ($self->{_eof}) {
