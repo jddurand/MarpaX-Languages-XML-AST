@@ -84,6 +84,7 @@ sub _read_blessed {
     $log->tracef('EOF after %d characters', $n);
     $_[3] = 1;
   }
+  return $n;
 }
 
 sub _read_fileno {
@@ -98,6 +99,7 @@ sub _read_fileno {
     $log->tracef('EOF after %d characters', $n);
     $_[3] = 1;
   }
+  return $n;
 }
 
 sub _read_scalar {
@@ -113,27 +115,23 @@ sub _read_scalar {
 sub _read {
     my ($self, $pos, $append) = @_;
 
-    my $idata = $#{$self->{_data}};
-    if ($idata < 0) {
-	#
-	# No buffer yet, fake append mode
-	#
-	$append = 1;
+    my $idata = $self->{_ndata};
+    if (! $idata) {
+      #
+      # No buffer yet. Append is not possible.
+      #
+      $append = 0;
+    } elsif (! $append) {
+      --$idata;
     }
-    if ($append) {
-	++$idata;
-    }
+
     #
     # Note: the perl system call read() is reading CHARACTERS OF DATA
     # not bytes. I.e. it is the responsability of the caller to
     # position correctly eventual io layers.
     #
     my $n = $self->{_doRead}->($self->{_input}, $self->{_data}->[$idata], $self->{_length}, $self->{_eof});
-    if ($append && $idata > 0) {
-	$self->{_mapbeg}->[$idata] =  $self->{_mapend}->[$idata-1];
-    } else {
-	$self->{_mapbeg}->[$idata] =  $pos;
-    }
+    $self->{_mapbeg}->[$idata] =  $append ? $self->{_mapend}->[$idata-1] : $pos;
     $self->{_mapend}->[$idata] =  $self->{_mapbeg}->[$idata] + $n;
     # $log->tracef('Buffer No %d maps to positions [%d-%d[', $idata, $self->{_mapbeg}->[$idata], $self->{_mapend}->[$idata]);
     $self->{_lastpos} = $self->{_mapend}->[$idata] - 1;
