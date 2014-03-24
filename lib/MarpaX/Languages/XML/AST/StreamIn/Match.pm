@@ -4,7 +4,6 @@ use warnings FATAL => 'all';
 package MarpaX::Languages::XML::AST::StreamIn::Match;
 use parent 'MarpaX::Languages::XML::AST::StreamIn';
 use SUPER;
-use Log::Any qw/$log/;
 
 # ABSTRACT: StreamIn subclass with match capability
 
@@ -15,7 +14,6 @@ use Log::Any qw/$log/;
 #
 sub _getBuf {
     my ($self, $pos, $buf, $length) = @_;
-    $log->tracef('_getBuf');
 
     if (! defined($buf)) {
 	$buf = $self->substr($pos, $length);
@@ -46,12 +44,9 @@ sub _getBuf {
 
 sub matchChar {
     my ($self, $pos, $buf, $char) = @_;
-    $log->tracef('matchChar %s', $char);
 
     my $c = $self->_getBuf($pos, $buf, 1);
     return undef if (! defined($c));
-
-    $log->tracef('matchChar ^%s^ = ^%s^ ?', $c, $char);
 
     return ($c eq $char) ? $c : undef;
 }
@@ -66,12 +61,10 @@ sub matchChar_closure {
 #
 sub matchRe {
     my ($self, $pos, $buf, $re) = @_;
-    $log->tracef('matchRe pos=%s re=%s', $pos, $re);
 
     my $c = $self->_getBuf($pos, $buf, 1);
     return undef if (! defined($c));
 
-    $log->tracef('matchRe pos=%s re=%s c=<HERE>%s</HERE>', $pos, $re, $c);
     return ($c =~ $re) ? $c : undef;
 }
 
@@ -81,7 +74,6 @@ sub matchRe_closure {
 
 sub matchRange {
     my ($self, $pos, $buf, $char1, $char2) = @_;
-    $log->tracef('matchRange');
 
     my $c = $self->_getBuf($pos, $buf, 1);
     return undef if (! defined($c));
@@ -95,7 +87,6 @@ sub matchRange_closure {
 
 sub matchRanges {
     my ($self, $pos, $buf, @char12) = @_;
-    $log->tracef('matchRanges');
 
     my $c = $self->_getBuf($pos, $buf, 1);
     return undef if (! defined($c));
@@ -113,7 +104,6 @@ sub matchRanges_closure {
 
 sub matchString {
     my ($self, $pos, $buf, $string) = @_;
-    $log->tracef('matchString %s', $string);
 
     my $s = $self->_getBuf($pos, $buf, length($string));
     return undef if (! defined($s));
@@ -127,7 +117,6 @@ sub matchString_closure {
 
 sub alternative {
     my ($self, $pos, $buf, @alternativeClosures) = @_;
-    $log->tracef('alternative');
 
     foreach (@alternativeClosures) {
 	my ($closure, @args) = @{$_};
@@ -147,7 +136,6 @@ sub alternative_closure {
 #
 sub exclusionString {
     my ($self, $pos, $buf, $closurep, @exclusions) = @_;
-    $log->tracef('exclusionString');
 
     my ($closure, @args) = @{$closurep};
     my $match = $self->$closure($pos, $buf, @args);
@@ -175,7 +163,6 @@ sub exclusionString_closure {
 #
 sub exclusionRe {
     my ($self, $pos, $buf, $closurep, @exclusions) = @_;
-    $log->tracef('exclusionRe');
 
     my ($closure, @args) = @{$closurep};
     my $match = $self->$closure($pos, $buf, @args);
@@ -199,12 +186,10 @@ sub exclusionRe_closure {
 
 sub group {
     my ($self, $pos, $buf, @groupClosures) = @_;
-    $log->tracef('group');
 
     my $full = undef;
     my $curpos = $pos;
     foreach (@_[3..$#_]) {
-	$log->tracef('... %s', $_);
 	my ($closure, @args) = @{$_};
 	my $match = $self->$closure($curpos, $buf, @args);
 	if (! defined($match)) {
@@ -242,9 +227,7 @@ sub quantified {
     my $full = ($min <= 0) ? '': undef;
     my ($closure, @args) = @{$closurep};
     while (++$m) {
-	$log->tracef('quantified pos=%s m=%s min=%s max=%s', $pos, $m, $min, $max);
 	my $match = $self->$closure($pos, $buf, @args);
-	$log->tracef('match=<HERE>%s</HERE>', $match);
 	if (defined($match)) {
 	    if (defined($max) && ($m > $max)) {
 		last;
@@ -261,7 +244,6 @@ sub quantified {
 	substr($buf, 0, $length, '');
     }
 
-    $log->tracef('quantified returns %s', $full);
     return $full;
 }
 

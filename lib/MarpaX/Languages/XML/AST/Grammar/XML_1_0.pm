@@ -23,7 +23,7 @@ foreach (qw/document/) {
   my $top = $_;
   $DATA =~ s/(:start\s*::=\s*)(.*)/$1$top/g;
   print STDERR "Compiling $top production\n";
-  $G{$top} = Marpa::R2::Scanless::G->new({source => \$DATA});
+  $G{$top} = Marpa::R2::Scanless::G->new({source => \$DATA, bless_package => 'XML'});
 }
 
 sub new {
@@ -112,20 +112,32 @@ sub parse {
 	      last;
 	  }
 	  my @terminals_expected = map {$_->[0]} @events;
-	  $log->tracef('pos=%s, buf=<HERE>%s...</HERE>, expecting %s', $pos, substr($buf, 0, 10), \@terminals_expected);
+	  # $log->tracef('pos=%6d : buf=<HERE>%s...</HERE>, expecting %s', $pos, substr($buf, 0, 10), \@terminals_expected);
 	  my ($length, $matched, @tokens) = $self->get_tokens($stream, $pos, $buf, @terminals_expected);
 	  if (! @tokens) {
-	      die "Failed at position $pos: " . substr($buf, $pos, 10) . "...\nContext:\n" . $recce->show_progress;
-	  }
-	  foreach (@tokens) {
 	      #
-	      # The array is a reference to [$name, $value], where value can be undef
+	      # Acceptable only if buf is starting with discard characters or end of buffer
 	      #
-	      $log->tracef('pos=%s : lexeme_alternative("%s", "%s")', $pos, $_, $matched);
-	      $recce->lexeme_alternative($_, $matched);
+	      if ($buf =~ /^\s+/) {
+		  $length = $+[0] - $-[0];
+		  $log->tracef('pos=%6d : discarding %d characters', $pos, $length);
+	      } elsif ($stream->eof && length($buf) <= 0) {
+		  $log->tracef('pos=%6d : end of stream', $pos);
+		  last;
+	      } else {
+		  die "Failed at position $pos: " . substr($buf, $pos, 10) . "...\nContext:\n" . $recce->show_progress;
+	      }
+	  } else {
+	      foreach (@tokens) {
+		  #
+		  # The array is a reference to [$name, $value], where value can be undef
+		  #
+		  $log->tracef('pos=%6d : lexeme_alternative("%s", "%s")', $pos, $_, $matched);
+		  $recce->lexeme_alternative($_, $matched);
+	      }
+	      $log->tracef('pos=%6d : lexeme_complete(0, 1)', $pos);
+	      $recce->lexeme_complete(0, 1);
 	  }
-	  $log->tracef('pos=%s : lexeme_complete(0, 1)', $pos);
-	  $recce->lexeme_complete(0, 1);
 	  #
 	  # Match overlapped with next buffer ?
 	  #
@@ -152,6 +164,12 @@ sub parse {
 	  #$recce->resume();
       }
   }
+  my $nvalue = 0;
+  while (defined($_ = $recce->value)) {
+      ++$nvalue;
+      $log->tracef('Value %d: %s', $nvalue, $_);
+  }
+  $log->tracef('Total number of values: %d', $nvalue);
 }
 
 sub get_tokens {
@@ -169,11 +187,11 @@ sub get_tokens {
   my %terminals = ();
   foreach (@terminals_expected) {
       my $terminal = $_;
-      $log->tracef('Trying %s', $terminal);
+      # $log->tracef('Trying %s', $terminal);
       my $closure = $TOKEN{$terminal};
       my $match = $stream->$closure($pos, $buf);
       if (defined($match)) {
-	  $log->tracef('%s => %s', $terminal, $match);
+	  # $log->tracef('%s => %s', $terminal, $match);
 	  my $matchLength = length($match);
 	  if (! $length || $matchLength > $length) {
 	      $length = $matchLength;
@@ -204,24 +222,24 @@ sub wantnext {
 # ---------------------------------------------------------------
 # Internal regexps. Designed to match at most a single character.
 # ---------------------------------------------------------------
-our $REG_NAMESTARTCHAR          = qr/[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/;
-our $REG_NAMECHAR               = qr/$REG_NAMESTARTCHAR|[-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]/;
-our $REG_PUBIDCHAR_NOT_DQUOTE   = qr/[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]/;
-our $REG_PUBIDCHAR_NOT_SQUOTE   = qr/[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]/;
-our $REG_CHARCOMMENT            = qr/[\x{9}\x{A}\x{D}\x{20}-\x{2C}\x{2E}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/;
-our $REG_CHAR                   = qr/[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/;
-our $REG_S                      = qr/[\x{20}\x{9}\x{D}\x{A}]/;
-our $REG_NOT_DQUOTE             = qr/[^"]/;
-our $REG_NOT_SQUOTE             = qr/[^']/;
-our $REG_CHARDATA               = qr/[^<&]/;
-our $REG_DIGIT                  = qr/[0-9]/;
-our $REG_HEXDIGIT               = qr/[0-9a-fA-F]/;
-our $REG_ALPHA                  = qr/[A-Za-z]/;
-our $REG_ENCNAME_REST           = qr/[A-Za-z0-9._-]/;
-our $REG_ATTVALUE_NOT_DQUOTE    = qr/[^<&"]/;
-our $REG_ATTVALUE_NOT_SQUOTE    = qr/[^<&']/;
-our $REG_ENTITYVALUE_NOT_DQUOTE = qr/[^%&"]/;
-our $REG_ENTITYVALUE_NOT_SQUOTE = qr/[^%&']/;
+our $REG_NAMESTARTCHAR          = qr/^[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/;
+our $REG_NAMECHAR               = qr/$REG_NAMESTARTCHAR|^[-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]/;
+our $REG_PUBIDCHAR_NOT_DQUOTE   = qr/^[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]/;
+our $REG_PUBIDCHAR_NOT_SQUOTE   = qr/^[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]/;
+our $REG_CHARCOMMENT            = qr/^[\x{9}\x{A}\x{D}\x{20}-\x{2C}\x{2E}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/;
+our $REG_CHAR                   = qr/^[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/;
+our $REG_S                      = qr/^[\x{20}\x{9}\x{D}\x{A}]/;
+our $REG_NOT_DQUOTE             = qr/^[^"]/;
+our $REG_NOT_SQUOTE             = qr/^[^']/;
+our $REG_CHARDATA               = qr/^[^<&]/;
+our $REG_DIGIT                  = qr/^[0-9]/;
+our $REG_HEXDIGIT               = qr/^[0-9a-fA-F]/;
+our $REG_ALPHA                  = qr/^[A-Za-z]/;
+our $REG_ENCNAME_REST           = qr/^[A-Za-z0-9._-]/;
+our $REG_ATTVALUE_NOT_DQUOTE    = qr/^[^<&"]/;
+our $REG_ATTVALUE_NOT_SQUOTE    = qr/^[^<&']/;
+our $REG_ENTITYVALUE_NOT_DQUOTE = qr/^[^%&"]/;
+our $REG_ENTITYVALUE_NOT_SQUOTE = qr/^[^%&']/;
 
 # -----------------------------------------------------------------------
 # TOKEN closures
@@ -472,7 +490,7 @@ $TOKEN{ENTITYREF_CLOSURE} = sub {
     my ($stream, $pos, $buf) = @_;
     
     return
-	[ $stream->group_Closure,
+	[ $stream->group_closure,
 	  # &
 	  [ $stream->matchString_closure, '&' ],
 	  # ${NAME}
@@ -504,7 +522,7 @@ $TOKEN{PEREFERENCE_CLOSURE} = sub {
     my ($stream, $pos, $buf) = @_;
     
     return
-	[ $stream->group_Closure,
+	[ $stream->group_closure,
 	  # %
 	  [ $stream->matchString_closure, '&' ],
 	  # ${NAME}
@@ -593,7 +611,7 @@ $TOKEN{REFERENCE_CLOSURE} = sub {
     my ($stream, $pos, $buf) = @_;
     
     return
-	[ $stream->alternative,
+	[ $stream->alternative_closure,
 	  # EntityRef
 	  &$TOKEN_ENTITYREF_CLOSURE($stream, $pos, $buf),
 	  # CharRef
@@ -610,25 +628,33 @@ $TOKEN{ATTVALUE} = sub {
 	 [ $stream->group_closure,
 	   # "
 	   [ $stream->matchChar_closure, '"' ],
-	   # 
-	   [ $stream->alternative_closure,
-	     # ${REG_ATTVALUE_NOT_DQUOTE}
-	     [ $stream->matchRe_closure, $REG_ATTVALUE_NOT_DQUOTE ],
-	     # Reference
-	     &$TOKEN_REFERENCE_CLOSURE($stream, $pos, $buf),
-	   ],
+	   # (${REG_ATTVALUE_NOT_DQUOTE}|Reference)*
+	   [ $stream->quantified_closure, 
+	     [ $stream->alternative_closure,
+	       # ${REG_ATTVALUE_NOT_DQUOTE}
+	       [ $stream->matchRe_closure, $REG_ATTVALUE_NOT_DQUOTE ],
+	       # Reference
+	       &$TOKEN_REFERENCE_CLOSURE($stream, $pos, $buf),
+	     ],
+	     0,
+	     undef
+	     ],
 	   # "
 	   [ $stream->matchChar_closure, '"' ],
 	 ],
 	 [ $stream->group_closure,
 	   # '
 	   [ $stream->matchChar_closure, '\'' ],
-	   # 
-	   [ $stream->alternative_closure,
-	     # ${REG_ATTVALUE_NOT_SQUOTE}
-	     [ $stream->matchRe_closure, $REG_ATTVALUE_NOT_SQUOTE ],
-	     # Reference
-	     &$TOKEN_REFERENCE_CLOSURE($stream, $pos, $buf),
+	   # (${REG_ATTVALUE_NOT_SQUOTE}|Reference)*
+	   [ $stream->quantified_closure, 
+	     [ $stream->alternative_closure,
+	       # ${REG_ATTVALUE_NOT_SQUOTE}
+	       [ $stream->matchRe_closure, $REG_ATTVALUE_NOT_SQUOTE ],
+	       # Reference
+	       &$TOKEN_REFERENCE_CLOSURE($stream, $pos, $buf),
+	     ],
+	     0,
+	     undef
 	   ],
 	   # '
 	   [ $stream->matchChar_closure, '\'' ],
@@ -651,14 +677,18 @@ $TOKEN{ENTITYVALUE} = sub {
 	 [ $stream->group_closure,
 	   # "
 	   [ $stream->matchChar_closure, '"' ],
-	   # 
-	   [ $stream->alternative_closure,
-	     # ${REG_ENTITYVALUE_NOT_DQUOTE}
-	     [ $stream->matchRe_closure, $REG_ENTITYVALUE_NOT_DQUOTE ],
-	     # PEReference
-	     &$TOKEN_PEREFERENCE_CLOSURE($stream, $pos, $buf),
-	     # Reference
-	     &$TOKEN_REFERENCE_CLOSURE($stream, $pos, $buf),
+	   # (${REG_ENTITYVALUE_NOT_DQUOTE}|Reference)*
+	   [ $stream->quantified_closure, 
+	     [ $stream->alternative_closure,
+	       # ${REG_ENTITYVALUE_NOT_DQUOTE}
+	       [ $stream->matchRe_closure, $REG_ENTITYVALUE_NOT_DQUOTE ],
+	       # PEReference
+	       &$TOKEN_PEREFERENCE_CLOSURE($stream, $pos, $buf),
+	       # Reference
+	       &$TOKEN_REFERENCE_CLOSURE($stream, $pos, $buf),
+	     ],
+	     0,
+	     undef
 	   ],
 	   # "
 	   [ $stream->matchChar_closure, '"' ],
@@ -666,15 +696,20 @@ $TOKEN{ENTITYVALUE} = sub {
 	 [ $stream->group_closure,
 	   # '
 	   [ $stream->matchChar_closure, '\'' ],
-	   # 
-	   [ $stream->alternative_closure,
-	     # ${REG_ENTITYVALUE_NOT_SQUOTE}
-	     [ $stream->matchRe_closure, $REG_ENTITYVALUE_NOT_SQUOTE ],
-	     # PEReference
-	     &$TOKEN_PEREFERENCE_CLOSURE($stream, $pos, $buf),
-	     # Reference
-	     &$TOKEN_REFERENCE_CLOSURE($stream, $pos, $buf),
-	   ],
+	   # (${REG_ENTITYVALUE_NOT_SQUOTE}|Reference)*
+	   [ $stream->quantified_closure, 
+	     # 
+	     [ $stream->alternative_closure,
+	       # ${REG_ENTITYVALUE_NOT_SQUOTE}
+	       [ $stream->matchRe_closure, $REG_ENTITYVALUE_NOT_SQUOTE ],
+	       # PEReference
+	       &$TOKEN_PEREFERENCE_CLOSURE($stream, $pos, $buf),
+	       # Reference
+	       &$TOKEN_REFERENCE_CLOSURE($stream, $pos, $buf),
+	     ],
+	     0,
+	     undef
+	     ],
 	   # '
 	   [ $stream->matchChar_closure, '\'' ],
 	 ]
@@ -1181,4 +1216,3 @@ event NOTATION_BEG     = predicted NotationBeg
 event NOTATION_END     = predicted NotationEnd
 event ATTVALUE         = predicted AttValue
 event ENTITYVALUE      = predicted EntityValue
-
