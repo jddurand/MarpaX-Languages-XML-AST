@@ -254,22 +254,25 @@ our $REG_ENTITYVALUE_NOT_SQUOTE = qr/^[^%&']/;
 # Range versions of internal regexps. Because this is faster.
 # -----------------------------------------------------------
 our $MAP_NAMESTARTCHAR = [
-                          [ ':', undef],
-                          [ 'A', 'Z' ],
-                          [ '_', undef ],
-                          [ 'a', 'z' ],
-                          [ "\x{C0}", "\x{D6}" ],
-                          [ "\x{D8}", "\x{F6}" ],
-                          [ "\x{F8}", "\x{2FF}" ],
-                          [ "\x{370}", "\x{37D}" ],
-                          [ "\x{37F}", "\x{1FFF}" ],
-                          [ "\x{200C}", "\x{200D}" ],
-                          [ "\x{2070}", "\x{218F}" ],
-                          [ "\x{2C00}", "\x{2FEF}" ],
-                          [ "\x{3001}", "\x{D7FF}" ],
-                          [ "\x{F900}", "\x{FDCF}" ],
-                          [ "\x{FDF0}", "\x{FFFD}" ],
-                          [ "\x{10000}", "\x{EFFFF}"]
+                          #
+                          # We put the most probables first
+                          #
+                          [ 'A'         , 'Z'        ],
+                          [ 'a'         , 'z'        ],
+                          [ '_'                      ],
+                          [ ':'                      ],
+                          [ "\x{C0}"    , "\x{D6}"   ],
+                          [ "\x{D8}"    , "\x{F6}"   ],
+                          [ "\x{F8}"    , "\x{2FF}"  ],
+                          [ "\x{370}"   , "\x{37D}"  ],
+                          [ "\x{37F}"   , "\x{1FFF}" ],
+                          [ "\x{200C}"  , "\x{200D}" ],
+                          [ "\x{2070}"  , "\x{218F}" ],
+                          [ "\x{2C00}"  , "\x{2FEF}" ],
+                          [ "\x{3001}"  , "\x{D7FF}" ],
+                          [ "\x{F900}"  , "\x{FDCF}" ],
+                          [ "\x{FDF0}"  , "\x{FFFD}" ],
+                          [ "\x{10000}" , "\x{EFFFF}"]
                          ];
 our $MAP_NAMECHAR = [
                      @{$MAP_NAMESTARTCHAR},
