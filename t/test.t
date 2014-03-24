@@ -3,15 +3,29 @@ use strict;
 use warnings FATAL => 'all';
 use Test::More;
 use File::Slurp qw/read_file/;
+    use Log::Log4perl qw/:easy/;
+    use Log::Any::Adapter;
+    use Log::Any qw/$log/;
+    #
+    # Init log
+    #
+    our $defaultLog4perlConf = '
+    log4perl.rootLogger              = TRACE, Screen
+    log4perl.appender.Screen         = Log::Log4perl::Appender::Screen
+    log4perl.appender.Screen.stderr  = 0
+    log4perl.appender.Screen.layout  = PatternLayout
+    log4perl.appender.Screen.layout.ConversionPattern = %d %-5p %6P %m{chomp}%n
+    ';
+    Log::Log4perl::init(\$defaultLog4perlConf);
+    Log::Any::Adapter->set('Log4perl');
 
 BEGIN {
     use_ok( 'MarpaX::Languages::XML::AST' ) || print "Bail out!\n";
 }
 
 my $xmlAst = MarpaX::Languages::XML::AST->new();
-my $input = read_file(shift);
-# my $input = do {local $/; <DATA>};
-print STDERR "GO - INPUT SIZE: " . length($input) . "\n";
+#my $input = read_file(shift);
+my $input = do {local $/; <DATA>};
 my $parse = $xmlAst->parse($input);
 
 done_testing(1);

@@ -10,23 +10,37 @@ use Log::Any qw/$log/;
 
 # VERSION
 
+#
+# We use an blessed array instead of a blessed hahsh because this is faster
+#
+#use constant {
+#    _INPUT   =>  0,
+#    _DATA    =>  1,
+#    _LENGTH  =>  2,
+#    _MAPBEG  =>  3,
+#    _MAPEND  =>  4,
+#    _EOF     =>  5,
+#    _BLESSED =>  6,
+#    _FILENO  =>  7,
+#    _NDATA   =>  8,
+#    _LASTPOS =>  9,
+#    _MAXPOS  => 10
+#};
 sub new {
     my ($class, %opts) = @_;
 
-    my $self = {
-	_input   => $opts{input},                    # File handle or object or scalar
-	_data    => [],                              # Array of cached data
-	_length  => $opts{length} || 1*1024*1024,    # Number of characters of every cached data
-	_mapend  => [],                              # Mapped position of each last data (exclusive)
-	_mapbeg  => [],                              # Mapped position of each first data (inclusive)
-	_eof     => 0,                               # Last buffer reached
-	_blessed => 0,                               # true if input is blessed
-	_fileno  => -1,                              # >= 0 if input appears to be a true filehandle
-	_ndata   => 0,                               # Number of cached buffers
-	_lastpos => undef,                           # Last position ever reached (does not mean it is available)
-	_maxpos  => undef,                           # Max pos in input (inclusive), setted only when eof
-        _doRead  => undef,                           # read call method pointer
-    };
+    my $self = [];
+    $self->[ 0]   = $opts{input};                    # File handle or object or scalar
+    $self->[ 1]    = [];                              # Array of cached data
+    $self->[ 2]  = $opts{length} || 1*1024*1024;    # Number of characters of every cached data
+    $self->[ 3]  = [];                              # Mapped position of each last data (exclusive)
+    $self->[ 4]  = [];                              # Mapped position of each first data (inclusive)
+    $self->[ 5]     = 0;                               # Last buffer reached
+    $self->[ 6] = 0;                               # true if input is blessed
+    $self->[ 7]  = -1;                              # >= 0 if input appears to be a true filehandle
+    $self->[ 8]   = 0;                               # Number of cached buffers
+    $self->[ 9] = undef;                           # Last position ever reached (does not mean it is available)
+    $self->[10]  = undef;                           # Max pos in input (inclusive), setted only when eof
 
     bless($self, $class);
 
@@ -37,7 +51,7 @@ sub new {
 
 sub length {
   my ($stream) = @_;
-  return $stream->{_length};
+  return $stream->[ 2];
 }
 
 #
@@ -46,22 +60,14 @@ sub length {
 sub _init {
     my ($self) = @_;
 
-    if (blessed($self->{_input})) {
-	if (! $self->{_input}->can('read')) {
+    if (blessed($self->[ 0])) {
+	if (! $self->[ 0]->can('read')) {
 	    croak 'Blessed input must support the read() method';
 	}
-	$log->tracef('Input is a blessed object that can read()');
-	$self->{_blessed} = 1;
-        $self->{_doRead} = \&_read_blessed;
+	#$log->tracef('Input is a blessed object that can read()');
+	$self->[ 6] = 1;
     } else {
-	$self->{_fileno} = fileno($self->{_input}) // -1;
-	if ($self->{_fileno} >= 0) {
-	    $log->tracef('Input is a file handle with fileno %d', $self->{_fileno});
-            $self->{_doRead} = \&_read_fileno;
-	} else {
-	    $log->tracef('Input is assumed to be a scalar');
-            $self->{_doRead} = \&_read_scalar;
-	}
+	$self->[ 7] = fileno($self->[ 0]) // -1;
     }
     #
     # Pretech first buffer
@@ -70,75 +76,64 @@ sub _init {
 }
 
 #
-# Read callbacks: for performance, modification is done on the stack
-#
-sub _read_blessed {
-  # my ($input, $data, $length, $eof) = @_;
-  $_[1] //= '';
-  my $n = $_[0]->read($_[1], $_[2]) || 0;
-  if ($n <= 0) {
-    $log->tracef('EOF');
-    $_[3] = 1;
-    $n = 0;
-  } elsif ($n < $_[2]) {
-    $log->tracef('EOF after %d characters', $n);
-    $_[3] = 1;
-  }
-  return $n;
-}
-
-sub _read_fileno {
-  # my ($input, $data, $length, $eof) = @_;
-  $_[1] //= '';
-  my $n = read($_[0], $_[1], $_[2]) || 0;
-  if ($n <= 0) {
-    $log->tracef('EOF');
-    $_[3] = 1;
-    $n = 0;
-  } elsif ($n < $_[2]) {
-    $log->tracef('EOF after %d characters', $n);
-    $_[3] = 1;
-  }
-  return $n;
-}
-
-sub _read_scalar {
-  # my ($input, $data, $length, $eof) = @_;
-  $_[1] = $_[0];
-  $_[3] = 1;
-  return CORE::length($_[1]);
-}
-
-#
 # Read buffer
 #
 sub _read {
     my ($self, $pos, $append) = @_;
 
-    my $idata = $self->{_ndata};
-    if (! $idata) {
-      #
-      # No buffer yet. Append is not possible.
-      #
-      $append = 0;
-    } elsif (! $append) {
-      --$idata;
+    my $n;
+    my $idata = $#{$self->[ 1]};
+    if ($idata < 0) {
+	#
+	# No buffer yet, fake append mode
+	#
+	$append = 1;
     }
-
+    if ($append) {
+	++$idata;
+    }
     #
     # Note: the perl system call read() is reading CHARACTERS OF DATA
     # not bytes. I.e. it is the responsability of the caller to
     # position correctly eventual io layers.
     #
-    my $n = $self->{_doRead}->($self->{_input}, $self->{_data}->[$idata], $self->{_length}, $self->{_eof});
-    $self->{_mapbeg}->[$idata] =  $append ? $self->{_mapend}->[$idata-1] : $pos;
-    $self->{_mapend}->[$idata] =  $self->{_mapbeg}->[$idata] + $n;
-    # $log->tracef('Buffer No %d maps to positions [%d-%d[', $idata, $self->{_mapbeg}->[$idata], $self->{_mapend}->[$idata]);
-    $self->{_lastpos} = $self->{_mapend}->[$idata] - 1;
-    $self->{_ndata} = $idata + 1;
-    if ($self->{_eof}) {
-	$self->{_maxpos} = $self->{_lastpos};
-	$log->tracef('Input max position found to be %s', $self->{_maxpos});
+    if ($self->[ 6]) {
+	#$log->tracef('Asking input for %d characters from assumed position %d in buffer No %d', $self->[ 2], $pos, $idata);
+	$n = $self->[ 0]->read($self->[ 1]->[$idata], $self->[ 2]) || 0;
+    } elsif ($self->[ 7] >= 0) {
+	#$log->tracef('Reading %d characters from assumed position %d in buffer No %d', $self->[ 2], $pos, $idata);
+	$n = read($self->[ 0], $self->[ 1]->[$idata], $self->[ 2]) || 0;
+    } else {
+	#$log->tracef('Mapping scalar into buffer No %d, faking EOF', $idata);
+	#
+	# Assumed to be a true scalar - no real read, fake a single whole buffer
+	#
+	$self->[ 1]->[$idata] = $self->[ 0];
+	$n = CORE::length($self->[ 0]);
+	$self->[ 5] = 1;
+    }
+    if ($self->[ 6] || $self->[ 7] >= 0) {
+	if ($n <= 0) {
+	    #$log->tracef('EOF');
+	    $self->[ 5] = 1;
+	    $n = 0;
+	} elsif ($n < $self->[ 2]) {
+	    #$log->tracef('EOF after %d characters', $n);
+	    $self->[ 5] = 1;
+	}
+    }
+    if ($append && $idata > 0) {
+	$self->[ 4]->[$idata] =  $self->[ 3]->[$idata-1];
+    } else {
+	$self->[ 4]->[$idata] =  $pos;
+    }
+    $self->[ 3]->[$idata] =  $self->[ 4]->[$idata] + $n;
+    #$log->tracef('Buffer No %d maps to positions [%d-%d[', $idata, $self->[ 4]->[$idata], $self->[ 3]->[$idata]);
+    $self->[ 9] = $self->[ 3]->[$idata] - 1;
+    $self->[ 8] = $idata + 1;
+    if ($self->[ 5]) {
+	$self->[10] = $self->[ 9];
+	#$log->tracef('Input max position found to be %s', $self->[10]);
     }
 }
 
@@ -149,11 +144,11 @@ sub _read {
 sub fetchc {
     my ($self, $pos) = @_;
 
-    if ($self->{_ndata} <= 0) {
+    if ($self->[ 8] <= 0) {
 	#
 	# No data cached
 	#
-	if ($self->{_eof}) {
+	if ($self->[ 5]) {
 	    #
 	    # But EOF marked: nothing else is available
 	    #
@@ -163,21 +158,21 @@ sub fetchc {
 	    # Buffer next data
 	    # This is where we technically disallow to go backwards.
 	    #
-	    $self->_read($self->{_lastpos} + 1);
+	    $self->_read($self->[ 9] + 1);
 	    return $self->fetchc($pos);
 	}
     } else {
-	if ($pos < $self->{_mapbeg}->[0]) {
-	    croak "Attempt to fetch at position $pos < $self->{_mapbeg}->[0] (first cached position)";
+	if ($pos < $self->[ 4]->[0]) {
+	    croak "Attempt to fetch at position $pos < $self->[ 4]->[0] (first cached position)";
 	} else {
-	    if ($pos >= $self->{_mapend}->[-1]) {
+	    if ($pos >= $self->[ 3]->[-1]) {
 		#
 		# Attempt to read beyond last cached data: need to append another buffer
 		# Although this is not likely to happen, we prevent deep recursion
 		# by doing the loop ourself
 		#
-		while (($pos >= $self->{_mapend}->[-1]) && ! $self->{_eof}) {
-		    $self->_read($self->{_lastpos} + 1, 1);
+		while (($pos >= $self->[ 3]->[-1]) && ! $self->[ 5]) {
+		    $self->_read($self->[ 9] + 1, 1);
 		}
 	    }
 	    #
@@ -185,25 +180,25 @@ sub fetchc {
 	    #
 	    my $idata;
 	    my $found = 0;
-	    for ($idata = 0; $idata < $self->{_ndata}; $idata++) {
-		if ($pos >= $self->{_mapbeg}->[$idata] && $pos < $self->{_mapend}->[$idata]) {
+	    for ($idata = 0; $idata < $self->[ 8]; $idata++) {
+		if ($pos >= $self->[ 4]->[$idata] && $pos < $self->[ 3]->[$idata]) {
 		    $found = 1;
 		    last;
 		}
 	    }
 	    if (! $found) {
 		#
-		# Not found - a priori $self->{_eof} should be marked
+		# Not found - a priori $self->[ 5] should be marked
 		#
-		if (! $self->{_eof}) {
+		if (! $self->[ 5]) {
 		    croak "Fetch at position $pos fail and eof is not reached";
 		} else {
 		    return undef;
 		}
 	    } else {
-		my $ipos = $pos - $self->{_mapbeg}->[$idata];
-		# $log->tracef('Position %d found at position %d in buffer No %d that maps to [%d-%d]', $pos, $ipos, $idata, $self->{_mapbeg}->[$idata], $self->{_mapend}->[$idata]);
-		return substr($self->{_data}->[$idata], $ipos, 1);
+		my $ipos = $pos - $self->[ 4]->[$idata];
+		# $log->tracef('Position %d found at position %d in buffer No %d that maps to [%d-%d]', $pos, $ipos, $idata, $self->[ 4]->[$idata], $self->[ 3]->[$idata]);
+		return substr($self->[ 1]->[$idata], $ipos, 1);
 	    }
 	}
     }
@@ -211,32 +206,32 @@ sub fetchc {
 
 sub mapbeg {
     my ($self, $n) = @_;
-    return $self->{_mapbeg}->[$n];
+    return $self->[ 4]->[$n];
 }
 
 sub mapend {
     my ($self, $n) = @_;
-    return $self->{_mapend}->[$n];
+    return $self->[ 3]->[$n];
 }
 
 sub eof {
     my ($self) = @_;
-    return $self->{_eof};
+    return $self->[ 5];
 }
 
 sub ndata {
     my ($self) = @_;
-    return $self->{_ndata};
+    return $self->[ 8];
 }
 
 sub lastpos {
     my ($self) = @_;
-    return $self->{_lastpos};
+    return $self->[ 9];
 }
 
 sub maxpos {
     my ($self) = @_;
-    return $self->{_maxpos};
+    return $self->[10];
 }
 
 #
@@ -246,11 +241,11 @@ sub maxpos {
 sub fetchb {
     my ($self, $n) = @_;
 
-    if ($self->{_ndata} <= 0) {
+    if ($self->[ 8] <= 0) {
 	#
 	# No data cached
 	#
-	if ($self->{_eof}) {
+	if ($self->[ 5]) {
 	    #
 	    # But EOF marked: nothing else is available
 	    #
@@ -260,32 +255,32 @@ sub fetchb {
 	    # Buffer next data
 	    # This is where we technically disallow to go backwards.
 	    #
-	    $self->_read($self->{_lastpos} + 1);
+	    $self->_read($self->[ 9] + 1);
 	    return $self->fetchb($n);
 	}
     } else {
-	if ($n >= $self->{_ndata}) {
+	if ($n >= $self->[ 8]) {
 	    #
 	    # Attempt to fetch a buffer beyond last cached data: need to append another buffer
 	    # Although this is not likely to happen, we prevent deep recursion
 	    # by doing the loop ourself
 	    #
-	    while (($n >= $self->{_ndata}) && ! $self->{_eof}) {
-		$self->_read($self->{_lastpos} + 1, 1);
+	    while (($n >= $self->[ 8]) && ! $self->[ 5]) {
+		$self->_read($self->[ 9] + 1, 1);
 	    }
 	}
-	if ($n >= $self->{_ndata}) {
+	if ($n >= $self->[ 8]) {
 	    #
-	    # Not found - a priori $self->{_eof} should be marked
+	    # Not found - a priori $self->[ 5] should be marked
 	    #
-	    if (! $self->{_eof}) {
+	    if (! $self->[ 5]) {
 		croak "Fetch of buffer $n fail and eof is not reached";
 	    } else {
 		return undef;
 	    }
 	} else {
-	    # $log->tracef('Buffer %d and maps to [%d-%d]', $n, $self->{_mapbeg}->[$n], $self->{_mapend}->[$n]);
-	    return $self->{_data}->[$n];
+	    # $log->tracef('Buffer %d and maps to [%d-%d]', $n, $self->[ 4]->[$n], $self->[ 3]->[$n]);
+	    return $self->[ 1]->[$n];
 	}
     }
 }
@@ -302,26 +297,21 @@ sub donec {
     #
     my $idata;
     my $found = 0;
-    for ($idata = 0; $idata < $self->{_ndata}; $idata++) {
-	if ($pos >= $self->{_mapbeg}->[$idata] && $pos < $self->{_mapend}->[$idata]) {
+    for ($idata = 0; $idata < $self->[ 8]; $idata++) {
+	if ($pos >= $self->[ 4]->[$idata] && $pos < $self->[ 3]->[$idata]) {
 	    $found = 1;
 	    last;
 	}
     }
-    if ($found && $pos == $self->{_mapend}->[$idata] -1) {
-	if ($idata > 0) {
-	    $log->tracef('Deleting buffers No %d to %d', 0, $idata);
-	} else {
-	    $log->tracef('Deleting buffer No %d', $idata);
-	}
+    if ($found && $pos == $self->[ 3]->[$idata] -1) {
 	#
 	# This position is the last one hosted by buffer No $idata
 	#
 	my $ndata = $idata + 1;
-	splice(@{$self->{_data}}, 0, $ndata);
-	splice(@{$self->{_mapbeg}}, 0, $ndata);
-	splice(@{$self->{_mapend}}, 0, $ndata);
-	$self->{_ndata} -= $ndata;
+	splice(@{$self->[ 1]}, 0, $ndata);
+	splice(@{$self->[ 4]}, 0, $ndata);
+	splice(@{$self->[ 3]}, 0, $ndata);
+	$self->[ 8] -= $ndata;
     }
 }
 
@@ -334,17 +324,12 @@ sub doneb {
     # We want to forget (FOREVER) buffer at position $n
     # Eventually previous buffers will be destroyed.
     #
-    if ($n < $self->{_ndata}) {
-	if ($n > 0) {
-	    $log->tracef('Deleting buffers No %d to %d', 0, $n);
-	} else {
-	    $log->tracef('Deleting buffer No %d', $n);
-	}
+    if ($n < $self->[ 8]) {
 	my $ndata = $n + 1;
-	splice(@{$self->{_data}}, 0, $ndata);
-	splice(@{$self->{_mapbeg}}, 0, $ndata);
-	splice(@{$self->{_mapend}}, 0, $ndata);
-	$self->{_ndata} -= $ndata;
+	splice(@{$self->[ 1]}, 0, $ndata);
+	splice(@{$self->[ 4]}, 0, $ndata);
+	splice(@{$self->[ 3]}, 0, $ndata);
+	$self->[ 8] -= $ndata;
     }
 }
 
@@ -388,12 +373,12 @@ sub substr {
 	#
 	# We need to reach eof
 	#
-	while (! $self->{_eof}) {
-	    $self->_read($self->{_lastpos} + 1);
+	while (! $self->[ 5]) {
+	    $self->_read($self->[ 9] + 1);
 	}
     }
-    my $start = ($offset < 0) ? ($self->{_maxpos} + $offset) : $offset;
-    my $end = defined($length) ? (($length < 0) ? ($self->{_maxpos} + $length) : ($start + $length - 1)) : $self->{_maxpos};
+    my $start = ($offset < 0) ? ($self->[10] + $offset) : $offset;
+    my $end = defined($length) ? (($length < 0) ? ($self->[10] + $length) : ($start + $length - 1)) : $self->[10];
 
     #
     # Make sure end is reachable, take last offset if end is beyond eof
@@ -402,25 +387,25 @@ sub substr {
 	#
 	# This is okay only if we hitted eof, in which end is overwriten
 	#
-	if (! $self->{_eof}) {
-	    $log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is not available', $offset, $length, $start, $end, $end);
+	if (! $self->[ 5]) {
+	    #$log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is not available', $offset, $length, $start, $end, $end);
 	    return undef;
 	}
-	$log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is beyond eof: [%d-%d] applied', $offset, $length, $start, $end, $end, $start, $self->{_maxpos});
-	$end = $self->{_maxpos};
+	#$log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is beyond eof: [%d-%d] applied', $offset, $length, $start, $end, $end, $start, $self->[10]);
+	$end = $self->[10];
     }
     #
     # Make sure start is not beyond end
     #
     if ($start > $end) {
-	$log->warnf('substr(%s, %s) converted to range [%d-%d]', $offset, $length, $start, $end);
+	#$log->warnf('substr(%s, %s) converted to range [%d-%d]', $offset, $length, $start, $end);
 	return undef;
     }
     #
     # Make sure start is reachable
     #
     if (! defined($self->fetchc($start))) {
-	$log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is not available', $offset, $length, $start, $end, $start);
+	#$log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is not available', $offset, $length, $start, $end, $start);
 	return undef;
     }
     #
@@ -429,14 +414,14 @@ sub substr {
     my $idatastart = undef;
     my $idataend = undef;
     my $idata;
-    for ($idata = 0; $idata < $self->{_ndata}; $idata++) {
+    for ($idata = 0; $idata < $self->[ 8]; $idata++) {
 	if (! defined($idatastart)) {
-	    if ($start >= $self->{_mapbeg}->[$idata] && $start < $self->{_mapend}->[$idata]) {
+	    if ($start >= $self->[ 4]->[$idata] && $start < $self->[ 3]->[$idata]) {
 		$idatastart = $idata;
 	    }
 	}
 	if (! defined($idataend)) {
-	    if ($end >= $self->{_mapbeg}->[$idata] && $end < $self->{_mapend}->[$idata]) {
+	    if ($end >= $self->[ 4]->[$idata] && $end < $self->[ 3]->[$idata]) {
 		$idataend = $idata;
 	    }
 	}
@@ -446,10 +431,10 @@ sub substr {
     }
     my $rc = '';
     foreach ($idatastart..$idataend) {
-	my $istart = ($_ == $idatastart) ? ($start - $self->{_mapbeg}->[$_]) : 0;
-	my $iend = ($_ == $idataend) ? ($end - $self->{_mapbeg}->[$_]) : ($self->{_mapend}->[$_] - 1);
+	my $istart = ($_ == $idatastart) ? ($start - $self->[ 4]->[$_]) : 0;
+	my $iend = ($_ == $idataend) ? ($end - $self->[ 4]->[$_]) : ($self->[ 3]->[$_] - 1);
 	my $ilength = $iend - $istart + 1;
-	$rc .= substr($self->{_data}->[$_], $istart, $ilength);
+	$rc .= substr($self->[ 1]->[$_], $istart, $ilength);
     }
     return $rc;
 }
@@ -492,7 +477,7 @@ sub stringsToSub {
 	foreach (keys %{$length2Strings{$length}}) {
 	    my $stringValue = $_;
 	    if ($#{$length2Strings{$length}->{$stringValue}} > 0) {
-		$log->warnf('More than one candidate for string \'%s\': %s', $stringValue, [ sort @{$length2Strings{$length}->{$stringValue}} ]);
+		#$log->warnf('More than one candidate for string \'%s\': %s', $stringValue, [ sort @{$length2Strings{$length}->{$stringValue}} ]);
 	    }
 	}
     }
