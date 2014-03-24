@@ -30,16 +30,16 @@ sub new {
     my ($class, %opts) = @_;
 
     my $self = [];
-    $self->[ 0]   = $opts{input};                    # File handle or object or scalar
-    $self->[ 1]    = [];                              # Array of cached data
+    $self->[ 0]   = $opts{input};                   # File handle or object or scalar
+    $self->[ 1]    = [];                            # Array of cached data
     $self->[ 2]  = $opts{length} || 1*1024*1024;    # Number of characters of every cached data
     $self->[ 3]  = [];                              # Mapped position of each last data (exclusive)
     $self->[ 4]  = [];                              # Mapped position of each first data (inclusive)
-    $self->[ 5]     = 0;                               # Last buffer reached
-    $self->[ 6] = 0;                               # true if input is blessed
+    $self->[ 5]     = 0;                            # Last buffer reached
+    $self->[ 6] = 0;                                # true if input is blessed
     $self->[ 7]  = -1;                              # >= 0 if input appears to be a true filehandle
-    $self->[ 8]   = 0;                               # Number of cached buffers
-    $self->[ 9] = undef;                           # Last position ever reached (does not mean it is available)
+    $self->[ 8]   = 0;                              # Number of cached buffers
+    $self->[ 9] = undef;                            # Last position ever reached (does not mean it is available)
     $self->[10]  = undef;                           # Max pos in input (inclusive), setted only when eof
 
     bless($self, $class);
@@ -348,18 +348,21 @@ sub getc {
 
 #
 # getb is an alias to fetchb and doneb
-# $n assumed to be >= 0
+# $n assumed to be >= 0.
+# Returns buffer and its mapped positions
 #
 sub getb {
     my ($self, $n) = @_;
 
     $n //= 0;
 
-    my $b;
+    my ($b, $mapbeg, $mapend) = (undef, undef, undef);
     if (defined($b = $self->fetchb($n))) {
-	$self->doneb($n);
+      $mapbeg = $self->mapbeg($n);
+      $mapend = $self->mapend($n);
+      $self->doneb($n);
     }
-    return $b;
+    return ($b, $mapbeg, $mapend);
 }
 
 #

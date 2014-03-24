@@ -9,28 +9,69 @@ use SUPER;
 
 # VERSION
 
+sub new {
+  my $self = super();
+  $self->[20] = {};
+  return $self;
+}
+
+sub doneMatch {
+  # my ($self, $pos) = @_;
+  foreach (grep {$_ <= $_[1]} keys %{$_[0]->[20]}) {
+    delete($_[0]->[20]->{$_});
+  }
+}
+
 #
-# In any case, buf position's 0 is supposed correspond to stream's position $pos
+# Match is always working on user's buf, and can extend
+# it if needed, without telling so to the caller.
+# This will be without side-effect: the buffer can be
+# extended (taking part of the next cached buffer(s)), but
+# never truncated.
+#
+# $buf is expected to never be undef and to always map to
+# a physical location >= $pos
 #
 sub _getBuf {
-    my ($self, $pos, $buf, $length) = @_;
+  # my ($self, $pos, $buf, $mapbeg, $mapend, $length) = @_;
 
-    if (! defined($buf)) {
-	$buf = $self->substr($pos, $length);
-	if (! defined($buf) || length($buf) < $length) {
-	    return undef;
-	}
+  my $full = undef;
+  my $ipos = $_[1];
+  my $i = 0;
+  while (++$i <= $_[5]) {
+    my $c = $_[0]->_getC($ipos++, $_[2], $_[3], $_[4]);
+    return undef if (! defined($c));
+    $full .= $c;
+  }
+
+  return $full;
+ jdd:
+  my $end = $_[1] + $_[5] - 1;
+  if ($end >= $_[4]) {
+    my $append = $_[0]->substr($_[4], $end - $_[4] + 1);
+    if (! defined($append)) {
+      return undef;
     } else {
-	if (length($buf) < $length) {
-	    my $append = $self->substr($pos + length($buf), $length - length($buf));
-	    if (! defined($append)) {
-		return undef;
-	    } else {
-		$buf .= $append;
-	    }
-	}
+      $_[2] .= $append;
     }
-    return substr($buf, 0, $length);
+  }
+
+  return substr($_[2], $_[1] - $_[3], $_[5]);
+}
+
+sub _getC {
+  # my ($self, $pos, $buf, $mapbeg, $mapend) = @_;
+
+  if (! defined($_[0]->[20]->{$_[1]})) {
+    if ($_[1] >= $_[3] && $_[1] < $_[4]) {
+      return $_[0]->[20]->{$_[1]} = substr($_[2], $_[1], 1);
+    } else {
+      return undef;
+    }
+  } else {
+    return $_[0]->[20]->{$_[1]};
+  }
+
 }
 
 #
@@ -43,12 +84,12 @@ sub _getBuf {
 #
 
 sub matchChar {
-    my ($self, $pos, $buf, $char) = @_;
+    # my ($self, $pos, $buf, $mapbeg, $mapend, $char) = @_;
 
-    my $c = $self->_getBuf($pos, $buf, 1);
+    my $c = $_[0]->_getC($_[1], $_[2], $_[3], $_[4]);
     return undef if (! defined($c));
 
-    return ($c eq $char) ? $c : undef;
+    return ($c eq $_[5]) ? $c : undef;
 }
 
 sub matchChar_closure {
@@ -60,12 +101,12 @@ sub matchChar_closure {
 # Even if NOT the case, only current character would be returned.
 #
 sub matchRe {
-    my ($self, $pos, $buf, $re) = @_;
+    # my ($self, $pos, $buf, $mapbeg, $mapend, $re) = @_;
 
-    my $c = $self->_getBuf($pos, $buf, 1);
+    my $c = $_[0]->_getC($_[1], $_[2], $_[3], $_[4]);
     return undef if (! defined($c));
 
-    return ($c =~ $re) ? $c : undef;
+    return ($c =~ $_[5]) ? $c : undef;
 }
 
 sub matchRe_closure {
@@ -73,12 +114,19 @@ sub matchRe_closure {
 }
 
 sub matchRange {
-    my ($self, $pos, $buf, $char1, $char2) = @_;
+    # my ($self, $pos, $buf, $mapbeg, $mapend, $char1, $char2) = @_;
 
-    my $c = $self->_getBuf($pos, $buf, 1);
+    my $c = $_[0]->_getC($_[1], $_[2], $_[3], $_[4]);
     return undef if (! defined($c));
 
-    return (($c ge $char1) && ($c le $char2)) ? $c : undef;
+    #
+    # If $_[6] is undef, this is assumed to be a single char
+    #
+    if (defined($_[6])) {
+      return (($c ge $_[5]) && ($c le $_[6])) ? $c : undef;
+    } else {
+      return ($c eq $_[5]) ? $c : undef;
+    }
 }
 
 sub matchRange_closure {
@@ -86,13 +134,13 @@ sub matchRange_closure {
 }
 
 sub matchRanges {
-    my ($self, $pos, $buf, @char12) = @_;
+    # my ($self, $pos, $buf, $mapbeg, $mapend, @char12) = @_;
 
-    my $c = $self->_getBuf($pos, $buf, 1);
+    my $c = $_[0]->_getC($_[1], $_[2], $_[3], $_[4]);
     return undef if (! defined($c));
 
-    foreach (@char12) {
-	return $c if (defined($self->matchRange($pos, $buf, @{$_})));
+    foreach (@_[5..$#_]) {
+	return $c if (defined($_[0]->matchRange($_[1], $_[2], $_[3], $_[4], @{$_})));
     }
 
     return undef;
@@ -103,12 +151,12 @@ sub matchRanges_closure {
 }
 
 sub matchString {
-    my ($self, $pos, $buf, $string) = @_;
+    # my ($self, $pos, $buf, $mapbeg, $mapend, $string) = @_;
 
-    my $s = $self->_getBuf($pos, $buf, length($string));
+    my $s = $_[0]->_getBuf($_[1], $_[2], $_[3], $_[4], length($_[5]));
     return undef if (! defined($s));
 
-    return ($s eq $string) ? $s : undef;
+    return ($s eq $_[5]) ? $s : undef;
 }
 
 sub matchString_closure {
@@ -116,11 +164,11 @@ sub matchString_closure {
 }
 
 sub alternative {
-    my ($self, $pos, $buf, @alternativeClosures) = @_;
+    # my ($self, $pos, $buf, $mapbeg, $mapend, @alternativeClosures) = @_;
 
-    foreach (@alternativeClosures) {
+    foreach (@_[5..$#_]) {
 	my ($closure, @args) = @{$_};
-	my $match = $self->$closure($pos, $buf, @args);
+	my $match = $_[0]->$closure($_[1], $_[2], $_[3], $_[4], @args);
 	return $match if (defined($match));
     }
 
@@ -135,13 +183,13 @@ sub alternative_closure {
 # Note: it is supposed that exclusions are mutually exclusive
 #
 sub exclusionString {
-    my ($self, $pos, $buf, $closurep, @exclusions) = @_;
+    # my ($self, $pos, $buf, $mapbeg, $mapend, $closurep, @exclusions) = @_;
 
-    my ($closure, @args) = @{$closurep};
-    my $match = $self->$closure($pos, $buf, @args);
+    my ($closure, @args) = @{$_[5]};
+    my $match = $_[0]->$closure($_[1], $_[2], $_[3], $_[4], @args);
     return undef if (! defined($match));
 
-    foreach (@exclusions) {
+    foreach (@_[6..$#_]) {
 	my $pos = index($match, $_);
 	if ($pos >= 0) {
 	    substr($match, $pos - length($match), length($match) - $pos, '');
@@ -162,13 +210,13 @@ sub exclusionString_closure {
 # Note: it is supposed that exclusions are mutually exclusive
 #
 sub exclusionRe {
-    my ($self, $pos, $buf, $closurep, @exclusions) = @_;
+    # my ($self, $pos, $buf, $mapbeg, $mapend, $closurep, @exclusions) = @_;
 
-    my ($closure, @args) = @{$closurep};
-    my $match = $self->$closure($pos, $buf, @args);
+    my ($closure, @args) = @{$_[5]};
+    my $match = $_[0]->$closure($_[1], $_[2], $_[3], $_[4], @args);
     return undef if (! defined($match));
 
-    foreach (@exclusions) {
+    foreach (@_[6..$#_]) {
 	if ($match =~ $_) {
 	    substr($match, $-[0] - length($match), length($match) - $-[0], '');
 	    if (length($match) <= 0) {
@@ -185,13 +233,13 @@ sub exclusionRe_closure {
 }
 
 sub group {
-    my ($self, $pos, $buf, @groupClosures) = @_;
+    # my ($self, $pos, $buf, $mapbeg, $mapend, @groupClosures) = @_;
 
     my $full = undef;
-    my $curpos = $pos;
-    foreach (@_[3..$#_]) {
+    my $curpos = $_[1];
+    foreach (@_[5..$#_]) {
 	my ($closure, @args) = @{$_};
-	my $match = $self->$closure($curpos, $buf, @args);
+	my $match = $_[0]->$closure($curpos, $_[2], $_[3], $_[4], @args);
 	if (! defined($match)) {
 	    $full = undef;
 	    last;
@@ -199,7 +247,6 @@ sub group {
 	$full .= $match;
 	my $length = length($match);
 	$curpos += $length;
-	substr($buf, 0, $length, '');
     }
 
     return $full;
@@ -221,27 +268,27 @@ sub group_closure {
 # '*' is: {min,max}={0,undef}
 #
 sub quantified {
-    my ($self, $pos, $buf, $closurep, $min, $max) = @_;
+    # my ($self, $pos, $buf, $mapbeg, $mapend, $closurep, $min, $max) = @_;
 
     my $m = 0;
-    my $full = ($min <= 0) ? '': undef;
-    my ($closure, @args) = @{$closurep};
+    my $full = ($_[6] <= 0) ? '': undef;
+    my ($closure, @args) = @{$_[5]};
+    my $pos = $_[1];
     while (++$m) {
-	my $match = $self->$closure($pos, $buf, @args);
+	my $match = $_[0]->$closure($pos, $_[2], $_[3], $_[4], @args);
 	if (defined($match)) {
-	    if (defined($max) && ($m > $max)) {
+	    if (defined($_[7]) && ($m > $_[7])) {
 		last;
 	    }
 	    $full .= $match;
 	} else {
-	    if ($m < $min) {
+	    if ($m < $_[6]) {
 		$full = undef;
 	    }
 	    last;
 	}
 	my $length = length($match);
 	$pos += length($match);
-	substr($buf, 0, $length, '');
     }
 
     return $full;

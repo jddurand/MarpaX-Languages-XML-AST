@@ -89,7 +89,22 @@ END {
     printf STDERR "%-20s %10s %s\n", $_, $stats{$_}{calls}, $stats{$_}{time};
   }
 }
-
+#
+# The whole optiéisation is based on NO manipulation of cached buffer, except
+# substracting from it, which is rather fast (perl's substr() has been
+# defined for that).
+# This mean that $buf always point to current data buffer and nothing else.
+# This buffer could be extended on the stack by the internal maching closure,
+# but this will NOT affect StreamIn knowedge of physical locations for a buffer.
+#
+# For instance:
+# - Suppose that buffer x1 maps to real positions [y11, y12]
+# - The matching routine will need to get data beyond y2
+# - The laters will call StreamIn for another buffer, if any, that will create
+#   a new buffer x2 mapping to [y21, y22], where y21 = y12+1.
+# - buffer x1 could be extended to x1 + part of x2
+# - StreamIn.pm will not know about this, neither this module.
+#
 sub parse {
   my ($self, $input) = @_;
 
@@ -101,10 +116,11 @@ sub parse {
   #
   # Loop on the streamed input buffer
   #
+  my $now = time();
   my $stream = MarpaX::Languages::XML::AST::StreamIn::Match->new(input => $input);
-  my $buf = $stream->getb();
+  my ($buf, $mapbeg, $mapend) = $stream->getb();
   if (defined($buf)) {
-      my $bufLength = length($buf);
+      my $bufLength = $mapend - $mapbeg;
       while (1) {
 	  my @events = @{$recce->events()};
 	  if (! @events) {
@@ -112,68 +128,61 @@ sub parse {
 	      last;
 	  }
 	  my @terminals_expected = map {$_->[0]} @events;
-	  # $log->tracef('pos=%6d : buf=<HERE>%s...</HERE>, expecting %s', $pos, substr($buf, 0, 10), \@terminals_expected);
-	  my ($length, $matched, @tokens) = $self->get_tokens($stream, $pos, $buf, @terminals_expected);
+	  my ($length, $matched, @tokens) = $self->get_tokens($stream, $pos, $buf, $mapbeg, $mapend, @terminals_expected);
 	  if (! @tokens) {
 	      #
-	      # Acceptable only if buf is starting with discard characters or end of buffer
+	      # Acceptable only if $buf is pointing to a discard character or end of buffer
 	      #
-	      if ($buf =~ /^\s+/) {
-		  $length = $+[0] - $-[0];
-		  $log->tracef('pos=%6d : discarding %d characters', $pos, $length);
-	      } elsif ($stream->eof && length($buf) <= 0) {
-		  $log->tracef('pos=%6d : end of stream', $pos);
+	      if ($pos < $mapend && substr($buf, $pos - $mapbeg, 1) =~ /\s/) {
+		  $length++;
+		  $log->tracef('pos=%6d/%6d : discarding character', $pos, $mapend);
+	      } elsif ($stream->eof && $pos == $mapend) {
+		  $log->tracef('pos=%6d/%6d : end of stream', $pos, $mapend);
 		  last;
 	      } else {
-		  die "Failed at position $pos: " . substr($buf, $pos, 10) . "...\nContext:\n" . $recce->show_progress;
+		  die "Failed at position $pos: " . substr($buf, $pos - $mapbeg, 10) . "...\nContext:\n" . $recce->show_progress;
 	      }
 	  } else {
 	      foreach (@tokens) {
 		  #
 		  # The array is a reference to [$name, $value], where value can be undef
 		  #
-		  $log->tracef('pos=%6d : lexeme_alternative("%s", "%s")', $pos, $_, $matched);
+		  # $log->tracef('pos=%6d/%6d : lexeme_alternative("%s", "%s")', $pos, $mapend, $_, $matched);
 		  $recce->lexeme_alternative($_, $matched);
 	      }
-	      $log->tracef('pos=%6d : lexeme_complete(0, 1)', $pos);
+	      # $log->tracef('pos=%6d/%6d : lexeme_complete(0, 1)', $pos, $mapend);
 	      $recce->lexeme_complete(0, 1);
+              $stream->doneMatch($pos);
 	  }
+          $pos += $length;
 	  #
-	  # Match overlapped with next buffer ?
+	  # Next buffer ?
 	  #
-	  if ($bufLength > $length) {
-	      substr($buf, 0, $length, '');
-	  } elsif ($bufLength == $length) {
-	      #
-	      # Exact boundary. We do not know yet if there is another buffer
-	      #
-	      $buf = $stream->getb();
-	      if (! defined($buf)) {
-		  last;
-	      }
-	      $bufLength = length($buf);
-	  } else {
-	      #
-	      # Yes. Per def, there is another buffer after, otherwise no match would have been possible
-	      #
-	      my $lengthToRemove = $length - $bufLength;
-	      $buf = $stream->getb();
-	      substr($buf, 0, $lengthToRemove, '');
-	  }
-	  $pos += $length;
+	  if ($pos >= $mapend) {
+            ($buf, $mapbeg, $mapend) = $stream->getb();
+            $buf = $stream->getb();
+            if (! defined($buf)) {
+              last;
+            }
+            $bufLength = $mapend - $mapbeg;
+          }
+          if (time() - $now > 300) {
+            $log->tracef('Exiting');
+            exit;
+          }
 	  #$recce->resume();
       }
   }
   my $nvalue = 0;
   while (defined($_ = $recce->value)) {
       ++$nvalue;
-      $log->tracef('Value %d: %s', $nvalue, $_);
+      #$log->tracef('Value %d: %s', $nvalue, $_);
   }
   $log->tracef('Total number of values: %d', $nvalue);
 }
 
 sub get_tokens {
-  my ($self, $stream, $pos, $buf, @terminals_expected) = @_;
+  my ($self, $stream, $pos, $buf, $mapbeg, $mapend, @terminals_expected) = @_;
 
   #
   # We maintain an internal status per terminal:
@@ -189,7 +198,7 @@ sub get_tokens {
       my $terminal = $_;
       # $log->tracef('Trying %s', $terminal);
       my $closure = $TOKEN{$terminal};
-      my $match = $stream->$closure($pos, $buf);
+      my $match = $stream->$closure($pos, $buf, $mapbeg, $mapend);
       if (defined($match)) {
 	  # $log->tracef('%s => %s', $terminal, $match);
 	  my $matchLength = length($match);
@@ -241,6 +250,36 @@ our $REG_ATTVALUE_NOT_SQUOTE    = qr/^[^<&']/;
 our $REG_ENTITYVALUE_NOT_DQUOTE = qr/^[^%&"]/;
 our $REG_ENTITYVALUE_NOT_SQUOTE = qr/^[^%&']/;
 
+# -----------------------------------------------------------
+# Range versions of internal regexps. Because this is faster.
+# -----------------------------------------------------------
+our $MAP_NAMESTARTCHAR = [
+                          [ ':', undef],
+                          [ 'A', 'Z' ],
+                          [ '_', undef ],
+                          [ 'a', 'z' ],
+                          [ "\x{C0}", "\x{D6}" ],
+                          [ "\x{D8}", "\x{F6}" ],
+                          [ "\x{F8}", "\x{2FF}" ],
+                          [ "\x{370}", "\x{37D}" ],
+                          [ "\x{37F}", "\x{1FFF}" ],
+                          [ "\x{200C}", "\x{200D}" ],
+                          [ "\x{2070}", "\x{218F}" ],
+                          [ "\x{2C00}", "\x{2FEF}" ],
+                          [ "\x{3001}", "\x{D7FF}" ],
+                          [ "\x{F900}", "\x{FDCF}" ],
+                          [ "\x{FDF0}", "\x{FFFD}" ],
+                          [ "\x{10000}", "\x{EFFFF}"]
+                         ];
+our $MAP_NAMECHAR = [
+                     @{$MAP_NAMESTARTCHAR},
+                     [ '-', undef ],
+                     [ '.', undef ],
+                     [ '0', '9' ],
+                     [ "\x{B7}", undef ],
+                     [ "\x{0300}", "\x{036F}" ],
+                     [ "\x{203F}", "\x{2040}"]
+                    ];
 # -----------------------------------------------------------------------
 # TOKEN closures
 # Arguments are always: ($stream, $pos, $buf)
@@ -249,21 +288,32 @@ our %TOKEN = ();
 #
 # NAME is /${REG_NAMESTARTCHAR}${REG_NAMECHAR}*/
 # ----------------------------------------------
-$TOKEN{NAME} = sub {
-    my ($stream, $pos, $buf) = @_;
+$TOKEN{NAME_OLD} = sub {
+    my $stream = shift;
     
     return
 	$stream->group
-	($pos,
-	 $buf,
+	(@_,
 	 # ${REG_NAMESTARTCHAR}
 	 [ $stream->matchRe_closure, $REG_NAMESTARTCHAR ],
 	 # ${REG_NAMECHAR}*
 	 [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_NAMECHAR ], 0, undef ],
 	);
 };
-$TOKEN{NAME_CLOSURE} = sub {
-    my ($stream, $pos, $buf) = @_;
+$TOKEN{NAME} = sub {
+    my $stream = shift;
+    
+    return
+	$stream->group
+	(@_,
+	 # ${MAP_NAMESTARTCHAR}
+	 [ $stream->matchRanges_closure, @{$MAP_NAMESTARTCHAR} ],
+	 # ${REG_NAMECHAR}*
+	 [ $stream->quantified_closure, [ $stream->matchRanges_closure, @{$MAP_NAMECHAR} ], 0, undef ],
+	);
+};
+$TOKEN{NAME_CLOSURE_OLD} = sub {
+    my $stream = shift;
     
     return
 	[ $stream->group_closure,
@@ -273,18 +323,28 @@ $TOKEN{NAME_CLOSURE} = sub {
 	  [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_NAMECHAR ], 0, undef ],
 	];
 };
+$TOKEN{NAME_CLOSURE} = sub {
+    my $stream = shift;
+    
+    return
+	[ $stream->group_closure,
+          # ${MAP_NAMESTARTCHAR}
+          [ $stream->matchRanges_closure, @{$MAP_NAMESTARTCHAR} ],
+          # ${REG_NAMECHAR}*
+          [ $stream->quantified_closure, [ $stream->matchRanges_closure, @{$MAP_NAMECHAR} ], 0, undef ],
+	];
+};
 our $TOKEN_NAME_CLOSURE = $TOKEN{NAME_CLOSURE};
 #
 # S is /${REG_S}+/
 # ----------------
 $TOKEN{S} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	# ${REG_S}+
 	$stream->quantified
-	($pos,
-	 $buf,
+	(@_,
 	 [ $stream->matchRe_closure, $REG_S ],
 	 1,
 	 undef);
@@ -293,13 +353,12 @@ $TOKEN{S} = sub {
 # NMTOKEN is /${REG_NAMECHAR}+/
 # -----------------------------
 $TOKEN{NMTOKEN} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	# ${REG_NAMECHAR}+
 	$stream->quantified
-	($pos,
-	 $buf,
+	(@_,
 	 [ $stream->matchRe_closure, $REG_NAMECHAR ],
 	 1,
 	 undef);
@@ -308,12 +367,11 @@ $TOKEN{NMTOKEN} = sub {
 # SYSTEMLITERAL is /"${REG_NOT_DQUOTE}*"/ or /'${REG_NOT_SQUOTE}*'/
 # ------------------------------------------------------------------
 $TOKEN{SYSTEMLITERAL} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	$stream->alternative
-	($pos,
-	 $buf,
+	(@_,
 	 [ $stream->group_closure,
 	   # "
 	   [ $stream->matchChar_closure, '"' ],
@@ -336,12 +394,11 @@ $TOKEN{SYSTEMLITERAL} = sub {
 # PUDIDLITERAL is /"${REG_PUBIDCHAR_NOT_DQUOTE}*"/ or /'${REG_PUBIDCHAR_NOT_SQUOTE}*'/
 # ------------------------------------------------------------------------------------
 $TOKEN{PUBIDLITERAL} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	$stream->alternative,
-	($pos,
-	 $buf,
+	(@_,
 	 [ $stream->group_closure,
 	   # "
 	   [ $stream->matchChar_closure, '"' ],
@@ -364,12 +421,11 @@ $TOKEN{PUBIDLITERAL} = sub {
 # CHARDATA is /${REG_CHARDATA}*/ minus the sequence ']]>'
 # -------------------------------------------------------
 $TOKEN{CHARDATA} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	$stream->exclusionString
-	($pos,
-	 $buf,
+	(@_,
 	 # ${REG_CHARDATA}*
 	 [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_CHARDATA ], 0, undef ],
 	 ']]>',
@@ -379,12 +435,11 @@ $TOKEN{CHARDATA} = sub {
 # CDATA is /${REG_CHAR}*/ minus the sequence ']]>'
 # ------------------------------------------------
 $TOKEN{CDATA} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	$stream->exclusionString
-	($pos,
-	 $buf,
+	(@_,
 	 # ${REG_CHAR}*
 	 [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_CHAR ], 0, undef ],
 	 ']]>',
@@ -394,12 +449,11 @@ $TOKEN{CDATA} = sub {
 # COMMENT is CHAR* minus the sequence '--'
 # ----------------------------------------
 $TOKEN{COMMENT} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	$stream->exclusionString
-	($pos,
-	 $buf,
+	(@_,
 	 # ${REG_CHAR}*
 	 [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_CHAR ], 0, undef ],
 	 '--',
@@ -411,13 +465,12 @@ $TOKEN{COMMENT} = sub {
 # Perl does not like $TOKEN{NAME}(...)
 our $TOKEN_NAME = $TOKEN{NAME};
 $TOKEN{PITARGET} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	$stream->exclusionRe
-	($pos,
-	 $buf,
-	 &$TOKEN_NAME_CLOSURE($stream, $pos, $buf),
+	(@_,
+	 $stream->$TOKEN_NAME_CLOSURE(@_),
 	 /xml/i
 	)
 };
@@ -425,12 +478,11 @@ $TOKEN{PITARGET} = sub {
 # PI_INTERIOR is CHAR* minus the sequence '?>'
 # --------------------------------------------
 $TOKEN{PI_INTERIOR} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	$stream->exclusionString
-	($pos,
-	 $buf,
+	(@_,
 	 # ${REG_CHAR}*
 	 [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_CHAR ], 0, undef ],
 	 '?>',
@@ -440,12 +492,11 @@ $TOKEN{PI_INTERIOR} = sub {
 # VERSIONNUM is /1.${REG_DIGIT}+/
 # -------------------------------
 $TOKEN{VERSIONNUM} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	$stream->group
-	($pos,
-	 $buf,
+	(@_,
 	 # 1.
 	 [ $stream->matchString_closure, '1.' ],
 	 # [0-9]+
@@ -456,12 +507,11 @@ $TOKEN{VERSIONNUM} = sub {
 # IGNORE_INTERIOR is /${REG_CHAR}*/ minus the sequence '<![' or ']]>'
 # -------------------------------------------------------------------
 $TOKEN{IGNORE_INTERIOR} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	$stream->exclusionString
-	($pos,
-	 $buf,
+	(@_,
 	 # ${REG_CHAR}*
 	 [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_CHAR ], 0, undef ],
 	 '<![',
@@ -472,29 +522,28 @@ $TOKEN{IGNORE_INTERIOR} = sub {
 # ENTITYREF is /&${NAME};/
 # --------------------------------
 $TOKEN{ENTITYREF} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	$stream->group
-	($pos,
-	 $buf,
+	(@_,
 	 # &
 	 [ $stream->matchString_closure, '&' ],
 	 # ${NAME}
-	 &$TOKEN_NAME_CLOSURE($stream, $pos, $buf),
+	 $stream->$TOKEN_NAME_CLOSURE(@_),
 	 # ;
 	 [ $stream->matchString_closure, ';' ],
 	);
 };
 $TOKEN{ENTITYREF_CLOSURE} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	[ $stream->group_closure,
 	  # &
 	  [ $stream->matchString_closure, '&' ],
 	  # ${NAME}
-	  &$TOKEN_NAME_CLOSURE($stream, $pos, $buf),
+	  $stream->$TOKEN_NAME_CLOSURE(@_),
 	  # ;
 	  [ $stream->matchString_closure, ';' ],
 	];
@@ -504,29 +553,28 @@ our $TOKEN_ENTITYREF_CLOSURE = $TOKEN{ENTITYREF_CLOSURE};
 # PEREFERENCE is /%${REG_NAME};/
 # ------------------------------
 $TOKEN{PEREFERENCE} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	$stream->group
-	($pos,
-	 $buf,
+	(@_,
 	 # %
 	 [ $stream->matchString_closure, '&' ],
 	 # ${NAME}
-	 &$TOKEN_NAME_CLOSURE($stream, $pos, $buf),
+	 $stream->$TOKEN_NAME_CLOSURE(@_),
 	 # ;
 	 [ $stream->matchString_closure, ';' ],
 	);
 };
 $TOKEN{PEREFERENCE_CLOSURE} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	[ $stream->group_closure,
 	  # %
 	  [ $stream->matchString_closure, '&' ],
 	  # ${NAME}
-	  &$TOKEN_NAME_CLOSURE($stream, $pos, $buf),
+	  $stream->$TOKEN_NAME_CLOSURE(@_),
 	  # ;
 	  [ $stream->matchString_closure, ';' ],
 	];
@@ -536,12 +584,11 @@ our $TOKEN_PEREFERENCE_CLOSURE = $TOKEN{PEREFERENCE_CLOSURE};
 # ENCNAME is /${REG_ALPHA}${REG_ENCNAME_REST}*/
 # ---------------------------------------------
 $TOKEN{ENCNAME} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	$stream->group
-	($pos,
-	 $buf,
+	(@_,
 	 # ${REG_ALPHA}
 	 [ $stream->matchRe_closure, $REG_ALPHA ],
 	 # ${REG_ENCNAME_REST}*
@@ -553,7 +600,7 @@ $TOKEN{ENCNAME} = sub {
 #         or /&#x${REG_HEXDIGIT}+;/
 # ---------------------------------
 $TOKEN{CHARREF_INTERIOR_1_CLOSURE} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	[ $stream->group_closure, 
@@ -567,7 +614,7 @@ $TOKEN{CHARREF_INTERIOR_1_CLOSURE} = sub {
 };
 our $TOKEN_CHARREF_INTERIOR_1_CLOSURE = $TOKEN{CHARREF_INTERIOR_1_CLOSURE};
 $TOKEN{CHARREF_INTERIOR_2_CLOSURE} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	[ $stream->group_closure, 
@@ -581,23 +628,22 @@ $TOKEN{CHARREF_INTERIOR_2_CLOSURE} = sub {
 };
 our $TOKEN_CHARREF_INTERIOR_2_CLOSURE = $TOKEN{CHARREF_INTERIOR_2_CLOSURE};
 $TOKEN{CHARREF} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	$stream->alternative
-	($pos,
-	 $buf,
-	 &$TOKEN_CHARREF_INTERIOR_1_CLOSURE($stream, $pos, $buf),
-	 &$TOKEN_CHARREF_INTERIOR_2_CLOSURE($stream, $pos, $buf),
+	(@_,
+	 $stream->$TOKEN_CHARREF_INTERIOR_1_CLOSURE(@_),
+	 $stream->$TOKEN_CHARREF_INTERIOR_2_CLOSURE(@_),
 	);
 };
 $TOKEN{CHARREF_CLOSURE} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	[ $stream->alternative_closure,
-	 &$TOKEN_CHARREF_INTERIOR_1_CLOSURE($stream, $pos, $buf),
-	 &$TOKEN_CHARREF_INTERIOR_2_CLOSURE($stream, $pos, $buf),
+          $stream->$TOKEN_CHARREF_INTERIOR_1_CLOSURE(@_),
+          $stream->$TOKEN_CHARREF_INTERIOR_2_CLOSURE(@_),
 	];
 };
 our $TOKEN_CHARREF_CLOSURE = $TOKEN{CHARREF_CLOSURE};
@@ -608,23 +654,22 @@ our $TOKEN_CHARREF_CLOSURE = $TOKEN{CHARREF_CLOSURE};
 # where Reference is: EntityRef | CharRef
 # ------------------------------------------
 $TOKEN{REFERENCE_CLOSURE} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return
 	[ $stream->alternative_closure,
 	  # EntityRef
-	  &$TOKEN_ENTITYREF_CLOSURE($stream, $pos, $buf),
+	  $stream->$TOKEN_ENTITYREF_CLOSURE(@_),
 	  # CharRef
-	  &$TOKEN_CHARREF_CLOSURE($stream, $pos, $buf),
+	  $stream->$TOKEN_CHARREF_CLOSURE(@_),
 	];
 };
 our $TOKEN_REFERENCE_CLOSURE = $TOKEN{REFERENCE_CLOSURE};
 $TOKEN{ATTVALUE} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return $stream->alternative
-	($pos,
-	 $buf,
+	(@_,
 	 [ $stream->group_closure,
 	   # "
 	   [ $stream->matchChar_closure, '"' ],
@@ -634,7 +679,7 @@ $TOKEN{ATTVALUE} = sub {
 	       # ${REG_ATTVALUE_NOT_DQUOTE}
 	       [ $stream->matchRe_closure, $REG_ATTVALUE_NOT_DQUOTE ],
 	       # Reference
-	       &$TOKEN_REFERENCE_CLOSURE($stream, $pos, $buf),
+	       $stream->$TOKEN_REFERENCE_CLOSURE(@_),
 	     ],
 	     0,
 	     undef
@@ -651,7 +696,7 @@ $TOKEN{ATTVALUE} = sub {
 	       # ${REG_ATTVALUE_NOT_SQUOTE}
 	       [ $stream->matchRe_closure, $REG_ATTVALUE_NOT_SQUOTE ],
 	       # Reference
-	       &$TOKEN_REFERENCE_CLOSURE($stream, $pos, $buf),
+	       $stream->$TOKEN_REFERENCE_CLOSURE(@_),
 	     ],
 	     0,
 	     undef
@@ -669,11 +714,10 @@ $TOKEN{ATTVALUE} = sub {
 # where Reference is: EntityRef | CharRef
 # ------------------------------------------
 $TOKEN{ENTITYVALUE} = sub {
-    my ($stream, $pos, $buf) = @_;
+    my $stream = shift;
     
     return $stream->alternative
-	($pos,
-	 $buf,
+	(@_,
 	 [ $stream->group_closure,
 	   # "
 	   [ $stream->matchChar_closure, '"' ],
@@ -683,9 +727,9 @@ $TOKEN{ENTITYVALUE} = sub {
 	       # ${REG_ENTITYVALUE_NOT_DQUOTE}
 	       [ $stream->matchRe_closure, $REG_ENTITYVALUE_NOT_DQUOTE ],
 	       # PEReference
-	       &$TOKEN_PEREFERENCE_CLOSURE($stream, $pos, $buf),
+	       $stream->$TOKEN_PEREFERENCE_CLOSURE(@_),
 	       # Reference
-	       &$TOKEN_REFERENCE_CLOSURE($stream, $pos, $buf),
+	       $stream->$TOKEN_REFERENCE_CLOSURE(@_),
 	     ],
 	     0,
 	     undef
@@ -703,9 +747,9 @@ $TOKEN{ENTITYVALUE} = sub {
 	       # ${REG_ENTITYVALUE_NOT_SQUOTE}
 	       [ $stream->matchRe_closure, $REG_ENTITYVALUE_NOT_SQUOTE ],
 	       # PEReference
-	       &$TOKEN_PEREFERENCE_CLOSURE($stream, $pos, $buf),
+	       $stream->$TOKEN_PEREFERENCE_CLOSURE(@_),
 	       # Reference
-	       &$TOKEN_REFERENCE_CLOSURE($stream, $pos, $buf),
+	       $stream->$TOKEN_REFERENCE_CLOSURE(@_),
 	     ],
 	     0,
 	     undef
@@ -719,73 +763,73 @@ $TOKEN{ENTITYVALUE} = sub {
 #
 # Fixed strings
 #
-$TOKEN{X20}              = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, "\x{20}") };
-$TOKEN{DQUOTE}           = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '"') };
-$TOKEN{SQUOTE}           = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, "'") };
-$TOKEN{EQUAL}            = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '=') };
-$TOKEN{DOCTYPE_END}      = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '>') };
-$TOKEN{LBRACKET}         = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '[') };
-$TOKEN{RBRACKET}         = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, ']') };
-$TOKEN{STAG_BEG}         = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '<') };
-$TOKEN{STAG_END}         = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '>') };
-$TOKEN{ETAG_END}         = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '>') };
-$TOKEN{EMPTYELEMTAG_BEG} = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '<') };
-$TOKEN{ELEMENTDECL_END}  = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '>') };
-$TOKEN{QUESTION_MARK}    = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '?') };
-$TOKEN{STAR}             = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '*') };
-$TOKEN{PLUS}             = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '+') };
-$TOKEN{LPAREN}           = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '(') };
-$TOKEN{RPAREN}           = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, ')') };
-$TOKEN{PIPE}             = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '|') };
-$TOKEN{COMMA}            = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, ',') };
-$TOKEN{ATTLIST_END}      = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '>') };
-$TOKEN{EDECL_END}        = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '>') };
-$TOKEN{PERCENT}          = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '%') };
-$TOKEN{NOTATION_END}     = sub { my ($stream, $pos, $buf) = @_; return $stream->matchChar($pos, $buf, '>') };
+$TOKEN{X20}              = sub { my $stream = shift; return $stream->matchChar(@_, "\x{20}") };
+$TOKEN{DQUOTE}           = sub { my $stream = shift; return $stream->matchChar(@_, '"') };
+$TOKEN{SQUOTE}           = sub { my $stream = shift; return $stream->matchChar(@_, "'") };
+$TOKEN{EQUAL}            = sub { my $stream = shift; return $stream->matchChar(@_, '=') };
+$TOKEN{DOCTYPE_END}      = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
+$TOKEN{LBRACKET}         = sub { my $stream = shift; return $stream->matchChar(@_, '[') };
+$TOKEN{RBRACKET}         = sub { my $stream = shift; return $stream->matchChar(@_, ']') };
+$TOKEN{STAG_BEG}         = sub { my $stream = shift; return $stream->matchChar(@_, '<') };
+$TOKEN{STAG_END}         = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
+$TOKEN{ETAG_END}         = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
+$TOKEN{EMPTYELEMTAG_BEG} = sub { my $stream = shift; return $stream->matchChar(@_, '<') };
+$TOKEN{ELEMENTDECL_END}  = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
+$TOKEN{QUESTION_MARK}    = sub { my $stream = shift; return $stream->matchChar(@_, '?') };
+$TOKEN{STAR}             = sub { my $stream = shift; return $stream->matchChar(@_, '*') };
+$TOKEN{PLUS}             = sub { my $stream = shift; return $stream->matchChar(@_, '+') };
+$TOKEN{LPAREN}           = sub { my $stream = shift; return $stream->matchChar(@_, '(') };
+$TOKEN{RPAREN}           = sub { my $stream = shift; return $stream->matchChar(@_, ')') };
+$TOKEN{PIPE}             = sub { my $stream = shift; return $stream->matchChar(@_, '|') };
+$TOKEN{COMMA}            = sub { my $stream = shift; return $stream->matchChar(@_, ',') };
+$TOKEN{ATTLIST_END}      = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
+$TOKEN{EDECL_END}        = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
+$TOKEN{PERCENT}          = sub { my $stream = shift; return $stream->matchChar(@_, '%') };
+$TOKEN{NOTATION_END}     = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
 
-$TOKEN{COMMENT_BEG}      = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '<!--') };
-$TOKEN{COMMENT_END}      = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '-->') };
-$TOKEN{PI_BEG}           = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '<?') };
-$TOKEN{PI_END}           = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '?>') };
-$TOKEN{CDSTART}          = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '<![CDATA[') };
-$TOKEN{CDEND}            = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, ']]>') };
-$TOKEN{XML_BEG}          = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '<?xml') };
-$TOKEN{XML_END}          = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '?>') };
-$TOKEN{VERSION}          = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'version') };
-$TOKEN{DOCTYPE_BEG}      = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '<!DOCTYPE') };
-$TOKEN{STANDALONE}       = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'standalone') };
-$TOKEN{YES}              = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'yes') };
-$TOKEN{NO}               = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'no') };
-$TOKEN{ETAG_BEG}         = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '</') };
-$TOKEN{EMPTYELEMTAG_END} = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '/>') };
-$TOKEN{ELEMENTDECL_BEG}  = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '<!ELEMENT') };
-$TOKEN{EMPTY}            = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'EMPTY') };
-$TOKEN{ANY}              = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'ANY') };
-$TOKEN{RPARENSTAR}       = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '(*') };
-$TOKEN{PCDATA}           = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '#PCDATA') };
-$TOKEN{ATTLIST_BEG}      = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '<!ATTLIST') };
-$TOKEN{STRINGTYPE}       = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'CDATA') };
-$TOKEN{TYPE_ID}          = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'ID') };
-$TOKEN{TYPE_IDREF}       = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'IDREF') };
-$TOKEN{TYPE_IDREFS}      = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'IDREFS') };
-$TOKEN{TYPE_ENTITY}      = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'ENTITY') };
-$TOKEN{TYPE_ENTITIES}    = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'ENTITIES') };
-$TOKEN{TYPE_NMTOKEN}     = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'NMTOKEN') };
-$TOKEN{TYPE_NMTOKENS}    = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'NMTOKENS') };
-$TOKEN{NOTATION}         = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'NOTATION') };
-$TOKEN{REQUIRED}         = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '#REQUIRED') };
-$TOKEN{IMPLIED}          = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '#IMPLIED') };
-$TOKEN{FIXED}            = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '#FIXED') };
-$TOKEN{SECT_BEG}         = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '<![') };
-$TOKEN{INCLUDE}          = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'INCLUDE') };
-$TOKEN{SECT_END}         = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, ']]>') };
-$TOKEN{IGNORE}           = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'IGNORE') };
-$TOKEN{EDECL_BEG}        = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '<!ENTITY') };
-$TOKEN{SYSTEM}           = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'SYSTEM') };
-$TOKEN{PUBLIC}           = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'PUBLIC') };
-$TOKEN{NDATA}            = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'NDATA') };
-$TOKEN{ENCODING}         = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, 'encoding') };
-$TOKEN{NOTATION_BEG}     = sub { my ($stream, $pos, $buf) = @_; return $stream->matchString($pos, $buf, '<!NOTATION') };
+$TOKEN{COMMENT_BEG}      = sub { my $stream = shift; return $stream->matchString(@_, '<!--') };
+$TOKEN{COMMENT_END}      = sub { my $stream = shift; return $stream->matchString(@_, '-->') };
+$TOKEN{PI_BEG}           = sub { my $stream = shift; return $stream->matchString(@_, '<?') };
+$TOKEN{PI_END}           = sub { my $stream = shift; return $stream->matchString(@_, '?>') };
+$TOKEN{CDSTART}          = sub { my $stream = shift; return $stream->matchString(@_, '<![CDATA[') };
+$TOKEN{CDEND}            = sub { my $stream = shift; return $stream->matchString(@_, ']]>') };
+$TOKEN{XML_BEG}          = sub { my $stream = shift; return $stream->matchString(@_, '<?xml') };
+$TOKEN{XML_END}          = sub { my $stream = shift; return $stream->matchString(@_, '?>') };
+$TOKEN{VERSION}          = sub { my $stream = shift; return $stream->matchString(@_, 'version') };
+$TOKEN{DOCTYPE_BEG}      = sub { my $stream = shift; return $stream->matchString(@_, '<!DOCTYPE') };
+$TOKEN{STANDALONE}       = sub { my $stream = shift; return $stream->matchString(@_, 'standalone') };
+$TOKEN{YES}              = sub { my $stream = shift; return $stream->matchString(@_, 'yes') };
+$TOKEN{NO}               = sub { my $stream = shift; return $stream->matchString(@_, 'no') };
+$TOKEN{ETAG_BEG}         = sub { my $stream = shift; return $stream->matchString(@_, '</') };
+$TOKEN{EMPTYELEMTAG_END} = sub { my $stream = shift; return $stream->matchString(@_, '/>') };
+$TOKEN{ELEMENTDECL_BEG}  = sub { my $stream = shift; return $stream->matchString(@_, '<!ELEMENT') };
+$TOKEN{EMPTY}            = sub { my $stream = shift; return $stream->matchString(@_, 'EMPTY') };
+$TOKEN{ANY}              = sub { my $stream = shift; return $stream->matchString(@_, 'ANY') };
+$TOKEN{RPARENSTAR}       = sub { my $stream = shift; return $stream->matchString(@_, '(*') };
+$TOKEN{PCDATA}           = sub { my $stream = shift; return $stream->matchString(@_, '#PCDATA') };
+$TOKEN{ATTLIST_BEG}      = sub { my $stream = shift; return $stream->matchString(@_, '<!ATTLIST') };
+$TOKEN{STRINGTYPE}       = sub { my $stream = shift; return $stream->matchString(@_, 'CDATA') };
+$TOKEN{TYPE_ID}          = sub { my $stream = shift; return $stream->matchString(@_, 'ID') };
+$TOKEN{TYPE_IDREF}       = sub { my $stream = shift; return $stream->matchString(@_, 'IDREF') };
+$TOKEN{TYPE_IDREFS}      = sub { my $stream = shift; return $stream->matchString(@_, 'IDREFS') };
+$TOKEN{TYPE_ENTITY}      = sub { my $stream = shift; return $stream->matchString(@_, 'ENTITY') };
+$TOKEN{TYPE_ENTITIES}    = sub { my $stream = shift; return $stream->matchString(@_, 'ENTITIES') };
+$TOKEN{TYPE_NMTOKEN}     = sub { my $stream = shift; return $stream->matchString(@_, 'NMTOKEN') };
+$TOKEN{TYPE_NMTOKENS}    = sub { my $stream = shift; return $stream->matchString(@_, 'NMTOKENS') };
+$TOKEN{NOTATION}         = sub { my $stream = shift; return $stream->matchString(@_, 'NOTATION') };
+$TOKEN{REQUIRED}         = sub { my $stream = shift; return $stream->matchString(@_, '#REQUIRED') };
+$TOKEN{IMPLIED}          = sub { my $stream = shift; return $stream->matchString(@_, '#IMPLIED') };
+$TOKEN{FIXED}            = sub { my $stream = shift; return $stream->matchString(@_, '#FIXED') };
+$TOKEN{SECT_BEG}         = sub { my $stream = shift; return $stream->matchString(@_, '<![') };
+$TOKEN{INCLUDE}          = sub { my $stream = shift; return $stream->matchString(@_, 'INCLUDE') };
+$TOKEN{SECT_END}         = sub { my $stream = shift; return $stream->matchString(@_, ']]>') };
+$TOKEN{IGNORE}           = sub { my $stream = shift; return $stream->matchString(@_, 'IGNORE') };
+$TOKEN{EDECL_BEG}        = sub { my $stream = shift; return $stream->matchString(@_, '<!ENTITY') };
+$TOKEN{SYSTEM}           = sub { my $stream = shift; return $stream->matchString(@_, 'SYSTEM') };
+$TOKEN{PUBLIC}           = sub { my $stream = shift; return $stream->matchString(@_, 'PUBLIC') };
+$TOKEN{NDATA}            = sub { my $stream = shift; return $stream->matchString(@_, 'NDATA') };
+$TOKEN{ENCODING}         = sub { my $stream = shift; return $stream->matchString(@_, 'encoding') };
+$TOKEN{NOTATION_BEG}     = sub { my $stream = shift; return $stream->matchString(@_, '<!NOTATION') };
 
 1;
 __DATA__
