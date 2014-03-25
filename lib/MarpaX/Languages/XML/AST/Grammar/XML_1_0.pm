@@ -197,7 +197,7 @@ sub get_tokens {
   my %terminals = ();
   foreach (@terminals_expected) {
       my $terminal = $_;
-      $log->tracef('Trying %s', $terminal);
+      # $log->tracef('Trying %s', $terminal);
       my $closure = $TOKEN{$terminal};
       my $match = $stream->$closure($pos, $buf, $mapbeg, $mapend);
       if (defined($match)) {
@@ -251,39 +251,6 @@ our $REG_ATTVALUE_NOT_SQUOTE    = qr/^[^<&']/;
 our $REG_ENTITYVALUE_NOT_DQUOTE = qr/^[^%&"]/;
 our $REG_ENTITYVALUE_NOT_SQUOTE = qr/^[^%&']/;
 
-# -----------------------------------------------------------
-# Range versions of internal regexps. Because this is faster.
-# -----------------------------------------------------------
-our $MAP_NAMESTARTCHAR = [
-                          #
-                          # We put the most probables first
-                          #
-                          [ 'A'         , 'Z'        ],
-                          [ 'a'         , 'z'        ],
-                          [ '_'                      ],
-                          [ ':'                      ],
-                          [ "\x{C0}"    , "\x{D6}"   ],
-                          [ "\x{D8}"    , "\x{F6}"   ],
-                          [ "\x{F8}"    , "\x{2FF}"  ],
-                          [ "\x{370}"   , "\x{37D}"  ],
-                          [ "\x{37F}"   , "\x{1FFF}" ],
-                          [ "\x{200C}"  , "\x{200D}" ],
-                          [ "\x{2070}"  , "\x{218F}" ],
-                          [ "\x{2C00}"  , "\x{2FEF}" ],
-                          [ "\x{3001}"  , "\x{D7FF}" ],
-                          [ "\x{F900}"  , "\x{FDCF}" ],
-                          [ "\x{FDF0}"  , "\x{FFFD}" ],
-                          [ "\x{10000}" , "\x{EFFFF}"]
-                         ];
-our $MAP_NAMECHAR = [
-                     @{$MAP_NAMESTARTCHAR},
-                     [ '-', undef ],
-                     [ '.', undef ],
-                     [ '0', '9' ],
-                     [ "\x{B7}", undef ],
-                     [ "\x{0300}", "\x{036F}" ],
-                     [ "\x{203F}", "\x{2040}"]
-                    ];
 # -----------------------------------------------------------------------
 # TOKEN closures
 # Arguments are always: ($stream, $pos, $buf)
@@ -292,7 +259,7 @@ our %TOKEN = ();
 #
 # NAME is /${REG_NAMESTARTCHAR}${REG_NAMECHAR}*/
 # ----------------------------------------------
-$TOKEN{NAME_OLD} = sub {
+$TOKEN{NAME} = sub {
     my $stream = shift;
     
     return
@@ -304,19 +271,7 @@ $TOKEN{NAME_OLD} = sub {
 	 [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_NAMECHAR ], 0, undef ],
 	);
 };
-$TOKEN{NAME} = sub {
-    my $stream = shift;
-    
-    return
-	$stream->group
-	(@_,
-	 # ${MAP_NAMESTARTCHAR}
-	 [ $stream->matchRanges_closure, @{$MAP_NAMESTARTCHAR} ],
-	 # ${REG_NAMECHAR}*
-	 [ $stream->quantified_closure, [ $stream->matchRanges_closure, @{$MAP_NAMECHAR} ], 0, undef ],
-	);
-};
-$TOKEN{NAME_CLOSURE_OLD} = sub {
+$TOKEN{NAME_CLOSURE} = sub {
     my $stream = shift;
     
     return
@@ -325,17 +280,6 @@ $TOKEN{NAME_CLOSURE_OLD} = sub {
 	  [ $stream->matchRe_closure, $REG_NAMESTARTCHAR ],
 	  # ${REG_NAMECHAR}*
 	  [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_NAMECHAR ], 0, undef ],
-	];
-};
-$TOKEN{NAME_CLOSURE} = sub {
-    my $stream = shift;
-    
-    return
-	[ $stream->group_closure,
-          # ${MAP_NAMESTARTCHAR}
-          [ $stream->matchRanges_closure, @{$MAP_NAMESTARTCHAR} ],
-          # ${REG_NAMECHAR}*
-          [ $stream->quantified_closure, [ $stream->matchRanges_closure, @{$MAP_NAMECHAR} ], 0, undef ],
 	];
 };
 our $TOKEN_NAME_CLOSURE = $TOKEN{NAME_CLOSURE};
