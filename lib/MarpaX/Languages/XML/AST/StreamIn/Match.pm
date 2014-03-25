@@ -194,12 +194,12 @@ sub exclusionString {
 	if ($pos >= 0) {
 	    substr($match, $pos - length($match), length($match) - $pos, '');
 	    if (length($match) <= 0) {
-		return 0;
+		return undef;
 	    }
 	}
     }
 
-    return undef;
+    return $match;
 }
 
 sub exclusionString_closure {
@@ -220,12 +220,12 @@ sub exclusionRe {
 	if ($match =~ $_) {
 	    substr($match, $-[0] - length($match), length($match) - $-[0], '');
 	    if (length($match) <= 0) {
-		return 0;
+		return undef;
 	    }
 	}
     }
 
-    return undef;
+    return $match;
 }
 
 sub exclusionRe_closure {
