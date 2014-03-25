@@ -147,7 +147,7 @@ sub parse {
 		  #
 		  # The array is a reference to [$name, $value], where value can be undef
 		  #
-		  # $log->tracef('pos=%6d/%6d : lexeme_alternative("%s", "%s")', $pos, $mapend, $_, $matched);
+		  $log->tracef('pos=%6d/%6d : lexeme_alternative("%s", "%s")', $pos, $mapend, $_, $matched);
 		  $recce->lexeme_alternative($_, $matched);
 	      }
 	      # $log->tracef('pos=%6d/%6d : lexeme_complete(0, 1)', $pos, $mapend);
@@ -159,6 +159,7 @@ sub parse {
 	  # Next buffer ?
 	  #
 	  if ($pos >= $mapend) {
+	      $log->tracef('pos=%6d/%6d : Asking or next buffer', $pos, $mapend);
             ($buf, $mapbeg, $mapend) = $stream->getb();
             $buf = $stream->getb();
             if (! defined($buf)) {
@@ -196,7 +197,7 @@ sub get_tokens {
   my %terminals = ();
   foreach (@terminals_expected) {
       my $terminal = $_;
-      # $log->tracef('Trying %s', $terminal);
+      $log->tracef('Trying %s', $terminal);
       my $closure = $TOKEN{$terminal};
       my $match = $stream->$closure($pos, $buf, $mapbeg, $mapend);
       if (defined($match)) {
@@ -770,14 +771,10 @@ $TOKEN{X20}              = sub { my $stream = shift; return $stream->matchChar(@
 $TOKEN{DQUOTE}           = sub { my $stream = shift; return $stream->matchChar(@_, '"') };
 $TOKEN{SQUOTE}           = sub { my $stream = shift; return $stream->matchChar(@_, "'") };
 $TOKEN{EQUAL}            = sub { my $stream = shift; return $stream->matchChar(@_, '=') };
-$TOKEN{DOCTYPE_END}      = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
 $TOKEN{LBRACKET}         = sub { my $stream = shift; return $stream->matchChar(@_, '[') };
 $TOKEN{RBRACKET}         = sub { my $stream = shift; return $stream->matchChar(@_, ']') };
-$TOKEN{STAG_BEG}         = sub { my $stream = shift; return $stream->matchChar(@_, '<') };
-$TOKEN{STAG_END}         = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
-$TOKEN{ETAG_END}         = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
-$TOKEN{EMPTYELEMTAG_BEG} = sub { my $stream = shift; return $stream->matchChar(@_, '<') };
-$TOKEN{ELEMENTDECL_END}  = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
+$TOKEN{XTAG_BEG}         = sub { my $stream = shift; return $stream->matchChar(@_, '<') };
+$TOKEN{XTAG_END}         = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
 $TOKEN{QUESTION_MARK}    = sub { my $stream = shift; return $stream->matchChar(@_, '?') };
 $TOKEN{STAR}             = sub { my $stream = shift; return $stream->matchChar(@_, '*') };
 $TOKEN{PLUS}             = sub { my $stream = shift; return $stream->matchChar(@_, '+') };
@@ -785,10 +782,7 @@ $TOKEN{LPAREN}           = sub { my $stream = shift; return $stream->matchChar(@
 $TOKEN{RPAREN}           = sub { my $stream = shift; return $stream->matchChar(@_, ')') };
 $TOKEN{PIPE}             = sub { my $stream = shift; return $stream->matchChar(@_, '|') };
 $TOKEN{COMMA}            = sub { my $stream = shift; return $stream->matchChar(@_, ',') };
-$TOKEN{ATTLIST_END}      = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
-$TOKEN{EDECL_END}        = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
 $TOKEN{PERCENT}          = sub { my $stream = shift; return $stream->matchChar(@_, '%') };
-$TOKEN{NOTATION_END}     = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
 
 $TOKEN{COMMENT_BEG}      = sub { my $stream = shift; return $stream->matchString(@_, '<!--') };
 $TOKEN{COMMENT_END}      = sub { my $stream = shift; return $stream->matchString(@_, '-->') };
@@ -1033,20 +1027,22 @@ Squote ::= SQUOTE
 Dquote ::= DQUOTE
 Equal ::= EQUAL
 DoctypeBeg ::= DOCTYPE_BEG
-DoctypeEnd ::= DOCTYPE_END
+DoctypeEnd ::= XTagEnd
 Lbracket ::= LBRACKET
 Rbracket ::= RBRACKET
 Standalone ::= STANDALONE
 Yes ::= YES
 No ::= NO
-STagBeg ::= STAG_BEG
-STagEnd ::= STAG_END
+XTagBeg ::= XTAG_BEG
+STagBeg ::= XTagBeg
+XTagEnd ::= XTAG_END
+STagEnd ::= XTagEnd
 ETagBeg ::= ETAG_BEG
-ETagEnd ::= ETAG_END
-EmptyElemTagBeg ::= EMPTYELEMTAG_BEG
+ETagEnd ::= XTagEnd
+EmptyElemTagBeg ::= XTagBeg
 EmptyElemTagEnd ::= EMPTYELEMTAG_END
 ElementDeclBeg ::= ELEMENTDECL_BEG
-ElementDeclEnd ::= ELEMENTDECL_END
+ElementDeclEnd ::= XTagEnd
 Empty ::= EMPTY
 Any ::= ANY
 QuestionMark ::= QUESTION_MARK
@@ -1058,7 +1054,7 @@ RparenStar ::= RPARENSTAR
 Pipe ::= PIPE
 Comma ::= COMMA
 AttlistBeg ::= ATTLIST_BEG
-AttlistEnd ::= ATTLIST_END
+AttlistEnd ::= XTagEnd
 TypeId ::= TYPE_ID
 TypeIdref ::= TYPE_IDREF
 TypeIdrefs ::= TYPE_IDREFS
@@ -1068,7 +1064,7 @@ TypeNmtoken ::= TYPE_NMTOKEN
 TypeNmtokens ::= TYPE_NMTOKENS
 Notation ::= NOTATION
 NotationBeg ::= NOTATION_BEG
-NotationEnd ::= NOTATION_END
+NotationEnd ::= XTagEnd
 Required ::= REQUIRED
 Implied ::= IMPLIED
 Fixed ::= FIXED
@@ -1076,7 +1072,7 @@ SectBeg ::= SECT_BEG
 SectEnd ::= SECT_END
 Include ::= INCLUDE
 EdeclBeg ::= EDECL_BEG
-EdeclEnd ::= EDECL_END
+EdeclEnd ::= XTagEnd
 Percent ::= PERCENT
 System ::= SYSTEM
 Public ::= PUBLIC
@@ -1116,20 +1112,16 @@ SQUOTE           ~ _DUMMY
 EQUAL            ~ _DUMMY
 VERSIONNUM       ~ _DUMMY
 DOCTYPE_BEG      ~ _DUMMY
-DOCTYPE_END      ~ _DUMMY
 LBRACKET         ~ _DUMMY
 RBRACKET         ~ _DUMMY
 STANDALONE       ~ _DUMMY
 YES              ~ _DUMMY
 NO               ~ _DUMMY
-STAG_BEG         ~ _DUMMY
-STAG_END         ~ _DUMMY
+XTAG_BEG         ~ _DUMMY
+XTAG_END         ~ _DUMMY
 ETAG_BEG         ~ _DUMMY
-ETAG_END         ~ _DUMMY
-EMPTYELEMTAG_BEG ~ _DUMMY
 EMPTYELEMTAG_END ~ _DUMMY
 ELEMENTDECL_BEG  ~ _DUMMY
-ELEMENTDECL_END  ~ _DUMMY
 EMPTY            ~ _DUMMY
 ANY              ~ _DUMMY
 QUESTION_MARK    ~ _DUMMY
@@ -1142,7 +1134,6 @@ COMMA            ~ _DUMMY
 RPARENSTAR       ~ _DUMMY
 PCDATA           ~ _DUMMY
 ATTLIST_BEG      ~ _DUMMY
-ATTLIST_END      ~ _DUMMY
 STRINGTYPE       ~ _DUMMY
 TYPE_ID          ~ _DUMMY
 TYPE_IDREF       ~ _DUMMY
@@ -1164,7 +1155,6 @@ CHARREF          ~ _DUMMY
 ENTITYREF        ~ _DUMMY
 PEREFERENCE      ~ _DUMMY
 EDECL_BEG        ~ _DUMMY
-EDECL_END        ~ _DUMMY
 PERCENT          ~ _DUMMY
 SYSTEM           ~ _DUMMY
 PUBLIC           ~ _DUMMY
@@ -1172,7 +1162,6 @@ NDATA            ~ _DUMMY
 ENCODING         ~ _DUMMY
 ENCNAME          ~ _DUMMY
 NOTATION_BEG     ~ _DUMMY
-NOTATION_END     ~ _DUMMY
 ATTVALUE         ~ _DUMMY
 ENTITYVALUE      ~ _DUMMY
 #
@@ -1204,20 +1193,16 @@ event SQUOTE           = predicted Squote
 event EQUAL            = predicted Equal
 event VERSIONNUM       = predicted VersionNum
 event DOCTYPE_BEG      = predicted DoctypeBeg
-event DOCTYPE_END      = predicted DoctypeEnd
 event LBRACKET         = predicted Lbracket
 event RBRACKET         = predicted Rbracket
 event STANDALONE       = predicted Standalone
 event YES              = predicted Yes
 event NO               = predicted No
-event STAG_BEG         = predicted STagBeg
-event STAG_END         = predicted STagEnd
+event XTAG_BEG         = predicted XTagBeg
+event XTAG_END         = predicted XTagEnd
 event ETAG_BEG         = predicted ETagBeg
-event ETAG_END         = predicted ETagEnd
-event EMPTYELEMTAG_BEG = predicted EmptyElemTagBeg
 event EMPTYELEMTAG_END = predicted EmptyElemTagEnd
 event ELEMENTDECL_BEG  = predicted ElementDeclBeg
-event ELEMENTDECL_END  = predicted ElementDeclEnd
 event EMPTY            = predicted Empty
 event ANY              = predicted Any
 event QUESTION_MARK    = predicted QuestionMark
@@ -1230,7 +1215,6 @@ event COMMA            = predicted Comma
 event RPARENSTAR       = predicted RparenStar
 event PCDATA           = predicted Pcdata
 event ATTLIST_BEG      = predicted AttlistBeg
-event ATTLIST_END      = predicted AttlistEnd
 event STRINGTYPE       = predicted StringType
 event TYPE_ID          = predicted TypeId
 event TYPE_IDREF       = predicted TypeIdref
@@ -1252,7 +1236,6 @@ event CHARREF          = predicted CharRef
 event ENTITYREF        = predicted EntityRef
 event PEREFERENCE      = predicted PEReference
 event EDECL_BEG        = predicted EdeclBeg
-event EDECL_END        = predicted EdeclEnd
 event PERCENT          = predicted Percent
 event SYSTEM           = predicted System
 event PUBLIC           = predicted Public
@@ -1260,6 +1243,5 @@ event NDATA            = predicted Ndata
 event ENCODING         = predicted Encoding
 event ENCNAME          = predicted EncName
 event NOTATION_BEG     = predicted NotationBeg
-event NOTATION_END     = predicted NotationEnd
 event ATTVALUE         = predicted AttValue
 event ENTITYVALUE      = predicted EntityValue
