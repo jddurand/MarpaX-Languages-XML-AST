@@ -147,7 +147,7 @@ sub parse {
 		  #
 		  # The array is a reference to [$name, $value], where value can be undef
 		  #
-		  $log->tracef('pos=%6d/%6d : lexeme_alternative("%s", "%s")', $pos, $mapend, $_, $matched);
+		  # $log->tracef('pos=%6d/%6d : lexeme_alternative("%s", "%s")', $pos, $mapend, $_, $matched);
 		  $recce->lexeme_alternative($_, $matched);
 	      }
 	      # $log->tracef('pos=%6d/%6d : lexeme_complete(0, 1)', $pos, $mapend);
@@ -167,7 +167,7 @@ sub parse {
             }
             $bufLength = $mapend - $mapbeg;
           }
-          if (time() - $now > 300) {
+          if (time() - $now > 60) {
             $log->tracef('Exiting');
             exit;
           }
@@ -232,24 +232,24 @@ sub wantnext {
 # ---------------------------------------------------------------
 # Internal regexps. Designed to match at most a single character.
 # ---------------------------------------------------------------
-our $REG_NAMESTARTCHAR          = qr/^[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/;
-our $REG_NAMECHAR               = qr/$REG_NAMESTARTCHAR|^[-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]/;
-our $REG_PUBIDCHAR_NOT_DQUOTE   = qr/^[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]/;
-our $REG_PUBIDCHAR_NOT_SQUOTE   = qr/^[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]/;
-our $REG_CHARCOMMENT            = qr/^[\x{9}\x{A}\x{D}\x{20}-\x{2C}\x{2E}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/;
-our $REG_CHAR                   = qr/^[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/;
-our $REG_S                      = qr/^[\x{20}\x{9}\x{D}\x{A}]/;
-our $REG_NOT_DQUOTE             = qr/^[^"]/;
-our $REG_NOT_SQUOTE             = qr/^[^']/;
-our $REG_CHARDATA               = qr/^[^<&]/;
-our $REG_DIGIT                  = qr/^[0-9]/;
-our $REG_HEXDIGIT               = qr/^[0-9a-fA-F]/;
-our $REG_ALPHA                  = qr/^[A-Za-z]/;
-our $REG_ENCNAME_REST           = qr/^[A-Za-z0-9._-]/;
-our $REG_ATTVALUE_NOT_DQUOTE    = qr/^[^<&"]/;
-our $REG_ATTVALUE_NOT_SQUOTE    = qr/^[^<&']/;
-our $REG_ENTITYVALUE_NOT_DQUOTE = qr/^[^%&"]/;
-our $REG_ENTITYVALUE_NOT_SQUOTE = qr/^[^%&']/;
+our $REG_NAMESTARTCHAR          = qr/^[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/o;
+our $REG_NAMECHAR               = qr/$REG_NAMESTARTCHAR|^[-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]/o;
+our $REG_PUBIDCHAR_NOT_DQUOTE   = qr/^[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]/o;
+our $REG_PUBIDCHAR_NOT_SQUOTE   = qr/^[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]/o;
+our $REG_CHARCOMMENT            = qr/^[\x{9}\x{A}\x{D}\x{20}-\x{2C}\x{2E}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/o;
+our $REG_CHAR                   = qr/^[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/o;
+our $REG_S                      = qr/^[\x{20}\x{9}\x{D}\x{A}]/o;
+our $REG_NOT_DQUOTE             = qr/^[^"]/o;
+our $REG_NOT_SQUOTE             = qr/^[^']/o;
+our $REG_CHARDATA               = qr/^[^<&]/o;
+our $REG_DIGIT                  = qr/^[0-9]/o;
+our $REG_HEXDIGIT               = qr/^[0-9a-fA-F]/o;
+our $REG_ALPHA                  = qr/^[A-Za-z]/o;
+our $REG_ENCNAME_REST           = qr/^[A-Za-z0-9._-]/o;
+our $REG_ATTVALUE_NOT_DQUOTE    = qr/^[^<&"]/o;
+our $REG_ATTVALUE_NOT_SQUOTE    = qr/^[^<&']/o;
+our $REG_ENTITYVALUE_NOT_DQUOTE = qr/^[^%&"]/o;
+our $REG_ENTITYVALUE_NOT_SQUOTE = qr/^[^%&']/o;
 
 # -----------------------------------------------------------------------
 # TOKEN closures
