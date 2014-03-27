@@ -17,8 +17,8 @@ use Log::Any qw/$log/;
 #    _INPUT   =>  0,
 #    _DATA    =>  1,
 #    _LENGTH  =>  2,
-#    _MAPBEG  =>  3,
-#    _MAPEND  =>  4,
+#    _MAPEND  =>  3,
+#    _MAPBEG  =>  4,
 #    _EOF     =>  5,
 #    _BLESSED =>  6,
 #    _FILENO  =>  7,
@@ -135,6 +135,12 @@ sub _read {
 	$self->[10] = $self->[ 9];
 	#$log->tracef('Input max position found to be %s', $self->[10]);
     }
+    if ($n <= 0) {
+	#
+	# Nothing was read - this could have been done before, but happens once only, at eof
+	#
+	$self->doneb($idata);
+    }
 }
 
 #
@@ -198,7 +204,7 @@ sub fetchc {
 	    } else {
 		my $ipos = $pos - $self->[ 4]->[$idata];
 		# $log->tracef('Position %d found at position %d in buffer No %d that maps to [%d-%d]', $pos, $ipos, $idata, $self->[ 4]->[$idata], $self->[ 3]->[$idata]);
-		return substr($self->[ 1]->[$idata], $ipos, 1);
+		return (substr($self->[ 1]->[$idata], $ipos, 1), $self->[ 1]->[$idata], $ipos);
 	    }
 	}
     }

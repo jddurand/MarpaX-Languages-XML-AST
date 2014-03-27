@@ -2,7 +2,7 @@ use strict;
 use warnings FATAL => 'all';
 
 package MarpaX::Languages::XML::AST::Grammar::XML_1_0;
-use MarpaX::Languages::XML::AST::StreamIn::Match;
+use MarpaX::Languages::XML::AST::StreamIn;
 use MarpaX::Languages::XML::AST::Grammar::XML_1_0::Util qw/%TOKEN/;
 use MarpaX::Languages::XML::AST::Util qw/:all/;
 use Carp qw/croak/;
@@ -13,8 +13,119 @@ use Log::Any qw/$log/;
 
 # VERSION
 
+#
+# Note: unfortunately, you can try all ways you want, doing:
+#
+# $REG = qr//;
+# ./..
+# $x =~ m/$REG/g;
+#
+# will always call CORE::match and CORE::regcomp
+#
+# The better I could get was with m/$REG/go, that reduces CORE::regcomp to its minimum but NOT the calls to it.
+#
+# So the fastest is the good old one:
+#
+# $x =~ m/explicitregexpwithNOinterpolation/g;
+#
+#
 our $DATA = do {local $/; <DATA>};
 
+# ---------------------------------------------------------------
+# Internal regexps. NOT used for CORE::regcomp optimisation.
+# But kept here as a scratchpad.
+# ---------------------------------------------------------------
+our $REG_NAMESTARTCHAR          = qr/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/;
+# $REG_NAMESTARTCHAR|[-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]
+our $REG_NAMECHAR_ZERO_OR_MORE  = qr/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/;
+our $REG_NAMECHAR_ONE_OR_MORE   = qr/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]+/;
+our $REG_PUBIDCHAR_NOT_DQUOTE   = qr/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]/;
+our $REG_PUBIDCHAR_NOT_DQUOTE_ZERO_OR_MORE   = qr/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]*/;
+our $REG_PUBIDCHAR_NOT_SQUOTE   = qr/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]/;
+our $REG_PUBIDCHAR_NOT_SQUOTE_ZERO_OR_MORE   = qr/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]*/;
+our $REG_CHARCOMMENT            = qr/\G[\x{9}\x{A}\x{D}\x{20}-\x{2C}\x{2E}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/;
+our $REG_CHAR                   = qr/\G[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/;
+our $REG_CHAR_ZERO_OR_MORE      = qr/\G[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]*/;
+our $REG_S_ONE_OR_MORE          = qr/\G[\x{20}\x{9}\x{D}\x{A}]+/;
+our $REG_NOT_DQUOTE             = qr/\G[^"]/;
+our $REG_NOT_DQUOTE_ZERO_OR_MORE = qr/\G[^"]*/;
+our $REG_NOT_SQUOTE             = qr/\G[^']/;
+our $REG_NOT_SQUOTE_ZERO_OR_MORE = qr/\G[^']*/;
+our $REG_CHARDATA               = qr/\G[^<&]/;
+our $REG_CHARDATA_ZERO_OR_MORE  = qr/\G[^<&]*/;
+our $REG_DIGIT                  = qr/\G[0-9]/;
+our $REG_DIGIT_ONE_OR_MORE      = qr/\G[0-9]+/;
+our $REG_HEXDIGIT               = qr/\G[0-9a-fA-F]/;
+our $REG_HEXDIGIT_ONE_OR_MORE   = qr/\G[0-9a-fA-F]+/;
+our $REG_ALPHA                  = qr/\G[A-Za-z]/;
+our $REG_ENCNAME_REST_ZERO_OR_MORE = qr/\G[A-Za-z0-9._-]*/;
+our $REG_ATTVALUE_NOT_DQUOTE    = qr/\G[^<&"]/;
+our $REG_ATTVALUE_NOT_DQUOTE_ZERO_OR_MORE = qr/\G[^<&"]*/;
+our $REG_ATTVALUE_NOT_SQUOTE    = qr/\G[^<&']/;
+our $REG_ATTVALUE_NOT_SQUOTE_ZERO_OR_MORE  = qr/\G[^<&']*/;
+our $REG_ENTITYVALUE_NOT_DQUOTE = qr/\G[^%&"]/;
+our $REG_ENTITYVALUE_NOT_SQUOTE = qr/\G[^%&']/;
+
+our %STR = ();
+$STR{X20}              = "\x{20}";
+$STR{DQUOTE}           = '"';
+$STR{SQUOTE}           = "'";
+$STR{EQUAL}            = '=';
+$STR{LBRACKET}         = '[';
+$STR{RBRACKET}         = ']';
+$STR{XTAG_BEG}         = '<';
+$STR{XTAG_END}         = '>';
+$STR{QUESTION_MARK}    = '?';
+$STR{STAR}             = '*';
+$STR{PLUS}             = '+';
+$STR{LPAREN}           = '(';
+$STR{RPAREN}           = ')';
+$STR{PIPE}             = '|';
+$STR{COMMA}            = ',';
+$STR{PERCENT}          = '%';
+$STR{COMMENT_BEG}      = '<!--';
+$STR{COMMENT_END}      = '-->';
+$STR{PI_BEG}           = '<?';
+$STR{PI_END}           = '?>';
+$STR{CDSTART}          = '<![CDATA[';
+$STR{CDEND}            = ']]>';
+$STR{XML_BEG}          = '<?xml';
+$STR{XML_END}          = '?>';
+$STR{VERSION}          = 'version';
+$STR{DOCTYPE_BEG}      = '<!DOCTYPE';
+$STR{STANDALONE}       = 'standalone';
+$STR{YES}              = 'yes';
+$STR{NO}               = 'no';
+$STR{ETAG_BEG}         = '</';
+$STR{EMPTYELEMTAG_END} = '/>';
+$STR{ELEMENTDECL_BEG}  = '<!ELEMENT';
+$STR{EMPTY}            = 'EMPTY';
+$STR{ANY}              = 'ANY';
+$STR{RPARENSTAR}       = '(*';
+$STR{PCDATA}           = '#PCDATA';
+$STR{ATTLIST_BEG}      = '<!ATTLIST';
+$STR{STRINGTYPE}       = 'CDATA';
+$STR{TYPE_ID}          = 'ID';
+$STR{TYPE_IDREF}       = 'IDREF';
+$STR{TYPE_IDREFS}      = 'IDREFS';
+$STR{TYPE_ENTITY}      = 'ENTITY';
+$STR{TYPE_ENTITIES}    = 'ENTITIES';
+$STR{TYPE_NMTOKEN}     = 'NMTOKEN';
+$STR{TYPE_NMTOKENS}    = 'NMTOKENS';
+$STR{NOTATION}         = 'NOTATION';
+$STR{REQUIRED}         = '#REQUIRED';
+$STR{IMPLIED}          = '#IMPLIED';
+$STR{FIXED}            = '#FIXED';
+$STR{SECT_BEG}         = '<![';
+$STR{INCLUDE}          = 'INCLUDE';
+$STR{SECT_END}         = ']]>';
+$STR{IGNORE}           = 'IGNORE';
+$STR{EDECL_BEG}        = '<!ENTITY';
+$STR{SYSTEM}           = 'SYSTEM';
+$STR{PUBLIC}           = 'PUBLIC';
+$STR{NDATA}            = 'NDATA';
+$STR{ENCODING}         = 'encoding';
+$STR{NOTATION_BEG}     = '<!NOTATION';
 #
 # There are several DIFFERENT top-level productions in the XML grammar
 #
@@ -26,154 +137,586 @@ foreach (qw/document/) {
   $G{$top} = Marpa::R2::Scanless::G->new({source => \$DATA, bless_package => 'XML'});
 }
 
+#
+# We always work with a single buffer, and handle eventual overlap
+# by appending to current buffer before discarding it
+#
 sub new {
   my ($class, %opts) = @_;
 
-  my $self = {};
+  my $self = {buf => undef, mapbeg => undef, mapend => undef};
 
   bless($self, $class);
 
   return $self;
 }
 
-my %stats = ();
-sub _doEvents {
-  my ($self, $input, $pos, $recce) = @_;
+sub _donePos {
+    my ($self, $stream, $pos) = @_;
 
-  my @alternatives = ();
-  my $longest = -1;
-  my $value = '';
-  pos($input) = $pos;
-  foreach (@{$recce->events()}) {
-    my ($name) = @{$_};
-    #printf STDERR "? $name\n";
-    #
-    # We made sure that we are paused only on lexemes
-    #
-    my $start = Time::HiRes::gettimeofday();
-    my $token = $TOKEN{$name}($input, $pos);
-    my $end = Time::HiRes::gettimeofday();
-    $stats{$name}{calls}++;
-    $stats{$name}{time} += ($end - $start);
-    if (defined($token)) {
-      my $length = length($token);
-      if ($length > $longest) {
-        $#alternatives = -1;
-        push(@alternatives, $name);
-        $longest = $length;
-        $value = $token;
-      } elsif ($length == $longest) {
-        push(@alternatives, $name);
-      }
+    if ($pos >= $self->{mapend}) {
+	#
+	# Current buffer, eventually appended with content of next
+	# buffer, is over
+	#
+	$stream->doneb(0);
+	#
+	# Assigning mapend to zero is enough for us
+	# to know nothing else is cached
+	#
+	$self->{mapend} = 0;
     }
-  }
-  if (! @alternatives) {
-    logCroak($recce, $input, "No alternative", $pos);
-  }
-  foreach (@alternatives) {
-    my $name = $_;
-    #my $lp = lineAndCol($recce, $pos);
-    #printf STDERR "%-10s %s \"%s\"\n", "L$lp->[0]c$lp->[1]", $name, $value;
-    $recce->lexeme_alternative($name, $value);
-  }
-  $recce->lexeme_complete($pos, $longest);
-
-  return $pos+$longest;
 }
 
-use Time::HiRes;
-END {
-  printf STDERR "%-20s %10s %s\n", "Lexeme", "Calls", "Time";
-  printf STDERR "%-20s %10s %s\n", "------", "-----", "----";
-  foreach (sort {$stats{$a}{time} <=> $stats{$b}{time}} keys %stats) {
-    printf STDERR "%-20s %10s %s\n", $_, $stats{$_}{calls}, $stats{$_}{time};
+#
+# For performance, everything is done one the stack
+#
+sub _canPos {
+    # my ($self, $stream, $pos) = @_;
+
+    if (defined($_[0]->{mapend}) && $_[2] < $_[0]->{mapend}) {
+      #
+      # Usually this is current buffer.
+      #
+      pos($_[0]->{buf}) = $_[2] - $_[0]->{mapbeg};
+      return 1;
+  } else {
+      if (! defined($_[0]->{mapend})) {
+	  #
+	  # No buffer
+	  #
+	  ($_[0]->{buf}, $_[0]->{mapbeg}, $_[0]->{mapend}) = $_[1]->getb();
+	  if (! defined($_[0]->{buf})) {
+	      return undef;
+	  } else {
+	      return $_[0]->_canPos($_[1], $_[2]);
+	  }
+      } else {
+	  #
+	  # Need to append
+	  #
+	  my $append = $_[1]->substr($_[0]->{mapend}, $_[2] - $_[0]->{mapend} + 1);
+	  if (defined($append)) {
+	      $_[0]->{buf} .= $append;
+	      $_[0]->{mapend} = $_[2]+1;
+	      return $_[0]->_canPos($_[1], $_[2]);
+	  } else {
+	      return undef;
+	  }
+      }
   }
+
 }
-#
-# The whole optiéisation is based on NO manipulation of cached buffer, except
-# substracting from it, which is rather fast (perl's substr() has been
-# defined for that).
-# This mean that $buf always point to current data buffer and nothing else.
-# This buffer could be extended on the stack by the internal maching closure,
-# but this will NOT affect StreamIn knowedge of physical locations for a buffer.
-#
-# For instance:
-# - Suppose that buffer x1 maps to real positions [y11, y12]
-# - The matching routine will need to get data beyond y2
-# - The laters will call StreamIn for another buffer, if any, that will create
-#   a new buffer x2 mapping to [y21, y22], where y21 = y12+1.
-# - buffer x1 could be extended to x1 + part of x2
-# - StreamIn.pm will not know about this, neither this module.
-#
+
 sub parse {
   my ($self, $input) = @_;
 
+  #
+  # Initiate recognizer
+  # We will take care of all lexemes recognition and use token-stream model
+  #
   my $recce = Marpa::R2::Scanless::R->new( { grammar => $G{document} } );
   my $fake_input = ' ';
-  my $pos = $recce->read(\$fake_input);
+  $recce->read(\$fake_input);
   #
-  # We made sure we are paused at the very beginning with event '^document'
+  # Current buffer
   #
-  # Loop on the streamed input buffer
+  my $stream = MarpaX::Languages::XML::AST::StreamIn->new(input => $input);
+  my $pos = 0;
+  #
+  # Loop until nothing left in the buffer
   #
   my $now = time();
-  my $stream = MarpaX::Languages::XML::AST::StreamIn::Match->new(input => $input);
-  my ($buf, $mapbeg, $mapend) = $stream->getb();
-  if (defined($buf)) {
-      my $bufLength = $mapend - $mapbeg;
-      while (1) {
-	  my @events = @{$recce->events()};
-	  if (! @events) {
-	      $log->tracef('No event');
-	      last;
-	  }
-	  my @terminals_expected = map {$_->[0]} @events;
-	  my ($length, $matched, @tokens) = $self->get_tokens($stream, $pos, $buf, $mapbeg, $mapend, @terminals_expected);
-	  if (! @tokens) {
-	      #
-	      # Acceptable only if $buf is pointing to a discard character or end of buffer
-	      #
-	      if ($pos < $mapend && substr($buf, $pos - $mapbeg, 1) =~ /\s/) {
-		  $length++;
-		  $log->tracef('pos=%6d/%6d : discarding character', $pos, $mapend);
-	      } elsif ($stream->eof && $pos == $mapend) {
-		  $log->tracef('pos=%6d/%6d : end of stream', $pos, $mapend);
-		  last;
-	      } else {
-		  die "Failed at position $pos: " . substr($buf, $pos - $mapbeg, 10) . "...\nContext:\n" . $recce->show_progress;
-	      }
-	  } else {
-	      foreach (@tokens) {
-		  #
-		  # The array is a reference to [$name, $value], where value can be undef
-		  #
-		  # $log->tracef('pos=%6d/%6d : lexeme_alternative("%s", "%s")', $pos, $mapend, $_, $matched);
-		  $recce->lexeme_alternative($_, $matched);
-	      }
-	      # $log->tracef('pos=%6d/%6d : lexeme_complete(0, 1)', $pos, $mapend);
-	      $recce->lexeme_complete(0, 1);
-              $stream->doneMatch($pos);
-	  }
-          $pos += $length;
-	  #
-	  # Next buffer ?
-	  #
-	  if ($pos >= $mapend) {
-	      $log->tracef('pos=%6d/%6d : Asking or next buffer', $pos, $mapend);
-            ($buf, $mapbeg, $mapend) = $stream->getb();
-            $buf = $stream->getb();
-            if (! defined($buf)) {
+  while (1) {
+
+    my @tokens = ();
+    my $discard = 0;
+    my $value = '';
+    my $maxTokenLength = 0;
+
+    foreach (@{$recce->events()}) {
+      my ($terminal) = @{$_};
+      my $workpos = $pos;
+      last if (! $self->_canPos($stream, $workpos));
+
+      my $match = '';
+      if ($terminal eq 'NAME' || $terminal eq 'PITARGET') {
+        # ----------------------------------------------
+        # NAME is /${REG_NAMESTARTCHAR}${REG_NAMECHAR}*/
+        #
+        # PITARGET is NAME without /xml/i
+        #
+        # ----------------------------------------------
+        if ($self->{buf} =~ m/$REG_NAMESTARTCHAR/go) {
+          next if (! $self->_canPos($stream, ++$workpos));
+          $match = $&;
+          my $length = 0;
+          while (1) {
+            last if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length)));
+            last if ($self->{buf} !~ m/$REG_NAMECHAR_ZERO_OR_MORE/go);
+            $length = $+[0] - $-[0];
+            last if ($length <= 0);
+            $match .= $&;
+          }
+        }
+        if ($terminal eq 'PITARGET' && length($match) > 0) {
+          if ($match =~ /xml/i) {
+            substr($match, $-[0]) = '';
+          }
+        }
+      }
+      elsif ($terminal eq 'ENCNAME') {
+        # ----------------------------------------------
+        # ENCNAME is /${REG_ALPHA}${REG_ENCNAME_REST}*/
+        # ----------------------------------------------
+        if ($self->{buf} =~ m/$REG_ALPHA/go) {
+          next if (! $self->_canPos($stream, ++$workpos));
+          $match = $&;
+          my $length = 0;
+          while (1) {
+            last if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length)));
+            last if ($self->{buf} !~ m/$REG_ENCNAME_REST_ZERO_OR_MORE/go);
+            $length = $+[0] - $-[0];
+            last if ($length <= 0);
+            $match .= $&;
+          }
+        }
+      }
+      elsif ($terminal eq 'CHARREF') {
+        # ---------------------------------
+        # CHARREF is /&#${REG_DIGIT}+;/
+        #         or /&#x${REG_HEXDIGIT}+;/
+        # ---------------------------------
+        if (substr($self->{buf}, pos($self->{buf}), 1) eq '&') {
+          next if (! $self->_canPos($stream, ++$workpos));
+          if (substr($self->{buf}, pos($self->{buf}), 1) eq '#') {
+            next if (! $self->_canPos($stream, ++$workpos));
+            if (substr($self->{buf}, pos($self->{buf}), 1) eq 'x') {
+              #
+              # We expect ${REG_HEXDIGIT}+ followed by ';'
+              #
+              my $submatch = '';
+              my $lastok = 1;
+              while ($self->{buf} =~ m/$REG_HEXDIGIT_ONE_OR_MORE/goc) {   # Note the /c modifier
+                $submatch .= $&;
+                if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0])))) {
+                  $lastok = 0;
+                  last;
+                }
+              }
+              if ($lastok && length($submatch) > 0) {
+                if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
+                  $match = "&#x${submatch};";
+                }
+              }
+            } else {
+              #
+              # We expect ${REG_DIGIT}+ followed by ';'
+              #
+              my $submatch = '';
+              my $lastok = 1;
+              while ($self->{buf} =~ m/$REG_DIGIT_ONE_OR_MORE/goc) {   # Note the /c modifier
+                $submatch .= $&;
+                if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0])))) {
+                  $lastok = 0;
+                  last;
+                }
+              }
+              if ($lastok && length($submatch) > 0) {
+                if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
+                  $match = "&#${submatch};";
+                }
+              }
+            }
+          }
+        }
+      }
+      elsif ($terminal eq 'S') {
+        #
+        # S is /${REG_S}+/
+        # ----------------
+        while ($self->{buf} =~ m/\G[\x{20}\x{9}\x{D}\x{A}]+/g) {
+          $match .= $&;
+          last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
+        }
+      }
+      elsif ($terminal eq 'NMTOKEN') {
+        #
+        # S is /${REG_NAMECHAR}+/
+        # -----------------------
+        while ($self->{buf} =~ m/$REG_NAMECHAR_ONE_OR_MORE/go) {
+          $match .= $&;
+          last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
+        }
+      }
+      elsif ($terminal eq 'SYSTEMLITERAL') {
+        #
+        # SYSTEMLITERAL is /"${REG_NOT_DQUOTE}*"/ or /'${REG_NOT_SQUOTE}*'/
+        # ------------------------------------------------------------------
+        if (substr($self->{buf}, pos($self->{buf}), 1) eq '"') {
+          next if (! $self->_canPos($stream, ++$workpos));
+          my $submatch = '';
+          my $length = 0;
+          my $lastok = 1;
+          while (1) {
+            if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length))) {
+              $lastok = 0;
               last;
             }
-            $bufLength = $mapend - $mapbeg;
+            last if ($self->{buf} !~ m/$REG_NOT_DQUOTE_ZERO_OR_MORE/goc);   # Note the /c modifier
+            $length = $+[0] - $-[0];
+            last if ($length <= 0);
+            $submatch .= $&;
           }
-          if (time() - $now > 60) {
-            $log->tracef('Exiting');
-            exit;
+          if ($lastok) {
+            if (substr($self->{buf}, pos($self->{buf}), 1) eq '"') {
+              $match = "\"${submatch}\"";
+            }
           }
-	  #$recce->resume();
+        }
+        elsif (substr($self->{buf}, pos($self->{buf}), 1) eq '\'') {
+          next if (! $self->_canPos($stream, ++$workpos));
+          my $submatch = '';
+          my $length = 0;
+          my $lastok = 1;
+          while (1) {
+            if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length))) {
+              $lastok = 0;
+              last;
+            }
+            last if ($self->{buf} !~ m/$REG_NOT_SQUOTE_ZERO_OR_MORE/goc);   # Note the /c modifier
+            $length = $+[0] - $-[0];
+            last if ($length <= 0);
+            $submatch .= $&;
+          }
+          if ($lastok) {
+            if (substr($self->{buf}, pos($self->{buf}), 1) eq '\'') {
+              $match = "'${submatch}'";
+            }
+          }
+        }
       }
+      elsif ($terminal eq 'PUDIDLITERAL') {
+        #
+        # PUDIDLITERAL is /"${REG_PUBIDCHAR_NOT_DQUOTE}*"/ or /'${REG_PUBIDCHAR_NOT_SQUOTE}*'/
+        # ------------------------------------------------------------------------------------
+        if (substr($self->{buf}, pos($self->{buf}), 1) eq '"') {
+          next if (! $self->_canPos($stream, ++$workpos));
+          my $submatch = '';
+          my $length = 0;
+          my $lastok = 1;
+          while (1) {
+            if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length))) {
+              $lastok = 0;
+              last;
+            }
+            last if ($self->{buf} !~ m/$REG_PUBIDCHAR_NOT_DQUOTE_ZERO_OR_MORE/goc);   # Note the /c modifier
+            $length = $+[0] - $-[0];
+            last if ($length <= 0);
+            $submatch .= $&;
+          }
+          if ($lastok) {
+            if (substr($self->{buf}, pos($self->{buf}), 1) eq '"') {
+              $match = "\"${submatch}\"";
+            }
+          }
+        }
+        elsif (substr($self->{buf}, pos($self->{buf}), 1) eq '\'') {
+          next if (! $self->_canPos($stream, ++$workpos));
+          my $submatch = '';
+          my $length = 0;
+          my $lastok = 1;
+          while (1) {
+            if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length))) {
+              $lastok = 0;
+              last;
+            }
+            last if ($self->{buf} !~ m/$REG_PUBIDCHAR_NOT_SQUOTE_ZERO_OR_MORE/goc);   # Note the /c modifier
+            $length = $+[0] - $-[0];
+            last if ($length <= 0);
+            $submatch .= $&;
+          }
+          if ($lastok) {
+            if (substr($self->{buf}, pos($self->{buf}), 1) eq '\'') {
+              $match = "'${submatch}'";
+            }
+          }
+        }
+      }
+      elsif ($terminal eq 'CHARDATA') {
+        #
+        # CHARDATA is /${REG_CHARDATA}*/ minus the sequence ']]>'
+        # ------------------------------------------------------------------
+        while ($self->{buf} =~ m/$REG_CHARDATA_ZERO_OR_MORE/go) {
+          last if ($-[0] == $+[0]);
+          $match .= $&;
+          last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
+        }
+        if (length($match) > 0) {
+          if ($match =~ /\]\]>/i) {
+            substr($match, $-[0]) = '';
+          }
+        }
+      }
+      elsif ($terminal eq 'CDATA' || $terminal eq 'COMMENT' || $terminal eq 'PI_INTERIOR' || $terminal eq 'IGNORE_INTERIOR') {
+        #
+        # CDATA           is /${REG_CHAR}*/ minus the sequence ']]>'
+        # COMMENT         is /${REG_CHAR}*/ minus the sequence '--'
+        # PI_INTERIOR     is /${REG_CHAR}*/ minus the sequence '?>'
+        # IGNORE_INTERIOR is /${REG_CHAR}*/ minus the sequence '<![' or ']]>'
+        # ------------------------------------------------------------------
+        while ($self->{buf} =~ m/$REG_CHAR_ZERO_OR_MORE/go) {
+          last if ($-[0] == $+[0]);
+          $match .= $&;
+          last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
+        }
+        if (length($match) > 0) {
+          my @exclusionString =
+            ($terminal eq 'CDATA') ? (quotemeta(']]>'))
+              :
+                ($terminal eq 'COMMENT') ? (quotemeta('--'))
+                  :
+                    ($terminal eq 'PI_INTERIOR') ? (quotemeta('?>'))
+                      : (quotemeta('<!['), quotemeta(']]>'));
+          foreach (@exclusionString) {
+            if ($match =~ /$_/i) {
+              substr($match, $-[0]) = '';
+            }
+          }
+        }
+      }
+      elsif ($terminal eq 'VERSIONNUM') {
+        #
+        # VERSIONNUM is /1.${REG_DIGIT}+/
+        # -------------------------------
+        if (substr($self->{buf}, pos($self->{buf}), 1) eq '1') {
+          next if (! $self->_canPos($stream, ++$workpos));
+          if (substr($self->{buf}, pos($self->{buf}), 1) eq '.') {
+            next if (! $self->_canPos($stream, ++$workpos));
+            while ($self->{buf} =~ m/$REG_DIGIT_ONE_OR_MORE/go) {
+              $match .= $&;
+              last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
+            }
+          }
+        }
+        $match = "1.$match" if (length($match) > 0);
+      }
+      elsif ($terminal eq 'ATTVALUE') {
+        #
+        # ATTVALUE is /"(${REG_ATTVALUE_NOT_DQUOTE}|Reference)*"/
+        #          or /'(${REG_ATTVALUE_NOT_SQUOTE}|Reference)*'/
+        #
+        # where Reference is: EntityRef | CharRef
+        #
+        # and EntityRef   is /&${NAME};/
+        #     CharRef     is /&#${REG_DIGIT}+;/ or /&#x${REG_HEXDIGIT}+;/
+        # ------------------------------------------------------
+        my $c = substr($self->{buf}, pos($self->{buf}), 1);
+        if ($c eq '"' || $c eq '\'') {
+          next if (! $self->_canPos($stream, ++$workpos));
+          my $length = 0;
+          my $lastok = 1;
+          $match = $c;
+          while (1) {
+            if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length))) {
+              $lastok = 0;
+              last;
+            }
+            if ($self->{buf} =~ m/$REG_ATTVALUE_NOT_DQUOTE_ZERO_OR_MORE/goc && $-[0] != $+[0]) {  # Note the /c modifier
+              $length = $+[0] - $-[0];
+              $match .= $&;
+            } elsif (substr($self->{buf}, pos($self->{buf}), 1) eq '&') {
+		my $subworkpos = $workpos;
+              last if (! $self->_canPos($stream, ++$subworkpos));
+              if (substr($self->{buf}, pos($self->{buf}), 1) eq '#') {
+                last if (! $self->_canPos($stream, ++$subworkpos));
+                if (substr($self->{buf}, pos($self->{buf}), 1) eq 'x') {
+                  #
+                  # We expect ${REG_HEXDIGIT}+ followed by ';'
+                  #
+                  my $submatch = '';
+                  my $sublastok = 1;
+                  while ($self->{buf} =~ m/$REG_HEXDIGIT_ONE_OR_MORE/go) {   # Note the /c modifier
+                    $submatch .= $&;
+                    if (! $self->_canPos($stream, ($subworkpos += ($+[0] - $-[0])))) {
+                      $sublastok = 0;
+                      last;
+                    }
+                  }
+                  if ($sublastok && length($submatch) > 0) {
+                    if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
+                      $match .= "&#x${submatch};";
+                      $length = 4 + length($submatch);
+                    } else {
+                      last;
+                    }
+                  } else {
+                    last;
+                  }
+                } else {
+                  #
+                  # We expect ${REG_DIGIT}+ followed by ';'
+                  #
+                  my $submatch = '';
+                  my $sublastok = 1;
+                  while ($self->{buf} =~ m/$REG_DIGIT_ONE_OR_MORE/goc) {   # Note the /c modifier
+                    $submatch .= $&;
+                    if (! $self->_canPos($stream, ($subworkpos += ($+[0] - $-[0])))) {
+                      $sublastok = 0;
+                      last;
+                    }
+                  }
+                  if ($sublastok && length($submatch) > 0) {
+                    if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
+                      $match .= "&#${submatch};";
+                      $length = 3 + length($submatch);
+                    } else {
+                      last;
+                    }
+                  } else {
+                    last;
+                  }
+                }
+              } else {
+                #
+                # We expect ${NAME}  followed by ';'
+                #
+                my $submatch = '';
+                my $sublastok = 1;
+                if ($self->{buf} =~ m/$REG_NAMESTARTCHAR/go) {
+                  $submatch = $&;
+                  my $sublength = 1;
+                  while (1) {
+                    if (! $self->_canPos($stream, ($subworkpos += $sublength))) {
+                      $sublastok = 0;
+                      last;
+                    }
+                    last if ($self->{buf} !~ m/$REG_NAMECHAR_ZERO_OR_MORE/goc);   # Note the /c modifier
+                    $sublength = $+[0] - $-[0];
+                    last if ($sublength <= 0);
+                    $submatch .= $&;
+                  }
+                  if ($sublastok) {
+                    if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
+                      $match .= "&${submatch};";
+                      $length = 2 + length($submatch);
+                    } else {
+                      last;
+                    }
+                  } else {
+                    last;
+                  }
+                } else {
+                  last;
+                }
+              }
+            } else {
+              last;
+            }
+          }
+          if ($lastok) {
+            if (substr($self->{buf}, pos($self->{buf}), 1) eq $c) {
+              $match .= $c;
+            } else {
+              $match = '';
+            }
+          } else {
+            $match = '';
+          }
+        }
+      }
+      elsif ($terminal eq 'ENTITYREF' || $terminal eq 'PEREFERENCE') {
+        #
+        # ENTITYREF   is /&${NAME};/
+        # PEREFERENCE is /%${NAME};/
+        # -------------------------------
+        my $c = substr($self->{buf}, pos($self->{buf}), 1);
+        if ($c eq '&' || $c eq '%') {
+          next if (! $self->_canPos($stream, ++$workpos));
+          #
+          # We expect ${NAME}  followed by ';'
+          #
+          my $submatch = '';
+          my $sublastok = 1;
+          if ($self->{buf} =~ m/$REG_NAMESTARTCHAR/go) {
+            $submatch = $&;
+            my $sublength = 1;
+            while (1) {
+              if (! $self->_canPos($stream, ($workpos += $sublength))) {
+                $sublastok = 0;
+                last;
+              }
+              last if ($self->{buf} !~ m/$REG_NAMECHAR_ZERO_OR_MORE/goc);   # Note the /c modifier
+              $sublength = $+[0] - $-[0];
+              last if ($sublength <= 0);
+              $submatch .= $&;
+            }
+            if ($sublastok) {
+              if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
+                $match = "${c}${submatch};";
+              }
+            }
+          }
+        }
+      }
+      elsif (exists($STR{$terminal})) {
+        my $lastok = 1;
+        foreach (0..length($STR{$terminal})-1) {
+          if ($_ > 0 && ! $self->_canPos($stream, ++$workpos)) {
+            $lastok = 0;
+            last;
+          }
+          if (substr($self->{buf}, pos($self->{buf}), 1) ne substr($STR{$terminal}, $_, 1)) {
+            $lastok = 0;
+            last;
+          }
+        }
+        if ($lastok) {
+          $match = $STR{$terminal};
+        }
+      }
+
+      my $tokenLength = length($match);
+      if ($tokenLength > 0) {
+	  if ($tokenLength > $maxTokenLength) {
+	      @tokens = ($terminal);
+	      $value = $match;
+	      $maxTokenLength = $tokenLength;
+	  } elsif ($tokenLength == $maxTokenLength) {
+	      push(@tokens, $terminal);
+	  }
+      } else {
+	  #
+	  # Acceptable only if this is a discarded characters
+	  #
+	  pos($self->{buf}) = $pos;
+          if ($self->{buf} =~ m/\G\s+/go) {
+	      $discard = $+[0] - $-[0];
+	  }
+      }
+    }
+    if (@tokens) {
+	foreach (@tokens) {
+	    #
+	    # The array is a reference to [$name, $value], where value can be undef
+	    #
+	    $log->tracef('pos=%6d : lexeme_alternative("%s", "%s")', $pos, $_, $value);
+	    $recce->lexeme_alternative($_, $value);
+	}
+	$recce->lexeme_complete(0, 1);
+	$pos += $maxTokenLength;
+    } elsif ($discard) {
+	$pos += $discard;
+    } else {
+	last;
+    }
+    if (time() - $now > 10) {
+      $log->tracef('Exiting');
+      exit;
+    }
+    $self->_donePos($stream, $pos);
   }
+  print STDERR $recce->show_progress;
   my $nvalue = 0;
   while (defined($_ = $recce->value)) {
       ++$nvalue;
@@ -182,419 +725,13 @@ sub parse {
   $log->tracef('Total number of values: %d', $nvalue);
 }
 
-sub get_tokens {
-  my ($self, $stream, $pos, $buf, $mapbeg, $mapend, @terminals_expected) = @_;
-
-  #
-  # We maintain an internal status per terminal:
-  # -1 : cannot happen
-  #  0 : not fully processed
-  #  1 : found
-
-  my $length = 0;
-  my @tokens = ();
-  my $matched = undef;
-  my %terminals = ();
-  foreach (@terminals_expected) {
-      my $terminal = $_;
-      # $log->tracef('Trying %s', $terminal);
-      my $closure = $TOKEN{$terminal};
-      my $match = $stream->$closure($pos, $buf, $mapbeg, $mapend);
-      if (defined($match)) {
-	  # $log->tracef('%s => %s', $terminal, $match);
-	  my $matchLength = length($match);
-	  if (! $length || $matchLength > $length) {
-	      $length = $matchLength;
-	      $matched = $match;
-	      @tokens = ( $terminal );
-	  } elsif ($matchLength == $length) {
-	      push(@tokens, $terminal);
-	  }
-      }
-  }
-  return ($length, $matched, @tokens);
-}
-
-#
-# Every token is dissected using closures that expect as parameters:
-# - current character (constant)
-# - current (eventually partial) match for this token
-# - opaque state internal to token, with a content understandable only by it
-#
-# states are only used in closures that map exactly to a lexeme.
-#
-
-sub wantnext {
-  my ($self, $token, $c, $wanted, $nextp) = @_;
-  print STDERR "$token\n";
-}
-
-# ---------------------------------------------------------------
-# Internal regexps. Designed to match at most a single character.
-# ---------------------------------------------------------------
-our $REG_NAMESTARTCHAR          = qr/^[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/o;
-our $REG_NAMECHAR               = qr/$REG_NAMESTARTCHAR|^[-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]/o;
-our $REG_PUBIDCHAR_NOT_DQUOTE   = qr/^[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]/o;
-our $REG_PUBIDCHAR_NOT_SQUOTE   = qr/^[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]/o;
-our $REG_CHARCOMMENT            = qr/^[\x{9}\x{A}\x{D}\x{20}-\x{2C}\x{2E}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/o;
-our $REG_CHAR                   = qr/^[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/o;
-our $REG_S                      = qr/^[\x{20}\x{9}\x{D}\x{A}]/o;
-our $REG_NOT_DQUOTE             = qr/^[^"]/o;
-our $REG_NOT_SQUOTE             = qr/^[^']/o;
-our $REG_CHARDATA               = qr/^[^<&]/o;
-our $REG_DIGIT                  = qr/^[0-9]/o;
-our $REG_HEXDIGIT               = qr/^[0-9a-fA-F]/o;
-our $REG_ALPHA                  = qr/^[A-Za-z]/o;
-our $REG_ENCNAME_REST           = qr/^[A-Za-z0-9._-]/o;
-our $REG_ATTVALUE_NOT_DQUOTE    = qr/^[^<&"]/o;
-our $REG_ATTVALUE_NOT_SQUOTE    = qr/^[^<&']/o;
-our $REG_ENTITYVALUE_NOT_DQUOTE = qr/^[^%&"]/o;
-our $REG_ENTITYVALUE_NOT_SQUOTE = qr/^[^%&']/o;
 
 # -----------------------------------------------------------------------
 # TOKEN closures
-# Arguments are always: ($stream, $pos, $buf)
+# Arguments are always: ($stream, $pos)
 # -----------------------------------------------------------------------
 our %TOKEN = ();
-#
-# NAME is /${REG_NAMESTARTCHAR}${REG_NAMECHAR}*/
-# ----------------------------------------------
-$TOKEN{NAME} = sub {
-    my $stream = shift;
-    
-    return
-	$stream->group
-	(@_,
-	 # ${REG_NAMESTARTCHAR}
-	 [ $stream->matchRe_closure, $REG_NAMESTARTCHAR ],
-	 # ${REG_NAMECHAR}*
-	 [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_NAMECHAR ], 0, undef ],
-	);
-};
-$TOKEN{NAME_CLOSURE} = sub {
-    my $stream = shift;
-    
-    return
-	[ $stream->group_closure,
-	  # ${REG_NAMESTARTCHAR}
-	  [ $stream->matchRe_closure, $REG_NAMESTARTCHAR ],
-	  # ${REG_NAMECHAR}*
-	  [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_NAMECHAR ], 0, undef ],
-	];
-};
-our $TOKEN_NAME_CLOSURE = $TOKEN{NAME_CLOSURE};
-#
-# S is /${REG_S}+/
-# ----------------
-$TOKEN{S} = sub {
-    my $stream = shift;
-    
-    return
-	# ${REG_S}+
-	$stream->quantified
-	(@_,
-	 [ $stream->matchRe_closure, $REG_S ],
-	 1,
-	 undef);
-};
-#
-# NMTOKEN is /${REG_NAMECHAR}+/
-# -----------------------------
-$TOKEN{NMTOKEN} = sub {
-    my $stream = shift;
-    
-    return
-	# ${REG_NAMECHAR}+
-	$stream->quantified
-	(@_,
-	 [ $stream->matchRe_closure, $REG_NAMECHAR ],
-	 1,
-	 undef);
-};
-#
-# SYSTEMLITERAL is /"${REG_NOT_DQUOTE}*"/ or /'${REG_NOT_SQUOTE}*'/
-# ------------------------------------------------------------------
-$TOKEN{SYSTEMLITERAL} = sub {
-    my $stream = shift;
-    
-    return
-	$stream->alternative
-	(@_,
-	 [ $stream->group_closure,
-	   # "
-	   [ $stream->matchChar_closure, '"' ],
-	   # ${REG_NOT_DQUOTE}*
-	   [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_NOT_DQUOTE ], 0, undef ],
-	   # "
-	   [ $stream->matchChar_closure, '"' ],
-	 ],
-	 [ $stream->group_closure,
-	   # '
-	   [ $stream->matchChar_closure, '\'' ],
-	   # ${REG_NOT_SQUOTE}*
-	   [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_NOT_SQUOTE ], 0, undef ],
-	   # "
-	   [ $stream->matchChar_closure, '\'' ],
-	 ]
-	);
-};
-#
-# PUDIDLITERAL is /"${REG_PUBIDCHAR_NOT_DQUOTE}*"/ or /'${REG_PUBIDCHAR_NOT_SQUOTE}*'/
-# ------------------------------------------------------------------------------------
-$TOKEN{PUBIDLITERAL} = sub {
-    my $stream = shift;
-    
-    return
-	$stream->alternative,
-	(@_,
-	 [ $stream->group_closure,
-	   # "
-	   [ $stream->matchChar_closure, '"' ],
-	   # ${REG_PUBIDCHAR_DQUOTE}*
-	   [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_PUBIDCHAR_NOT_DQUOTE ], 0, undef ],
-	   # "
-	   [ $stream->matchChar_closure, '"' ],
-	 ],
-	 [ $stream->group_closure,
-	   # '
-	   [ $stream->matchChar_closure, '\'' ],
-	   # ${REG_PUBIDCHAR_SQUOTE}*
-	   [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_PUBIDCHAR_NOT_SQUOTE ], 0, undef ],
-	   # "
-	   [ $stream->matchChar_closure, '\'' ],
-	 ],
-	);
-};
-#
-# CHARDATA is /${REG_CHARDATA}*/ minus the sequence ']]>'
-# -------------------------------------------------------
-$TOKEN{CHARDATA} = sub {
-    my $stream = shift;
-    
-    return
-	$stream->exclusionString
-	(@_,
-	 # ${REG_CHARDATA}*
-	 [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_CHARDATA ], 0, undef ],
-	 ']]>',
-	)
-};
-#
-# CDATA is /${REG_CHAR}*/ minus the sequence ']]>'
-# ------------------------------------------------
-$TOKEN{CDATA} = sub {
-    my $stream = shift;
-    
-    return
-	$stream->exclusionString
-	(@_,
-	 # ${REG_CHAR}*
-	 [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_CHAR ], 0, undef ],
-	 ']]>',
-	)
-};
-#
-# COMMENT is CHAR* minus the sequence '--'
-# ----------------------------------------
-$TOKEN{COMMENT} = sub {
-    my $stream = shift;
-    
-    return
-	$stream->exclusionString
-	(@_,
-	 # ${REG_CHAR}*
-	 [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_CHAR ], 0, undef ],
-	 '--',
-	)
-};
-#
-# PITARGET is NAME without /xml/i
-# -------------------------------
-# Perl does not like $TOKEN{NAME}(...)
-our $TOKEN_NAME = $TOKEN{NAME};
-$TOKEN{PITARGET} = sub {
-    my $stream = shift;
-    
-    return
-	$stream->exclusionRe
-	(@_,
-	 $stream->$TOKEN_NAME_CLOSURE(@_),
-	 /xml/i
-	)
-};
-#
-# PI_INTERIOR is CHAR* minus the sequence '?>'
-# --------------------------------------------
-$TOKEN{PI_INTERIOR} = sub {
-    my $stream = shift;
-    
-    return
-	$stream->exclusionString
-	(@_,
-	 # ${REG_CHAR}*
-	 [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_CHAR ], 0, undef ],
-	 '?>',
-	)
-};
-#
-# VERSIONNUM is /1.${REG_DIGIT}+/
-# -------------------------------
-$TOKEN{VERSIONNUM} = sub {
-    my $stream = shift;
-    
-    return
-	$stream->group
-	(@_,
-	 # 1.
-	 [ $stream->matchString_closure, '1.' ],
-	 # [0-9]+
-	 [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_DIGIT ], 1, undef ],
-	);
-};
-#
-# IGNORE_INTERIOR is /${REG_CHAR}*/ minus the sequence '<![' or ']]>'
-# -------------------------------------------------------------------
-$TOKEN{IGNORE_INTERIOR} = sub {
-    my $stream = shift;
-    
-    return
-	$stream->exclusionString
-	(@_,
-	 # ${REG_CHAR}*
-	 [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_CHAR ], 0, undef ],
-	 '<![',
-	 ']]>',
-	)
-};
-#
-# ENTITYREF is /&${NAME};/
-# --------------------------------
-$TOKEN{ENTITYREF} = sub {
-    my $stream = shift;
-    
-    return
-	$stream->group
-	(@_,
-	 # &
-	 [ $stream->matchString_closure, '&' ],
-	 # ${NAME}
-	 $stream->$TOKEN_NAME_CLOSURE(@_),
-	 # ;
-	 [ $stream->matchString_closure, ';' ],
-	);
-};
-$TOKEN{ENTITYREF_CLOSURE} = sub {
-    my $stream = shift;
-    
-    return
-	[ $stream->group_closure,
-	  # &
-	  [ $stream->matchString_closure, '&' ],
-	  # ${NAME}
-	  $stream->$TOKEN_NAME_CLOSURE(@_),
-	  # ;
-	  [ $stream->matchString_closure, ';' ],
-	];
-};
-our $TOKEN_ENTITYREF_CLOSURE = $TOKEN{ENTITYREF_CLOSURE};
-#
-# PEREFERENCE is /%${REG_NAME};/
-# ------------------------------
-$TOKEN{PEREFERENCE} = sub {
-    my $stream = shift;
-    
-    return
-	$stream->group
-	(@_,
-	 # %
-	 [ $stream->matchString_closure, '&' ],
-	 # ${NAME}
-	 $stream->$TOKEN_NAME_CLOSURE(@_),
-	 # ;
-	 [ $stream->matchString_closure, ';' ],
-	);
-};
-$TOKEN{PEREFERENCE_CLOSURE} = sub {
-    my $stream = shift;
-    
-    return
-	[ $stream->group_closure,
-	  # %
-	  [ $stream->matchString_closure, '&' ],
-	  # ${NAME}
-	  $stream->$TOKEN_NAME_CLOSURE(@_),
-	  # ;
-	  [ $stream->matchString_closure, ';' ],
-	];
-};
-our $TOKEN_PEREFERENCE_CLOSURE = $TOKEN{PEREFERENCE_CLOSURE};
-#
-# ENCNAME is /${REG_ALPHA}${REG_ENCNAME_REST}*/
-# ---------------------------------------------
-$TOKEN{ENCNAME} = sub {
-    my $stream = shift;
-    
-    return
-	$stream->group
-	(@_,
-	 # ${REG_ALPHA}
-	 [ $stream->matchRe_closure, $REG_ALPHA ],
-	 # ${REG_ENCNAME_REST}*
-	 [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_ENCNAME_REST ], 0, undef ],
-	);
-};
 
-# CHARREF is /&#${REG_DIGIT}+;/
-#         or /&#x${REG_HEXDIGIT}+;/
-# ---------------------------------
-$TOKEN{CHARREF_INTERIOR_1_CLOSURE} = sub {
-    my $stream = shift;
-    
-    return
-	[ $stream->group_closure, 
-	  # &#
-	  [ $stream->matchString_closure, '&#' ],
-	  # ${REG_DIGIT}+
-	  [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_DIGIT ], 1, undef ],
-	  # ';'
-	  [ $stream->matchChar_closure, ';' ],
-	];
-};
-our $TOKEN_CHARREF_INTERIOR_1_CLOSURE = $TOKEN{CHARREF_INTERIOR_1_CLOSURE};
-$TOKEN{CHARREF_INTERIOR_2_CLOSURE} = sub {
-    my $stream = shift;
-    
-    return
-	[ $stream->group_closure, 
-	  # &#x
-	  [ $stream->matchString_closure, '&#x' ],
-	  # ${REG_HEXDIGIT}+
-	  [ $stream->quantified_closure, [ $stream->matchRe_closure, $REG_HEXDIGIT ], 1, undef ],
-	  # ';'
-	  [ $stream->matchChar_closure, ';' ],
-	];
-};
-our $TOKEN_CHARREF_INTERIOR_2_CLOSURE = $TOKEN{CHARREF_INTERIOR_2_CLOSURE};
-$TOKEN{CHARREF} = sub {
-    my $stream = shift;
-    
-    return
-	$stream->alternative
-	(@_,
-	 $stream->$TOKEN_CHARREF_INTERIOR_1_CLOSURE(@_),
-	 $stream->$TOKEN_CHARREF_INTERIOR_2_CLOSURE(@_),
-	);
-};
-$TOKEN{CHARREF_CLOSURE} = sub {
-    my $stream = shift;
-    
-    return
-	[ $stream->alternative_closure,
-          $stream->$TOKEN_CHARREF_INTERIOR_1_CLOSURE(@_),
-          $stream->$TOKEN_CHARREF_INTERIOR_2_CLOSURE(@_),
-	];
-};
-our $TOKEN_CHARREF_CLOSURE = $TOKEN{CHARREF_CLOSURE};
 #
 # ATTVALUE is /"(${REG_ATTVALUE_NOT_DQUOTE}|Reference)*"/
 #          or /'(${REG_ATTVALUE_NOT_SQUOTE}|Reference)*'/
@@ -607,9 +744,9 @@ $TOKEN{REFERENCE_CLOSURE} = sub {
     return
 	[ $stream->alternative_closure,
 	  # EntityRef
-	  $stream->$TOKEN_ENTITYREF_CLOSURE(@_),
+	  #$stream->$TOKEN_ENTITYREF_CLOSURE(@_),
 	  # CharRef
-	  $stream->$TOKEN_CHARREF_CLOSURE(@_),
+	  #$stream->$TOKEN_CHARREF_CLOSURE(@_),
 	];
 };
 our $TOKEN_REFERENCE_CLOSURE = $TOKEN{REFERENCE_CLOSURE};
@@ -675,7 +812,7 @@ $TOKEN{ENTITYVALUE} = sub {
 	       # ${REG_ENTITYVALUE_NOT_DQUOTE}
 	       [ $stream->matchRe_closure, $REG_ENTITYVALUE_NOT_DQUOTE ],
 	       # PEReference
-	       $stream->$TOKEN_PEREFERENCE_CLOSURE(@_),
+	       #$stream->$TOKEN_PEREFERENCE_CLOSURE(@_),
 	       # Reference
 	       $stream->$TOKEN_REFERENCE_CLOSURE(@_),
 	     ],
@@ -695,7 +832,7 @@ $TOKEN{ENTITYVALUE} = sub {
 	       # ${REG_ENTITYVALUE_NOT_SQUOTE}
 	       [ $stream->matchRe_closure, $REG_ENTITYVALUE_NOT_SQUOTE ],
 	       # PEReference
-	       $stream->$TOKEN_PEREFERENCE_CLOSURE(@_),
+	       #$stream->$TOKEN_PEREFERENCE_CLOSURE(@_),
 	       # Reference
 	       $stream->$TOKEN_REFERENCE_CLOSURE(@_),
 	     ],
