@@ -35,34 +35,34 @@ our $DATA = do {local $/; <DATA>};
 # Internal regexps. NOT used for CORE::regcomp optimisation.
 # But kept here as a scratchpad.
 # ---------------------------------------------------------------
-our $REG_NAMESTARTCHAR          = qr/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/;
+# our $REG_NAMESTARTCHAR          = qr/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/;
 # $REG_NAMESTARTCHAR|[-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]
-our $REG_NAMECHAR_ZERO_OR_MORE  = qr/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/;
-our $REG_NAMECHAR_ONE_OR_MORE   = qr/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]+/;
-our $REG_PUBIDCHAR_NOT_DQUOTE   = qr/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]/;
-our $REG_PUBIDCHAR_NOT_DQUOTE_ZERO_OR_MORE   = qr/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]*/;
-our $REG_PUBIDCHAR_NOT_SQUOTE   = qr/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]/;
-our $REG_PUBIDCHAR_NOT_SQUOTE_ZERO_OR_MORE   = qr/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]*/;
-our $REG_CHARCOMMENT            = qr/\G[\x{9}\x{A}\x{D}\x{20}-\x{2C}\x{2E}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/;
-our $REG_CHAR                   = qr/\G[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/;
-our $REG_CHAR_ZERO_OR_MORE      = qr/\G[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]*/;
-our $REG_S_ONE_OR_MORE          = qr/\G[\x{20}\x{9}\x{D}\x{A}]+/;
-our $REG_NOT_DQUOTE             = qr/\G[^"]/;
-our $REG_NOT_DQUOTE_ZERO_OR_MORE = qr/\G[^"]*/;
-our $REG_NOT_SQUOTE             = qr/\G[^']/;
-our $REG_NOT_SQUOTE_ZERO_OR_MORE = qr/\G[^']*/;
-our $REG_CHARDATA               = qr/\G[^<&]/;
-our $REG_CHARDATA_ZERO_OR_MORE  = qr/\G[^<&]*/;
-our $REG_DIGIT                  = qr/\G[0-9]/;
-our $REG_DIGIT_ONE_OR_MORE      = qr/\G[0-9]+/;
-our $REG_HEXDIGIT               = qr/\G[0-9a-fA-F]/;
-our $REG_HEXDIGIT_ONE_OR_MORE   = qr/\G[0-9a-fA-F]+/;
-our $REG_ALPHA                  = qr/\G[A-Za-z]/;
-our $REG_ENCNAME_REST_ZERO_OR_MORE = qr/\G[A-Za-z0-9._-]*/;
-our $REG_ATTVALUE_NOT_DQUOTE    = qr/\G[^<&"]/;
-our $REG_ATTVALUE_NOT_DQUOTE_ZERO_OR_MORE = qr/\G[^<&"]*/;
-our $REG_ATTVALUE_NOT_SQUOTE    = qr/\G[^<&']/;
-our $REG_ATTVALUE_NOT_SQUOTE_ZERO_OR_MORE  = qr/\G[^<&']*/;
+# our $REG_NAMECHAR_ZERO_OR_MORE  = qr/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/;
+# our $REG_NAMECHAR_ONE_OR_MORE   = qr/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]+/;
+# our $REG_PUBIDCHAR_NOT_DQUOTE   = qr/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]/;
+# our $REG_PUBIDCHAR_NOT_DQUOTE_ZERO_OR_MORE   = qr/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]*/;
+# our $REG_PUBIDCHAR_NOT_SQUOTE   = qr/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]/;
+# our $REG_PUBIDCHAR_NOT_SQUOTE_ZERO_OR_MORE   = qr/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]*/;
+# our $REG_CHARCOMMENT            = qr/\G[\x{9}\x{A}\x{D}\x{20}-\x{2C}\x{2E}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/;
+# our $REG_CHAR                   = qr/\G[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/;
+# our $REG_CHAR_ZERO_OR_MORE      = qr/\G[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]*/;
+# our $REG_S_ONE_OR_MORE          = qr/\G[\x{20}\x{9}\x{D}\x{A}]+/;
+# our $REG_NOT_DQUOTE             = qr/\G[^"]/;
+# our $REG_NOT_DQUOTE_ZERO_OR_MORE = qr/\G[^"]*/;
+# our $REG_NOT_SQUOTE             = qr/\G[^']/;
+# our $REG_NOT_SQUOTE_ZERO_OR_MORE = qr/\G[^']*/;
+# our $REG_CHARDATA               = qr/\G[^<&]/;
+# our $REG_CHARDATA_ZERO_OR_MORE  = qr/\G[^<&]*/;
+# our $REG_DIGIT                  = qr/\G[0-9]/;
+# our $REG_DIGIT_ONE_OR_MORE      = qr/\G[0-9]+/;
+# our $REG_HEXDIGIT               = qr/\G[0-9a-fA-F]/;
+# our $REG_HEXDIGIT_ONE_OR_MORE   = qr/\G[0-9a-fA-F]+/;
+# our $REG_ALPHA                  = qr/\G[A-Za-z]/;
+# our $REG_ENCNAME_REST_ZERO_OR_MORE = qr/\G[A-Za-z0-9._-]*/;
+# our $REG_ATTVALUE_NOT_DQUOTE    = qr/\G[^<&"]/;
+# our $REG_ATTVALUE_NOT_DQUOTE_ZERO_OR_MORE = qr/\G[^<&"]*/;
+# our $REG_ATTVALUE_NOT_SQUOTE    = qr/\G[^<&']/;
+# our $REG_ATTVALUE_NOT_SQUOTE_ZERO_OR_MORE = qr/\G[^<&']*/;
 our $REG_ENTITYVALUE_NOT_DQUOTE = qr/\G[^%&"]/;
 our $REG_ENTITYVALUE_NOT_SQUOTE = qr/\G[^%&']/;
 
@@ -247,13 +247,13 @@ sub parse {
         # PITARGET is NAME without /xml/i
         #
         # ----------------------------------------------
-        if ($self->{buf} =~ m/$REG_NAMESTARTCHAR/go) {
+        if ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/g) {
           next if (! $self->_canPos($stream, ++$workpos));
           $match = $&;
           my $length = 0;
           while (1) {
             last if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length)));
-            last if ($self->{buf} !~ m/$REG_NAMECHAR_ZERO_OR_MORE/go);
+            last if ($self->{buf} !~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/g);
             $length = $+[0] - $-[0];
             last if ($length <= 0);
             $match .= $&;
@@ -269,13 +269,13 @@ sub parse {
         # ----------------------------------------------
         # ENCNAME is /${REG_ALPHA}${REG_ENCNAME_REST}*/
         # ----------------------------------------------
-        if ($self->{buf} =~ m/$REG_ALPHA/go) {
+        if ($self->{buf} =~ m/\G[A-Za-z]/g) {
           next if (! $self->_canPos($stream, ++$workpos));
           $match = $&;
           my $length = 0;
           while (1) {
             last if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length)));
-            last if ($self->{buf} !~ m/$REG_ENCNAME_REST_ZERO_OR_MORE/go);
+            last if ($self->{buf} !~ m/\G[A-Za-z0-9._-]*/g);
             $length = $+[0] - $-[0];
             last if ($length <= 0);
             $match .= $&;
@@ -297,7 +297,7 @@ sub parse {
               #
               my $submatch = '';
               my $lastok = 1;
-              while ($self->{buf} =~ m/$REG_HEXDIGIT_ONE_OR_MORE/goc) {   # Note the /c modifier
+              while ($self->{buf} =~ m/\G[0-9a-fA-F]+/gc) {   # Note the /c modifier
                 $submatch .= $&;
                 if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0])))) {
                   $lastok = 0;
@@ -315,7 +315,7 @@ sub parse {
               #
               my $submatch = '';
               my $lastok = 1;
-              while ($self->{buf} =~ m/$REG_DIGIT_ONE_OR_MORE/goc) {   # Note the /c modifier
+              while ($self->{buf} =~ m/\G[0-9]+/gc) {   # Note the /c modifier
                 $submatch .= $&;
                 if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0])))) {
                   $lastok = 0;
@@ -344,7 +344,7 @@ sub parse {
         #
         # S is /${REG_NAMECHAR}+/
         # -----------------------
-        while ($self->{buf} =~ m/$REG_NAMECHAR_ONE_OR_MORE/go) {
+        while ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]+/g) {
           $match .= $&;
           last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
         }
@@ -363,7 +363,7 @@ sub parse {
               $lastok = 0;
               last;
             }
-            last if ($self->{buf} !~ m/$REG_NOT_DQUOTE_ZERO_OR_MORE/goc);   # Note the /c modifier
+            last if ($self->{buf} !~ m/\G[^"]*/gc);   # Note the /c modifier
             $length = $+[0] - $-[0];
             last if ($length <= 0);
             $submatch .= $&;
@@ -384,7 +384,7 @@ sub parse {
               $lastok = 0;
               last;
             }
-            last if ($self->{buf} !~ m/$REG_NOT_SQUOTE_ZERO_OR_MORE/goc);   # Note the /c modifier
+            last if ($self->{buf} !~ m/\G[^']*/gc);   # Note the /c modifier
             $length = $+[0] - $-[0];
             last if ($length <= 0);
             $submatch .= $&;
@@ -410,7 +410,7 @@ sub parse {
               $lastok = 0;
               last;
             }
-            last if ($self->{buf} !~ m/$REG_PUBIDCHAR_NOT_DQUOTE_ZERO_OR_MORE/goc);   # Note the /c modifier
+            last if ($self->{buf} !~ m/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]*/gc);   # Note the /c modifier
             $length = $+[0] - $-[0];
             last if ($length <= 0);
             $submatch .= $&;
@@ -431,7 +431,7 @@ sub parse {
               $lastok = 0;
               last;
             }
-            last if ($self->{buf} !~ m/$REG_PUBIDCHAR_NOT_SQUOTE_ZERO_OR_MORE/goc);   # Note the /c modifier
+            last if ($self->{buf} !~ m/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]*/gc);   # Note the /c modifier
             $length = $+[0] - $-[0];
             last if ($length <= 0);
             $submatch .= $&;
@@ -447,7 +447,7 @@ sub parse {
         #
         # CHARDATA is /${REG_CHARDATA}*/ minus the sequence ']]>'
         # ------------------------------------------------------------------
-        while ($self->{buf} =~ m/$REG_CHARDATA_ZERO_OR_MORE/go) {
+        while ($self->{buf} =~ m/\G[^<&]*/g) {
           last if ($-[0] == $+[0]);
           $match .= $&;
           last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
@@ -465,7 +465,7 @@ sub parse {
         # PI_INTERIOR     is /${REG_CHAR}*/ minus the sequence '?>'
         # IGNORE_INTERIOR is /${REG_CHAR}*/ minus the sequence '<![' or ']]>'
         # ------------------------------------------------------------------
-        while ($self->{buf} =~ m/$REG_CHAR_ZERO_OR_MORE/go) {
+        while ($self->{buf} =~ m/\G[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]*/g) {
           last if ($-[0] == $+[0]);
           $match .= $&;
           last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
@@ -493,7 +493,7 @@ sub parse {
           next if (! $self->_canPos($stream, ++$workpos));
           if (substr($self->{buf}, pos($self->{buf}), 1) eq '.') {
             next if (! $self->_canPos($stream, ++$workpos));
-            while ($self->{buf} =~ m/$REG_DIGIT_ONE_OR_MORE/go) {
+            while ($self->{buf} =~ m/\G[0-9]+/g) {
               $match .= $&;
               last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
             }
@@ -513,6 +513,7 @@ sub parse {
         # ------------------------------------------------------
         my $c = substr($self->{buf}, pos($self->{buf}), 1);
         if ($c eq '"' || $c eq '\'') {
+	  my $dquoteMode = ($c eq '"');
           next if (! $self->_canPos($stream, ++$workpos));
           my $length = 0;
           my $lastok = 1;
@@ -522,7 +523,12 @@ sub parse {
               $lastok = 0;
               last;
             }
-            if ($self->{buf} =~ m/$REG_ATTVALUE_NOT_DQUOTE_ZERO_OR_MORE/goc && $-[0] != $+[0]) {  # Note the /c modifier
+            if (
+		(
+		 (  $dquoteMode && $self->{buf} =~ m/\G[^<&"]*/gc) ||
+		 (! $dquoteMode && $self->{buf} =~ m/\G[^<&']*/gc)
+		 )
+		&& $-[0] != $+[0]) {  # Note the /c modifier
               $length = $+[0] - $-[0];
               $match .= $&;
             } elsif (substr($self->{buf}, pos($self->{buf}), 1) eq '&') {
@@ -536,7 +542,7 @@ sub parse {
                   #
                   my $submatch = '';
                   my $sublastok = 1;
-                  while ($self->{buf} =~ m/$REG_HEXDIGIT_ONE_OR_MORE/go) {   # Note the /c modifier
+                  while ($self->{buf} =~ m/\G[0-9a-fA-F]+/g) {   # Note the /c modifier
                     $submatch .= $&;
                     if (! $self->_canPos($stream, ($subworkpos += ($+[0] - $-[0])))) {
                       $sublastok = 0;
@@ -559,7 +565,7 @@ sub parse {
                   #
                   my $submatch = '';
                   my $sublastok = 1;
-                  while ($self->{buf} =~ m/$REG_DIGIT_ONE_OR_MORE/goc) {   # Note the /c modifier
+                  while ($self->{buf} =~ m/\G[0-9]+/gc) {   # Note the /c modifier
                     $submatch .= $&;
                     if (! $self->_canPos($stream, ($subworkpos += ($+[0] - $-[0])))) {
                       $sublastok = 0;
@@ -583,7 +589,7 @@ sub parse {
                 #
                 my $submatch = '';
                 my $sublastok = 1;
-                if ($self->{buf} =~ m/$REG_NAMESTARTCHAR/go) {
+                if ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/g) {
                   $submatch = $&;
                   my $sublength = 1;
                   while (1) {
@@ -591,7 +597,7 @@ sub parse {
                       $sublastok = 0;
                       last;
                     }
-                    last if ($self->{buf} !~ m/$REG_NAMECHAR_ZERO_OR_MORE/goc);   # Note the /c modifier
+                    last if ($self->{buf} !~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/gc);   # Note the /c modifier
                     $sublength = $+[0] - $-[0];
                     last if ($sublength <= 0);
                     $submatch .= $&;
@@ -638,7 +644,7 @@ sub parse {
           #
           my $submatch = '';
           my $sublastok = 1;
-          if ($self->{buf} =~ m/$REG_NAMESTARTCHAR/go) {
+          if ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/g) {
             $submatch = $&;
             my $sublength = 1;
             while (1) {
@@ -646,7 +652,7 @@ sub parse {
                 $sublastok = 0;
                 last;
               }
-              last if ($self->{buf} !~ m/$REG_NAMECHAR_ZERO_OR_MORE/goc);   # Note the /c modifier
+              last if ($self->{buf} !~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/gc);   # Note the /c modifier
               $sublength = $+[0] - $-[0];
               last if ($sublength <= 0);
               $submatch .= $&;
@@ -690,7 +696,7 @@ sub parse {
 	  # Acceptable only if this is a discarded characters
 	  #
 	  pos($self->{buf}) = $pos;
-          if ($self->{buf} =~ m/\G\s+/go) {
+          if ($self->{buf} =~ m/\G\s+/g) {
 	      $discard = $+[0] - $-[0];
 	  }
       }
@@ -724,190 +730,6 @@ sub parse {
   }
   $log->tracef('Total number of values: %d', $nvalue);
 }
-
-
-# -----------------------------------------------------------------------
-# TOKEN closures
-# Arguments are always: ($stream, $pos)
-# -----------------------------------------------------------------------
-our %TOKEN = ();
-
-#
-# ATTVALUE is /"(${REG_ATTVALUE_NOT_DQUOTE}|Reference)*"/
-#          or /'(${REG_ATTVALUE_NOT_SQUOTE}|Reference)*'/
-#
-# where Reference is: EntityRef | CharRef
-# ------------------------------------------
-$TOKEN{REFERENCE_CLOSURE} = sub {
-    my $stream = shift;
-    
-    return
-	[ $stream->alternative_closure,
-	  # EntityRef
-	  #$stream->$TOKEN_ENTITYREF_CLOSURE(@_),
-	  # CharRef
-	  #$stream->$TOKEN_CHARREF_CLOSURE(@_),
-	];
-};
-our $TOKEN_REFERENCE_CLOSURE = $TOKEN{REFERENCE_CLOSURE};
-$TOKEN{ATTVALUE} = sub {
-    my $stream = shift;
-    
-    return $stream->alternative
-	(@_,
-	 [ $stream->group_closure,
-	   # "
-	   [ $stream->matchChar_closure, '"' ],
-	   # (${REG_ATTVALUE_NOT_DQUOTE}|Reference)*
-	   [ $stream->quantified_closure, 
-	     [ $stream->alternative_closure,
-	       # ${REG_ATTVALUE_NOT_DQUOTE}
-	       [ $stream->matchRe_closure, $REG_ATTVALUE_NOT_DQUOTE ],
-	       # Reference
-	       $stream->$TOKEN_REFERENCE_CLOSURE(@_),
-	     ],
-	     0,
-	     undef
-	     ],
-	   # "
-	   [ $stream->matchChar_closure, '"' ],
-	 ],
-	 [ $stream->group_closure,
-	   # '
-	   [ $stream->matchChar_closure, '\'' ],
-	   # (${REG_ATTVALUE_NOT_SQUOTE}|Reference)*
-	   [ $stream->quantified_closure, 
-	     [ $stream->alternative_closure,
-	       # ${REG_ATTVALUE_NOT_SQUOTE}
-	       [ $stream->matchRe_closure, $REG_ATTVALUE_NOT_SQUOTE ],
-	       # Reference
-	       $stream->$TOKEN_REFERENCE_CLOSURE(@_),
-	     ],
-	     0,
-	     undef
-	   ],
-	   # '
-	   [ $stream->matchChar_closure, '\'' ],
-	 ]
-	);
-};
-
-#
-# ENTITYVALUE is /"(${REG_ENTITYVALUE_NOT_DQUOTE}|PEReference|Reference)*"/
-#             or /'(${REG_ENTITYVALUE_NOT_DQUOTE}|PEReference|Reference)*'/
-#
-# where Reference is: EntityRef | CharRef
-# ------------------------------------------
-$TOKEN{ENTITYVALUE} = sub {
-    my $stream = shift;
-    
-    return $stream->alternative
-	(@_,
-	 [ $stream->group_closure,
-	   # "
-	   [ $stream->matchChar_closure, '"' ],
-	   # (${REG_ENTITYVALUE_NOT_DQUOTE}|Reference)*
-	   [ $stream->quantified_closure, 
-	     [ $stream->alternative_closure,
-	       # ${REG_ENTITYVALUE_NOT_DQUOTE}
-	       [ $stream->matchRe_closure, $REG_ENTITYVALUE_NOT_DQUOTE ],
-	       # PEReference
-	       #$stream->$TOKEN_PEREFERENCE_CLOSURE(@_),
-	       # Reference
-	       $stream->$TOKEN_REFERENCE_CLOSURE(@_),
-	     ],
-	     0,
-	     undef
-	   ],
-	   # "
-	   [ $stream->matchChar_closure, '"' ],
-	 ],
-	 [ $stream->group_closure,
-	   # '
-	   [ $stream->matchChar_closure, '\'' ],
-	   # (${REG_ENTITYVALUE_NOT_SQUOTE}|Reference)*
-	   [ $stream->quantified_closure, 
-	     # 
-	     [ $stream->alternative_closure,
-	       # ${REG_ENTITYVALUE_NOT_SQUOTE}
-	       [ $stream->matchRe_closure, $REG_ENTITYVALUE_NOT_SQUOTE ],
-	       # PEReference
-	       #$stream->$TOKEN_PEREFERENCE_CLOSURE(@_),
-	       # Reference
-	       $stream->$TOKEN_REFERENCE_CLOSURE(@_),
-	     ],
-	     0,
-	     undef
-	     ],
-	   # '
-	   [ $stream->matchChar_closure, '\'' ],
-	 ]
-	);
-};
-
-#
-# Fixed strings
-#
-$TOKEN{X20}              = sub { my $stream = shift; return $stream->matchChar(@_, "\x{20}") };
-$TOKEN{DQUOTE}           = sub { my $stream = shift; return $stream->matchChar(@_, '"') };
-$TOKEN{SQUOTE}           = sub { my $stream = shift; return $stream->matchChar(@_, "'") };
-$TOKEN{EQUAL}            = sub { my $stream = shift; return $stream->matchChar(@_, '=') };
-$TOKEN{LBRACKET}         = sub { my $stream = shift; return $stream->matchChar(@_, '[') };
-$TOKEN{RBRACKET}         = sub { my $stream = shift; return $stream->matchChar(@_, ']') };
-$TOKEN{XTAG_BEG}         = sub { my $stream = shift; return $stream->matchChar(@_, '<') };
-$TOKEN{XTAG_END}         = sub { my $stream = shift; return $stream->matchChar(@_, '>') };
-$TOKEN{QUESTION_MARK}    = sub { my $stream = shift; return $stream->matchChar(@_, '?') };
-$TOKEN{STAR}             = sub { my $stream = shift; return $stream->matchChar(@_, '*') };
-$TOKEN{PLUS}             = sub { my $stream = shift; return $stream->matchChar(@_, '+') };
-$TOKEN{LPAREN}           = sub { my $stream = shift; return $stream->matchChar(@_, '(') };
-$TOKEN{RPAREN}           = sub { my $stream = shift; return $stream->matchChar(@_, ')') };
-$TOKEN{PIPE}             = sub { my $stream = shift; return $stream->matchChar(@_, '|') };
-$TOKEN{COMMA}            = sub { my $stream = shift; return $stream->matchChar(@_, ',') };
-$TOKEN{PERCENT}          = sub { my $stream = shift; return $stream->matchChar(@_, '%') };
-
-$TOKEN{COMMENT_BEG}      = sub { my $stream = shift; return $stream->matchString(@_, '<!--') };
-$TOKEN{COMMENT_END}      = sub { my $stream = shift; return $stream->matchString(@_, '-->') };
-$TOKEN{PI_BEG}           = sub { my $stream = shift; return $stream->matchString(@_, '<?') };
-$TOKEN{PI_END}           = sub { my $stream = shift; return $stream->matchString(@_, '?>') };
-$TOKEN{CDSTART}          = sub { my $stream = shift; return $stream->matchString(@_, '<![CDATA[') };
-$TOKEN{CDEND}            = sub { my $stream = shift; return $stream->matchString(@_, ']]>') };
-$TOKEN{XML_BEG}          = sub { my $stream = shift; return $stream->matchString(@_, '<?xml') };
-$TOKEN{XML_END}          = sub { my $stream = shift; return $stream->matchString(@_, '?>') };
-$TOKEN{VERSION}          = sub { my $stream = shift; return $stream->matchString(@_, 'version') };
-$TOKEN{DOCTYPE_BEG}      = sub { my $stream = shift; return $stream->matchString(@_, '<!DOCTYPE') };
-$TOKEN{STANDALONE}       = sub { my $stream = shift; return $stream->matchString(@_, 'standalone') };
-$TOKEN{YES}              = sub { my $stream = shift; return $stream->matchString(@_, 'yes') };
-$TOKEN{NO}               = sub { my $stream = shift; return $stream->matchString(@_, 'no') };
-$TOKEN{ETAG_BEG}         = sub { my $stream = shift; return $stream->matchString(@_, '</') };
-$TOKEN{EMPTYELEMTAG_END} = sub { my $stream = shift; return $stream->matchString(@_, '/>') };
-$TOKEN{ELEMENTDECL_BEG}  = sub { my $stream = shift; return $stream->matchString(@_, '<!ELEMENT') };
-$TOKEN{EMPTY}            = sub { my $stream = shift; return $stream->matchString(@_, 'EMPTY') };
-$TOKEN{ANY}              = sub { my $stream = shift; return $stream->matchString(@_, 'ANY') };
-$TOKEN{RPARENSTAR}       = sub { my $stream = shift; return $stream->matchString(@_, '(*') };
-$TOKEN{PCDATA}           = sub { my $stream = shift; return $stream->matchString(@_, '#PCDATA') };
-$TOKEN{ATTLIST_BEG}      = sub { my $stream = shift; return $stream->matchString(@_, '<!ATTLIST') };
-$TOKEN{STRINGTYPE}       = sub { my $stream = shift; return $stream->matchString(@_, 'CDATA') };
-$TOKEN{TYPE_ID}          = sub { my $stream = shift; return $stream->matchString(@_, 'ID') };
-$TOKEN{TYPE_IDREF}       = sub { my $stream = shift; return $stream->matchString(@_, 'IDREF') };
-$TOKEN{TYPE_IDREFS}      = sub { my $stream = shift; return $stream->matchString(@_, 'IDREFS') };
-$TOKEN{TYPE_ENTITY}      = sub { my $stream = shift; return $stream->matchString(@_, 'ENTITY') };
-$TOKEN{TYPE_ENTITIES}    = sub { my $stream = shift; return $stream->matchString(@_, 'ENTITIES') };
-$TOKEN{TYPE_NMTOKEN}     = sub { my $stream = shift; return $stream->matchString(@_, 'NMTOKEN') };
-$TOKEN{TYPE_NMTOKENS}    = sub { my $stream = shift; return $stream->matchString(@_, 'NMTOKENS') };
-$TOKEN{NOTATION}         = sub { my $stream = shift; return $stream->matchString(@_, 'NOTATION') };
-$TOKEN{REQUIRED}         = sub { my $stream = shift; return $stream->matchString(@_, '#REQUIRED') };
-$TOKEN{IMPLIED}          = sub { my $stream = shift; return $stream->matchString(@_, '#IMPLIED') };
-$TOKEN{FIXED}            = sub { my $stream = shift; return $stream->matchString(@_, '#FIXED') };
-$TOKEN{SECT_BEG}         = sub { my $stream = shift; return $stream->matchString(@_, '<![') };
-$TOKEN{INCLUDE}          = sub { my $stream = shift; return $stream->matchString(@_, 'INCLUDE') };
-$TOKEN{SECT_END}         = sub { my $stream = shift; return $stream->matchString(@_, ']]>') };
-$TOKEN{IGNORE}           = sub { my $stream = shift; return $stream->matchString(@_, 'IGNORE') };
-$TOKEN{EDECL_BEG}        = sub { my $stream = shift; return $stream->matchString(@_, '<!ENTITY') };
-$TOKEN{SYSTEM}           = sub { my $stream = shift; return $stream->matchString(@_, 'SYSTEM') };
-$TOKEN{PUBLIC}           = sub { my $stream = shift; return $stream->matchString(@_, 'PUBLIC') };
-$TOKEN{NDATA}            = sub { my $stream = shift; return $stream->matchString(@_, 'NDATA') };
-$TOKEN{ENCODING}         = sub { my $stream = shift; return $stream->matchString(@_, 'encoding') };
-$TOKEN{NOTATION_BEG}     = sub { my $stream = shift; return $stream->matchString(@_, '<!NOTATION') };
 
 1;
 __DATA__
