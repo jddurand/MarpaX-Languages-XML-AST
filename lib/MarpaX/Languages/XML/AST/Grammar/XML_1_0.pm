@@ -151,7 +151,7 @@ foreach (qw/document/) {
 sub new {
   my ($class, %opts) = @_;
 
-  my $self = {buf => undef, mapbeg => 0, mapend => 0};
+  my $self = {buf => undef, mapbeg => 0, origmapend => 0, mapend => 0, lastBufNo => 0};
 
   bless($self, $class);
 
@@ -161,17 +161,30 @@ sub new {
 sub _donePos {
     # my ($self, $stream, $pos) = @_;
 
-    if ($_[2] >= $_[0]->{mapend}) {
+    # $log->tracef('_donePos %d', $_[2]);
+
+    if ($_[2] >= $_[0]->{origmapend}) {
 	#
 	# Current buffer, eventually appended with content of next
-	# buffer, is over
+	# buffer(s), is over
 	#
-	$_[1]->doneb(0);
+        my $mapend;
+        while (defined($mapend = $_[1]->mapend(0))) {
+          if ($_[2] >= $mapend) {
+            $_[1]->doneb(0);
+          } else {
+            last;
+          }
+        }
 	#
 	# Assigning mapend to zero is enough for us
 	# to know nothing else is cached
 	#
+	$_[0]->{buf} = undef;
+	$_[0]->{mapbeg} = 0;
 	$_[0]->{mapend} = 0;
+	$_[0]->{origmapend} = 0;
+	$_[0]->{lastBufNo} = 0;
     }
 }
 
@@ -179,83 +192,67 @@ sub _donePos {
 # For performance, everything is done one the stack
 # This routine check AND position buffer
 #
-sub _canPos {
-    # my ($self, $stream, $pos) = @_;
-
-    if ($_[2] < $_[0]->{mapend}) {
-      #
-      # Current buffer
-      #
-      pos($_[0]->{buf}) = $_[2] - $_[0]->{mapbeg};
-      return 1;
-  } else {
-      if (! $_[0]->{mapend}) {
-	  #
-	  # No buffer
-	  #
-	  ($_[0]->{buf}, $_[0]->{mapbeg}, $_[0]->{mapend}) = $_[1]->getb();
-	  if (! defined($_[0]->{buf})) {
-	      return undef;
-	  } else {
-	      return $_[0]->_canPos($_[1], $_[2]);
-	  }
-      } else {
-	  #
-	  # Need to append
-	  #
-	  my $append = $_[1]->substr($_[0]->{mapend}, $_[2] - $_[0]->{mapend} + 1);
-	  if (defined($append)) {
-	      $_[0]->{buf} .= $append;
-	      $_[0]->{mapend} = $_[2]+1;
-	      return $_[0]->_canPos($_[1], $_[2]);
-	  } else {
-	      return undef;
-	  }
-      }
-  }
-
-}
-
-#
-# For performance, everything is done one the stack
-# This routine check AND EVENTUALLY position buffer
-# It has to be called only after a successful m//gc
-# or a previous call to _canPos().
+# _isPos is functionally equivalent to _canPos, but prevent an
+# unnecessary call to pos(). _isPos() should be called ONLY after
+# a successful m//g or after a _canPos.
 #
 sub _isPos {
     # my ($self, $stream, $pos) = @_;
 
     if ($_[2] < $_[0]->{mapend}) {
-      #
-      # Current buffer. Assumed to be already correctly positionned.
-      #
-      return 1;
-  } else {
-      if (! $_[0]->{mapend}) {
-	  #
-	  # No buffer
-	  #
-	  ($_[0]->{buf}, $_[0]->{mapbeg}, $_[0]->{mapend}) = $_[1]->getb();
-	  if (! defined($_[0]->{buf})) {
-	      return undef;
-	  } else {
-	      return $_[0]->_canPos($_[1], $_[2]);
-	  }
-      } else {
-	  #
-	  # Need to append
-	  #
-	  my $append = $_[1]->substr($_[0]->{mapend}, $_[2] - $_[0]->{mapend} + 1);
-	  if (defined($append)) {
-	      $_[0]->{buf} .= $append;
-	      $_[0]->{mapend} = $_[2]+1;
-	      return $_[0]->_canPos($_[1], $_[2]);
-	  } else {
-	      return undef;
-	  }
-      }
-  }
+	#
+	# Current buffer. pos($self->{buf}) ASSUMED to be already correct.
+	#
+	# $log->tracef('_isPos %d : internal pos %s : %s', $_[2], pos($_[0]->{buf}), substr($_[0]->{buf}, pos($_[0]->{buf})));
+	return 1;
+    } else {
+	return $_[0]->_canPos($_[1], $_[2]);
+    }
+}
 
+sub _canPos {
+    # my ($self, $stream, $pos) = @_;
+
+    if ($_[2] < $_[0]->{mapend}) {
+	#
+	# Current buffer
+	#
+	pos($_[0]->{buf}) = $_[2] - $_[0]->{mapbeg};
+	# $log->tracef('_canPos %d : internal pos %s : %s', $_[2], pos($_[0]->{buf}), substr($_[0]->{buf}, pos($_[0]->{buf})));
+	return 1;
+    } else {
+	if (! $_[0]->{mapend}) {
+	    #
+	    # No buffer
+	    #
+	    $_[0]->{buf} = $_[1]->fetchb(0);
+	    if (! defined($_[0]->{buf})) {
+		return undef;
+	    } else {
+		# $log->tracef('_canPos %d : fetched buffer 0: %s', $_[2], $_[0]->{buf});
+		$_[0]->{mapbeg} = $_[1]->mapbeg(0);
+		$_[0]->{mapend} = $_[1]->mapend(0);
+		$_[0]->{origmapend} = $_[0]->{mapend};
+		$_[0]->{lastBufNo} = 0;
+		return $_[0]->_canPos($_[1], $_[2]);
+	    }
+	} else {
+	    #
+	    # Need to append. We take the next uncached buffer
+	    #
+	    my $nextBufNo = $_[0]->{lastBufNo} + 1;
+	    # $log->tracef('_canPos %d : append buffer %d', $_[2], $nextBufNo);
+	    my $append = $_[1]->fetchb($nextBufNo);
+	    if (defined($append)) {
+		$_[0]->{buf} .= $append;
+		$_[0]->{mapend} = $_[1]->mapend($nextBufNo);
+		$_[0]->{lastBufNo} = $nextBufNo;
+		return $_[0]->_canPos($_[1], $_[2]);
+	    } else {
+		return undef;
+	    }
+	}
+    }
 }
 
 sub parse {
@@ -273,16 +270,15 @@ sub parse {
   #
   my $stream = MarpaX::Languages::XML::AST::StreamIn->new(input => $input);
   my $pos = 0;
+  my $bigtrace = 100000;
   #
   # Loop until nothing left in the buffer
   #
-  my $now = time();
   while (1) {
 
     last if (! $self->_canPos($stream, $pos));
 
     my @tokens = ();
-    my $discard = 0;
     my $value = '';
     my $maxTokenLength = 0;
     #
@@ -290,10 +286,19 @@ sub parse {
     # This information is retreived once per loop on events.
     #
     my @c = ();
+    #
+    # By definition we know we can pos() here. No need to call again _canPos()
+    # for a predictable result at a predictable position.
+    #
+    my $internalPos = pos($self->{buf});
 
     foreach (@{$recce->events()}) {
       my ($terminal) = @{$_};
       my $workpos = $pos;
+
+      pos($self->{buf}) = $internalPos;
+
+      # $log->tracef('pos=%6d : trying %s, pos($self->{buf})=%s', $pos, $terminal, pos($self->{buf}));
 
       my $match = '';
       if ($terminal eq 'NAME' || $terminal eq 'PITARGET') {
@@ -723,25 +728,20 @@ sub parse {
         }
       }
       elsif (exists($STRSPLIT{$terminal})) {
-        my $lastok = 1;
-        foreach (0..$STRSPLIT{$terminal}->[0]) {
-          #
-          # The very first character is already reachable, the check is done
-          # outside of the for loop on terminals
-          #
-          if ($_ > 0 && ! defined($c[$_]) && ! $self->_canPos($stream, $workpos)) {
-            $lastok = 0;
-            last;
-          }
-          if (($c[$_] //= substr($self->{buf}, pos($self->{buf}), 1)) ne $STRSPLIT{$terminal}->[1]->[$_]) {
-            $lastok = 0;
-            last;
-          }
-          ++$workpos;
-        }
-        if ($lastok) {
-          $match = $STR{$terminal};
-        }
+	  if ($STRSPLIT{$terminal}->[0] == 0) {
+	      #
+	      # This terminal is a single character
+	      if (($c[0] //= substr($self->{buf}, pos($self->{buf}), 1)) eq $STR{$terminal}) {
+		  $match = $STR{$terminal};
+	      }      
+	  } else {
+	      my $curpos = pos($self->{buf});
+	      if ($self->_canPos($stream, $workpos + $STRSPLIT{$terminal}->[0])) {
+		  if (substr($self->{buf}, $curpos, pos($self->{buf}) - $curpos + 1) eq $STR{$terminal}) {
+		      $match = $STR{$terminal};
+		  }
+	      }
+	  }
       }
 
       my $tokenLength = length($match);
@@ -753,20 +753,7 @@ sub parse {
 	  } elsif ($tokenLength == $maxTokenLength) {
 	      push(@tokens, $terminal);
 	  }
-      } else {
-	  #
-	  # Acceptable only if this is a discarded characters
-	  #
-	  pos($self->{buf}) = $pos;
-          if ($self->{buf} =~ m/\G\s+/g) {
-	      $discard = $+[0] - $-[0];
-	  }
       }
-      #
-      # Buffer for real position $pos is reachable by definition, we just
-      # reposition for the next terminal
-      #
-      pos($self->{buf}) = $pos;
     }
     if (@tokens) {
 	foreach (@tokens) {
@@ -774,22 +761,33 @@ sub parse {
 	    # The array is a reference to [$name, $value], where value can be undef
 	    #
 	    # $log->tracef('pos=%6d : lexeme_alternative("%s", "%s")', $pos, $_, $value);
-	    $recce->lexeme_alternative($_, $value);
+	    # $recce->lexeme_alternative($_, $value);
+	    $recce->lexeme_alternative($_);
 	}
 	$recce->lexeme_complete(0, 1);
 	$pos += $maxTokenLength;
-    } elsif ($discard) {
-	$pos += $discard;
     } else {
-	last;
+	#
+	# Acceptable only if there are discardable characters
+	#
+	$self->_canPos($stream, $pos);
+	if ($self->{buf} =~ m/\G\s+/g) {
+	    # $log->tracef('pos=%6d : discarding %d characters', $pos, $+[0] - $-[0]);
+	    $pos += $+[0] - $-[0];
+	} else {
+	    # $log->tracef('pos=%6d : no token nor discardable character', $pos);
+	    last;
+	}
     }
-    if (time() - $now > 10) {
-      $log->tracef('pos=%6d : Exiting', $pos);
-      exit;
+
+    if ($pos >= $bigtrace) {
+	$log->tracef('pos=%6d', $pos);
+	$bigtrace += 100000;
     }
+
     $self->_donePos($stream, $pos);
   }
-  print STDERR $recce->show_progress;
+  #print STDERR $recce->show_progress;
   my $nvalue = 0;
   while (defined($_ = $recce->value)) {
       ++$nvalue;

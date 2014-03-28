@@ -98,13 +98,13 @@ sub _read {
     # position correctly eventual io layers.
     #
     if ($self->[ 6]) {
-	#$log->tracef('Asking input for %d characters from assumed position %d in buffer No %d', $self->[ 2], $pos, $idata);
+	# $log->tracef('Asking input for %d characters from assumed position %d in buffer No %d', $self->[ 2], $pos, $idata);
 	$n = $self->[ 0]->read($self->[ 1]->[$idata], $self->[ 2]) || 0;
     } elsif ($self->[ 7] >= 0) {
-	#$log->tracef('Reading %d characters from assumed position %d in buffer No %d', $self->[ 2], $pos, $idata);
+	# $log->tracef('Reading %d characters from assumed position %d in buffer No %d', $self->[ 2], $pos, $idata);
 	$n = read($self->[ 0], $self->[ 1]->[$idata], $self->[ 2]) || 0;
     } else {
-	#$log->tracef('Mapping scalar into buffer No %d, faking EOF', $idata);
+	# $log->tracef('Mapping scalar into buffer No %d, faking EOF', $idata);
 	#
 	# Assumed to be a true scalar - no real read, fake a single whole buffer
 	#
@@ -114,11 +114,11 @@ sub _read {
     }
     if ($self->[ 6] || $self->[ 7] >= 0) {
 	if ($n <= 0) {
-	    #$log->tracef('EOF');
+	    # $log->tracef('EOF');
 	    $self->[ 5] = 1;
 	    $n = 0;
 	} elsif ($n < $self->[ 2]) {
-	    #$log->tracef('EOF after %d characters', $n);
+	    # $log->tracef('EOF after %d characters', $n);
 	    $self->[ 5] = 1;
 	}
     }
@@ -128,7 +128,7 @@ sub _read {
 	$self->[ 4]->[$idata] =  $pos;
     }
     $self->[ 3]->[$idata] =  $self->[ 4]->[$idata] + $n;
-    #$log->tracef('Buffer No %d maps to positions [%d-%d[', $idata, $self->[ 4]->[$idata], $self->[ 3]->[$idata]);
+    # $log->tracef('Buffer No %d maps to positions [%d-%d[', $idata, $self->[ 4]->[$idata], $self->[ 3]->[$idata]);
     $self->[ 9] = $self->[ 3]->[$idata] - 1;
     $self->[ 8] = $idata + 1;
     if ($self->[ 5]) {
@@ -241,11 +241,17 @@ sub maxpos {
 }
 
 #
-# $n assumed to be >= 0
+# If $n is < 0, this will fetch next uncached buffer.
 # This routine can recurse, but at max once
 #
 sub fetchb {
     my ($self, $n) = @_;
+
+    $n //= 0;
+
+    if ($n < 0) {
+      $n = $self->[ 8];
+    }
 
     if ($self->[ 8] <= 0) {
 	#
@@ -326,11 +332,14 @@ sub donec {
 #
 sub doneb {
     my ($self, $n) = @_;
+
+    $n //= 0;
     #
     # We want to forget (FOREVER) buffer at position $n
     # Eventually previous buffers will be destroyed.
     #
     if ($n < $self->[ 8]) {
+        # $log->tracef('Destroying buffer No %d [%d-%d[', $n, $self->mapbeg($n), $self->mapend($n));
 	my $ndata = $n + 1;
 	splice(@{$self->[ 1]}, 0, $ndata);
 	splice(@{$self->[ 4]}, 0, $ndata);
