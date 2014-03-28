@@ -236,6 +236,8 @@ sub parse {
   my $now = time();
   while (1) {
 
+    last if (! $self->_canPos($stream, $pos));
+
     my @tokens = ();
     my $discard = 0;
     my $value = '';
@@ -249,7 +251,6 @@ sub parse {
     foreach (@{$recce->events()}) {
       my ($terminal) = @{$_};
       my $workpos = $pos;
-      last if (! $self->_canPos($stream, $workpos));
 
       my $match = '';
       if ($terminal eq 'NAME' || $terminal eq 'PITARGET') {
@@ -680,7 +681,11 @@ sub parse {
       elsif (exists($STRSPLIT{$terminal})) {
         my $lastok = 1;
         foreach (0..$STRSPLIT{$terminal}->[0]) {
-          if (! defined($c[$_]) && ! $self->_canPos($stream, $workpos)) {
+          #
+          # The very first character is already reachable, the check is done
+          # outside of the for loop on terminals
+          #
+          if ($_ > 0 && ! defined($c[$_]) && ! $self->_canPos($stream, $workpos)) {
             $lastok = 0;
             last;
           }
@@ -713,6 +718,11 @@ sub parse {
 	      $discard = $+[0] - $-[0];
 	  }
       }
+      #
+      # Buffer for real position $pos is reachable by definition, we just
+      # reposition for the next terminal
+      #
+      pos($self->{buf}) = $pos;
     }
     if (@tokens) {
 	foreach (@tokens) {
