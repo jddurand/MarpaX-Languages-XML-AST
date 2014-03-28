@@ -151,7 +151,7 @@ foreach (qw/document/) {
 sub new {
   my ($class, %opts) = @_;
 
-  my $self = {buf => undef, mapbeg => undef, mapend => undef};
+  my $self = {buf => undef, mapbeg => 0, mapend => 0};
 
   bless($self, $class);
 
@@ -159,36 +159,79 @@ sub new {
 }
 
 sub _donePos {
-    my ($self, $stream, $pos) = @_;
+    # my ($self, $stream, $pos) = @_;
 
-    if ($pos >= $self->{mapend}) {
+    if ($_[2] >= $_[0]->{mapend}) {
 	#
 	# Current buffer, eventually appended with content of next
 	# buffer, is over
 	#
-	$stream->doneb(0);
+	$_[1]->doneb(0);
 	#
 	# Assigning mapend to zero is enough for us
 	# to know nothing else is cached
 	#
-	$self->{mapend} = 0;
+	$_[0]->{mapend} = 0;
     }
 }
 
 #
 # For performance, everything is done one the stack
+# This routine check AND position buffer
 #
 sub _canPos {
     # my ($self, $stream, $pos) = @_;
 
-    if (defined($_[0]->{mapend}) && $_[2] < $_[0]->{mapend}) {
+    if ($_[2] < $_[0]->{mapend}) {
       #
-      # Usually this is current buffer.
+      # Current buffer
       #
       pos($_[0]->{buf}) = $_[2] - $_[0]->{mapbeg};
       return 1;
   } else {
-      if (! defined($_[0]->{mapend})) {
+      if (! $_[0]->{mapend}) {
+	  #
+	  # No buffer
+	  #
+	  ($_[0]->{buf}, $_[0]->{mapbeg}, $_[0]->{mapend}) = $_[1]->getb();
+	  if (! defined($_[0]->{buf})) {
+	      return undef;
+	  } else {
+	      return $_[0]->_canPos($_[1], $_[2]);
+	  }
+      } else {
+	  #
+	  # Need to append
+	  #
+	  my $append = $_[1]->substr($_[0]->{mapend}, $_[2] - $_[0]->{mapend} + 1);
+	  if (defined($append)) {
+	      $_[0]->{buf} .= $append;
+	      $_[0]->{mapend} = $_[2]+1;
+	      return $_[0]->_canPos($_[1], $_[2]);
+	  } else {
+	      return undef;
+	  }
+      }
+  }
+
+}
+
+#
+# For performance, everything is done one the stack
+# This routine check AND EVENTUALLY position buffer
+# It has to be called only after a successful m//gc
+# or a previous call to _canPos().
+#
+sub _isPos {
+    # my ($self, $stream, $pos) = @_;
+
+    if ($_[2] < $_[0]->{mapend}) {
+      #
+      # Current buffer. Assumed to be already correctly positionned.
+      #
+      return 1;
+  } else {
+      if (! $_[0]->{mapend}) {
 	  #
 	  # No buffer
 	  #
@@ -261,11 +304,11 @@ sub parse {
         #
         # ----------------------------------------------
         if ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/g) {
-          next if (! $self->_canPos($stream, ++$workpos));
+          next if (! $self->_isPos($stream, ++$workpos));
           $match = $&;
           my $length = 0;
           while (1) {
-            last if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length)));
+            last if (($length > 0) && ! $self->_isPos($stream, ($workpos += $length)));
             last if ($self->{buf} !~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/g);
             $length = $+[0] - $-[0];
             last if ($length <= 0);
@@ -283,11 +326,11 @@ sub parse {
         # ENCNAME is /${REG_ALPHA}${REG_ENCNAME_REST}*/
         # ----------------------------------------------
         if ($self->{buf} =~ m/\G[A-Za-z]/g) {
-          next if (! $self->_canPos($stream, ++$workpos));
+          next if (! $self->_isPos($stream, ++$workpos));
           $match = $&;
           my $length = 0;
           while (1) {
-            last if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length)));
+            last if (($length > 0) && ! $self->_isPos($stream, ($workpos += $length)));
             last if ($self->{buf} !~ m/\G[A-Za-z0-9._-]*/g);
             $length = $+[0] - $-[0];
             last if ($length <= 0);
@@ -312,7 +355,7 @@ sub parse {
               my $lastok = 1;
               while ($self->{buf} =~ m/\G[0-9a-fA-F]+/gc) {   # Note the /c modifier
                 $submatch .= $&;
-                if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0])))) {
+                if (! $self->_isPos($stream, ($workpos += ($+[0] - $-[0])))) {
                   $lastok = 0;
                   last;
                 }
@@ -330,7 +373,7 @@ sub parse {
               my $lastok = 1;
               while ($self->{buf} =~ m/\G[0-9]+/gc) {   # Note the /c modifier
                 $submatch .= $&;
-                if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0])))) {
+                if (! $self->_isPos($stream, ($workpos += ($+[0] - $-[0])))) {
                   $lastok = 0;
                   last;
                 }
@@ -350,7 +393,7 @@ sub parse {
         # ----------------
         while ($self->{buf} =~ m/\G[\x{20}\x{9}\x{D}\x{A}]+/g) {
           $match .= $&;
-          last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
+          last if (! $self->_isPos($stream, ($workpos += ($+[0] - $-[0]))));
         }
       }
       elsif ($terminal eq 'NMTOKEN') {
@@ -359,7 +402,7 @@ sub parse {
         # -----------------------
         while ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]+/g) {
           $match .= $&;
-          last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
+          last if (! $self->_isPos($stream, ($workpos += ($+[0] - $-[0]))));
         }
       }
       elsif ($terminal eq 'SYSTEMLITERAL') {
@@ -372,7 +415,7 @@ sub parse {
           my $length = 0;
           my $lastok = 1;
           while (1) {
-            if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length))) {
+            if (($length > 0) && ! $self->_isPos($stream, ($workpos += $length))) {
               $lastok = 0;
               last;
             }
@@ -393,7 +436,7 @@ sub parse {
           my $length = 0;
           my $lastok = 1;
           while (1) {
-            if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length))) {
+            if (($length > 0) && ! $self->_isPos($stream, ($workpos += $length))) {
               $lastok = 0;
               last;
             }
@@ -419,7 +462,7 @@ sub parse {
           my $length = 0;
           my $lastok = 1;
           while (1) {
-            if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length))) {
+            if (($length > 0) && ! $self->_isPos($stream, ($workpos += $length))) {
               $lastok = 0;
               last;
             }
@@ -440,7 +483,7 @@ sub parse {
           my $length = 0;
           my $lastok = 1;
           while (1) {
-            if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length))) {
+            if (($length > 0) && ! $self->_isPos($stream, ($workpos += $length))) {
               $lastok = 0;
               last;
             }
@@ -463,7 +506,7 @@ sub parse {
         while ($self->{buf} =~ m/\G[^<&]*/g) {
           last if ($-[0] == $+[0]);
           $match .= $&;
-          last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
+          last if (! $self->_isPos($stream, ($workpos += ($+[0] - $-[0]))));
         }
         if (length($match) > 0) {
           if ($match =~ /\]\]>/i) {
@@ -481,7 +524,7 @@ sub parse {
         while ($self->{buf} =~ m/\G[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]*/g) {
           last if ($-[0] == $+[0]);
           $match .= $&;
-          last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
+          last if (! $self->_isPos($stream, ($workpos += ($+[0] - $-[0]))));
         }
         if (length($match) > 0) {
           my @exclusionString =
@@ -508,7 +551,7 @@ sub parse {
             next if (! $self->_canPos($stream, ++$workpos));
             while ($self->{buf} =~ m/\G[0-9]+/g) {
               $match .= $&;
-              last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
+              last if (! $self->_isPos($stream, ($workpos += ($+[0] - $-[0]))));
             }
           }
         }
@@ -550,14 +593,15 @@ sub parse {
               if (substr($self->{buf}, pos($self->{buf}), 1) eq '#') {
                 last if (! $self->_canPos($stream, ++$subworkpos));
                 if (substr($self->{buf}, pos($self->{buf}), 1) eq 'x') {
+                  last if (! $self->_canPos($stream, ++$subworkpos));
                   #
                   # We expect ${REG_HEXDIGIT}+ followed by ';'
                   #
                   my $submatch = '';
                   my $sublastok = 1;
-                  while ($self->{buf} =~ m/\G[0-9a-fA-F]+/g) {   # Note the /c modifier
+                  while ($self->{buf} =~ m/\G[0-9a-fA-F]+/gc) {   # Note the /c modifier
                     $submatch .= $&;
-                    if (! $self->_canPos($stream, ($subworkpos += ($+[0] - $-[0])))) {
+                    if (! $self->_isPos($stream, ($subworkpos += ($+[0] - $-[0])))) {
                       $sublastok = 0;
                       last;
                     }
@@ -580,7 +624,7 @@ sub parse {
                   my $sublastok = 1;
                   while ($self->{buf} =~ m/\G[0-9]+/gc) {   # Note the /c modifier
                     $submatch .= $&;
-                    if (! $self->_canPos($stream, ($subworkpos += ($+[0] - $-[0])))) {
+                    if (! $self->_isPos($stream, ($subworkpos += ($+[0] - $-[0])))) {
                       $sublastok = 0;
                       last;
                     }
@@ -606,7 +650,7 @@ sub parse {
                   $submatch = $&;
                   my $sublength = 1;
                   while (1) {
-                    if (! $self->_canPos($stream, ($subworkpos += $sublength))) {
+                    if (! $self->_isPos($stream, ($subworkpos += $sublength))) {
                       $sublastok = 0;
                       last;
                     }
@@ -661,7 +705,7 @@ sub parse {
             $submatch = $&;
             my $sublength = 1;
             while (1) {
-              if (! $self->_canPos($stream, ($workpos += $sublength))) {
+              if (! $self->_isPos($stream, ($workpos += $sublength))) {
                 $sublastok = 0;
                 last;
               }
