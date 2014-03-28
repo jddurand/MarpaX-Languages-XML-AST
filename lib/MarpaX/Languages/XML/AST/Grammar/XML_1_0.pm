@@ -127,6 +127,13 @@ $STR{NDATA}            = 'NDATA';
 $STR{ENCODING}         = 'encoding';
 $STR{NOTATION_BEG}     = '<!NOTATION';
 #
+# For optimization, we presplit %STR into its length and list of characters
+#
+our %STRSPLIT = ();
+foreach (keys %STR) {
+  $STRSPLIT{$_} = [ length($STR{$_}) - 1, [ split('', $STR{$_}) ] ];
+}
+#
 # There are several DIFFERENT top-level productions in the XML grammar
 #
 our %G = ();
@@ -233,11 +240,15 @@ sub parse {
     my $discard = 0;
     my $value = '';
     my $maxTokenLength = 0;
+    #
+    # Quite a lot of terminals are starting with an explicit substr().
+    # This information is retreived once per loop on events.
+    #
+    my @c = ();
 
     foreach (@{$recce->events()}) {
       my ($terminal) = @{$_};
       my $workpos = $pos;
-      my $doneTerminal = 0;
       last if (! $self->_canPos($stream, $workpos));
 
       my $match = '';
@@ -288,11 +299,11 @@ sub parse {
         # CHARREF is /&#${REG_DIGIT}+;/
         #         or /&#x${REG_HEXDIGIT}+;/
         # ---------------------------------
-        if (substr($self->{buf}, pos($self->{buf}), 1) eq '&') {
-          next if (! $self->_canPos($stream, ++$workpos));
-          if (substr($self->{buf}, pos($self->{buf}), 1) eq '#') {
-            next if (! $self->_canPos($stream, ++$workpos));
-            if (substr($self->{buf}, pos($self->{buf}), 1) eq 'x') {
+        if (($c[0] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '&') {
+          next if (! defined($c[1]) && ! $self->_canPos($stream, ++$workpos));
+          if (($c[1] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '#') {
+            next if (! defined($c[2]) && ! $self->_canPos($stream, ++$workpos));
+            if (($c[2] //= substr($self->{buf}, pos($self->{buf}), 1)) eq 'x') {
               #
               # We expect ${REG_HEXDIGIT}+ followed by ';'
               #
@@ -307,7 +318,7 @@ sub parse {
               }
               if ($lastok && length($submatch) > 0) {
                 if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
-                  $match = "&#x${submatch};";
+                  $match = '&#x' . ${submatch} . ';';
                 }
               }
             } else {
@@ -325,7 +336,7 @@ sub parse {
               }
               if ($lastok && length($submatch) > 0) {
                 if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
-                  $match = "&#${submatch};";
+                  $match = '&#' . ${submatch} .';';
                 }
               }
             }
@@ -338,7 +349,6 @@ sub parse {
         # ----------------
         while ($self->{buf} =~ m/\G[\x{20}\x{9}\x{D}\x{A}]+/g) {
           $match .= $&;
-	  $doneTerminal = 1;
           last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
         }
       }
@@ -355,7 +365,7 @@ sub parse {
         #
         # SYSTEMLITERAL is /"${REG_NOT_DQUOTE}*"/ or /'${REG_NOT_SQUOTE}*'/
         # ------------------------------------------------------------------
-        if (substr($self->{buf}, pos($self->{buf}), 1) eq '"') {
+        if (($c[0] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '"') {
           next if (! $self->_canPos($stream, ++$workpos));
           my $submatch = '';
           my $length = 0;
@@ -372,11 +382,11 @@ sub parse {
           }
           if ($lastok) {
             if (substr($self->{buf}, pos($self->{buf}), 1) eq '"') {
-              $match = "\"${submatch}\"";
+              $match = '"' . ${submatch} . '"';
             }
           }
         }
-        elsif (substr($self->{buf}, pos($self->{buf}), 1) eq '\'') {
+        elsif (($c[0] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '\'') {
           next if (! $self->_canPos($stream, ++$workpos));
           my $submatch = '';
           my $length = 0;
@@ -393,7 +403,7 @@ sub parse {
           }
           if ($lastok) {
             if (substr($self->{buf}, pos($self->{buf}), 1) eq '\'') {
-              $match = "'${submatch}'";
+              $match = '\'' . ${submatch} . '\'';
             }
           }
         }
@@ -402,7 +412,7 @@ sub parse {
         #
         # PUDIDLITERAL is /"${REG_PUBIDCHAR_NOT_DQUOTE}*"/ or /'${REG_PUBIDCHAR_NOT_SQUOTE}*'/
         # ------------------------------------------------------------------------------------
-        if (substr($self->{buf}, pos($self->{buf}), 1) eq '"') {
+        if (($c[0] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '"') {
           next if (! $self->_canPos($stream, ++$workpos));
           my $submatch = '';
           my $length = 0;
@@ -419,11 +429,11 @@ sub parse {
           }
           if ($lastok) {
             if (substr($self->{buf}, pos($self->{buf}), 1) eq '"') {
-              $match = "\"${submatch}\"";
+              $match = '"' . ${submatch} . '"';
             }
           }
         }
-        elsif (substr($self->{buf}, pos($self->{buf}), 1) eq '\'') {
+        elsif (($c[0] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '\'') {
           next if (! $self->_canPos($stream, ++$workpos));
           my $submatch = '';
           my $length = 0;
@@ -440,7 +450,7 @@ sub parse {
           }
           if ($lastok) {
             if (substr($self->{buf}, pos($self->{buf}), 1) eq '\'') {
-              $match = "'${submatch}'";
+              $match = '\'' . ${submatch} . '\'';
             }
           }
         }
@@ -491,9 +501,9 @@ sub parse {
         #
         # VERSIONNUM is /1.${REG_DIGIT}+/
         # -------------------------------
-        if (substr($self->{buf}, pos($self->{buf}), 1) eq '1') {
-          next if (! $self->_canPos($stream, ++$workpos));
-          if (substr($self->{buf}, pos($self->{buf}), 1) eq '.') {
+        if (($c[0] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '1') {
+          next if (! defined($c[1]) && ! $self->_canPos($stream, ++$workpos));
+          if (($c[1] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '.') {
             next if (! $self->_canPos($stream, ++$workpos));
             while ($self->{buf} =~ m/\G[0-9]+/g) {
               $match .= $&;
@@ -501,7 +511,7 @@ sub parse {
             }
           }
         }
-        $match = "1.$match" if (length($match) > 0);
+        $match = '1.' . $match if (length($match) > 0);
       }
       elsif ($terminal eq 'ATTVALUE') {
         #
@@ -513,13 +523,13 @@ sub parse {
         # and EntityRef   is /&${NAME};/
         #     CharRef     is /&#${REG_DIGIT}+;/ or /&#x${REG_HEXDIGIT}+;/
         # ------------------------------------------------------
-        my $c = substr($self->{buf}, pos($self->{buf}), 1);
-        if ($c eq '"' || $c eq '\'') {
-	  my $dquoteMode = ($c eq '"');
+        $c[0] //= substr($self->{buf}, pos($self->{buf}), 1);
+        if ($c[0] eq '"' || $c[0] eq '\'') {
+	  my $dquoteMode = ($c[0] eq '"');
           next if (! $self->_canPos($stream, ++$workpos));
           my $length = 0;
           my $lastok = 1;
-          $match = $c;
+          $match = $c[0];
           while (1) {
             if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length))) {
               $lastok = 0;
@@ -623,8 +633,8 @@ sub parse {
             }
           }
           if ($lastok) {
-            if (substr($self->{buf}, pos($self->{buf}), 1) eq $c) {
-              $match .= $c;
+            if (substr($self->{buf}, pos($self->{buf}), 1) eq $c[0]) {
+              $match .= $c[0];
             } else {
               $match = '';
             }
@@ -638,8 +648,8 @@ sub parse {
         # ENTITYREF   is /&${NAME};/
         # PEREFERENCE is /%${NAME};/
         # -------------------------------
-        my $c = substr($self->{buf}, pos($self->{buf}), 1);
-        if ($c eq '&' || $c eq '%') {
+        $c[0] //= substr($self->{buf}, pos($self->{buf}), 1);
+        if ($c[0] eq '&' || $c[0] eq '%') {
           next if (! $self->_canPos($stream, ++$workpos));
           #
           # We expect ${NAME}  followed by ';'
@@ -661,23 +671,24 @@ sub parse {
             }
             if ($sublastok) {
               if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
-                $match = "${c}${submatch};";
+                $match = $c[0]. ${submatch}. ';';
               }
             }
           }
         }
       }
-      elsif (exists($STR{$terminal})) {
+      elsif (exists($STRSPLIT{$terminal})) {
         my $lastok = 1;
-        foreach (0..length($STR{$terminal})-1) {
-          if ($_ > 0 && ! $self->_canPos($stream, ++$workpos)) {
+        foreach (0..$STRSPLIT{$terminal}->[0]) {
+          if (! defined($c[$_]) && ! $self->_canPos($stream, $workpos)) {
             $lastok = 0;
             last;
           }
-          if (substr($self->{buf}, pos($self->{buf}), 1) ne substr($STR{$terminal}, $_, 1)) {
+          if (($c[$_] //= substr($self->{buf}, pos($self->{buf}), 1)) ne $STRSPLIT{$terminal}->[1]->[$_]) {
             $lastok = 0;
             last;
           }
+          ++$workpos;
         }
         if ($lastok) {
           $match = $STR{$terminal};
@@ -702,10 +713,6 @@ sub parse {
 	      $discard = $+[0] - $-[0];
 	  }
       }
-      #
-      # Sometimes, when a terminal matches, we know the others will fail
-      #
-      last if ($doneTerminal);
     }
     if (@tokens) {
 	foreach (@tokens) {
