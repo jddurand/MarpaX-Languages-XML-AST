@@ -237,6 +237,7 @@ sub parse {
     foreach (@{$recce->events()}) {
       my ($terminal) = @{$_};
       my $workpos = $pos;
+      my $doneTerminal = 0;
       last if (! $self->_canPos($stream, $workpos));
 
       my $match = '';
@@ -337,6 +338,7 @@ sub parse {
         # ----------------
         while ($self->{buf} =~ m/\G[\x{20}\x{9}\x{D}\x{A}]+/g) {
           $match .= $&;
+	  $doneTerminal = 1;
           last if (! $self->_canPos($stream, ($workpos += ($+[0] - $-[0]))));
         }
       }
@@ -700,13 +702,17 @@ sub parse {
 	      $discard = $+[0] - $-[0];
 	  }
       }
+      #
+      # Sometimes, when a terminal matches, we know the others will fail
+      #
+      last if ($doneTerminal);
     }
     if (@tokens) {
 	foreach (@tokens) {
 	    #
 	    # The array is a reference to [$name, $value], where value can be undef
 	    #
-	    $log->tracef('pos=%6d : lexeme_alternative("%s", "%s")', $pos, $_, $value);
+	    # $log->tracef('pos=%6d : lexeme_alternative("%s", "%s")', $pos, $_, $value);
 	    $recce->lexeme_alternative($_, $value);
 	}
 	$recce->lexeme_complete(0, 1);
@@ -717,7 +723,7 @@ sub parse {
 	last;
     }
     if (time() - $now > 10) {
-      $log->tracef('Exiting');
+      $log->tracef('pos=%6d : Exiting', $pos);
       exit;
     }
     $self->_donePos($stream, $pos);
