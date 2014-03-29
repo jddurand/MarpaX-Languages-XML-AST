@@ -281,11 +281,7 @@ sub parse {
     my @tokens = ();
     my $value = '';
     my $maxTokenLength = 0;
-    #
-    # Quite a lot of terminals are starting with an explicit substr().
-    # This information is retreived once per loop on events.
-    #
-    my @c = ();
+
     #
     # By definition we know we can pos() here. No need to call again _canPos()
     # for a predictable result at a predictable position.
@@ -311,12 +307,12 @@ sub parse {
         if ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/g) {
           next if (! $self->_isPos($stream, ++$workpos));
           $match = $&;
-          my $length = 0;
+	  my $length = 0;
           while (1) {
             last if (($length > 0) && ! $self->_isPos($stream, ($workpos += $length)));
             last if ($self->{buf} !~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/g);
             $length = $+[0] - $-[0];
-            last if ($length <= 0);
+            last if (! $length);
             $match .= $&;
           }
         }
@@ -333,64 +329,61 @@ sub parse {
         if ($self->{buf} =~ m/\G[A-Za-z]/g) {
           next if (! $self->_isPos($stream, ++$workpos));
           $match = $&;
-          my $length = 0;
+	  my $length;
           while (1) {
             last if (($length > 0) && ! $self->_isPos($stream, ($workpos += $length)));
             last if ($self->{buf} !~ m/\G[A-Za-z0-9._-]*/g);
             $length = $+[0] - $-[0];
-            last if ($length <= 0);
+            last if (! $length);
             $match .= $&;
           }
         }
       }
       elsif ($terminal eq 'CHARREF') {
-        # ---------------------------------
-        # CHARREF is /&#${REG_DIGIT}+;/
-        #         or /&#x${REG_HEXDIGIT}+;/
-        # ---------------------------------
-        if (($c[0] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '&') {
-          next if (! defined($c[1]) && ! $self->_canPos($stream, ++$workpos));
-          if (($c[1] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '#') {
-            next if (! defined($c[2]) && ! $self->_canPos($stream, ++$workpos));
-            if (($c[2] //= substr($self->{buf}, pos($self->{buf}), 1)) eq 'x') {
-              #
-              # We expect ${REG_HEXDIGIT}+ followed by ';'
-              #
-              my $submatch = '';
-              my $lastok = 1;
-              while ($self->{buf} =~ m/\G[0-9a-fA-F]+/gc) {   # Note the /c modifier
-                $submatch .= $&;
-                if (! $self->_isPos($stream, ($workpos += ($+[0] - $-[0])))) {
-                  $lastok = 0;
-                  last;
-                }
-              }
-              if ($lastok && length($submatch) > 0) {
-                if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
-                  $match = '&#x' . ${submatch} . ';';
-                }
-              }
-            } else {
-              #
-              # We expect ${REG_DIGIT}+ followed by ';'
-              #
-              my $submatch = '';
-              my $lastok = 1;
-              while ($self->{buf} =~ m/\G[0-9]+/gc) {   # Note the /c modifier
-                $submatch .= $&;
-                if (! $self->_isPos($stream, ($workpos += ($+[0] - $-[0])))) {
-                  $lastok = 0;
-                  last;
-                }
-              }
-              if ($lastok && length($submatch) > 0) {
-                if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
-                  $match = '&#' . ${submatch} .';';
-                }
-              }
-            }
-          }
-        }
+	  # ---------------------------------
+	  # CHARREF is /&#${REG_DIGIT}+;/
+	  #         or /&#x${REG_HEXDIGIT}+;/
+	  # ---------------------------------
+	  if ($self->{buf} =~ m/\G&/g) {
+	      next if (! $self->_isPos($stream, ++$workpos));
+	      if ($self->{buf} =~ m/\G#/g) {
+		  next if (! $self->_isPos($stream, ++$workpos));
+		  if ($self->{buf} =~ m/\Gx/gc) {            # Note the /c modifier
+		      next if (! $self->_isPos($stream, ++$workpos));
+		      #
+		      # We expect ${REG_HEXDIGIT}+ followed by ';'
+		      #
+		      my $submatch = '';
+		      my $submatchok = 0;
+		      while ($self->{buf} =~ m/\G[0-9a-fA-F]+/gc) {   # Note the /c modifier
+			  $submatch .= $&;
+			  $submatchok = 1;
+			  last if (! $self->_isPos($stream, ($workpos += ($+[0] - $-[0]))));
+		      }
+		      if ($submatchok) {
+			  if ($self->{buf} =~ m/\G;/g) {
+			      $match = '&#x' . ${submatch} . ';';
+			  }
+		      }
+		  } else {
+		      #
+		      # We expect ${REG_DIGIT}+ followed by ';'
+		      #
+		      my $submatch = '';
+		      my $submatchok = 0;
+		      while ($self->{buf} =~ m/\G[0-9]+/gc) {   # Note the /c modifier
+			  $submatch .= $&;
+			  $submatchok = 1;
+			  last if (! $self->_isPos($stream, ($workpos += ($+[0] - $-[0]))));
+		      }
+		      if ($submatchok) {
+			  if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
+			      $match = '&#' . ${submatch} .';';
+			  }
+		      }
+		  }
+	      }
+	  }
       }
       elsif ($terminal eq 'S') {
         #
@@ -411,113 +404,76 @@ sub parse {
         }
       }
       elsif ($terminal eq 'SYSTEMLITERAL') {
-        #
-        # SYSTEMLITERAL is /"${REG_NOT_DQUOTE}*"/ or /'${REG_NOT_SQUOTE}*'/
-        # ------------------------------------------------------------------
-        if (($c[0] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '"') {
-          next if (! $self->_canPos($stream, ++$workpos));
-          my $submatch = '';
-          my $length = 0;
-          my $lastok = 1;
-          while (1) {
-            if (($length > 0) && ! $self->_isPos($stream, ($workpos += $length))) {
-              $lastok = 0;
-              last;
-            }
-            last if ($self->{buf} !~ m/\G[^"]*/gc);   # Note the /c modifier
-            $length = $+[0] - $-[0];
-            last if ($length <= 0);
-            $submatch .= $&;
-          }
-          if ($lastok) {
-            if (substr($self->{buf}, pos($self->{buf}), 1) eq '"') {
-              $match = '"' . ${submatch} . '"';
-            }
-          }
-        }
-        elsif (($c[0] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '\'') {
-          next if (! $self->_canPos($stream, ++$workpos));
-          my $submatch = '';
-          my $length = 0;
-          my $lastok = 1;
-          while (1) {
-            if (($length > 0) && ! $self->_isPos($stream, ($workpos += $length))) {
-              $lastok = 0;
-              last;
-            }
-            last if ($self->{buf} !~ m/\G[^']*/gc);   # Note the /c modifier
-            $length = $+[0] - $-[0];
-            last if ($length <= 0);
-            $submatch .= $&;
-          }
-          if ($lastok) {
-            if (substr($self->{buf}, pos($self->{buf}), 1) eq '\'') {
-              $match = '\'' . ${submatch} . '\'';
-            }
-          }
-        }
+	  #
+	  # SYSTEMLITERAL is /"${REG_NOT_DQUOTE}*"/ or /'${REG_NOT_SQUOTE}*'/
+	  # ------------------------------------------------------------------
+	  if ($self->{buf} =~ m/\G["']/g) {
+	      $match = my $c = $&;
+	      ++$workpos;
+	      while (1) {
+		  last if (! $self->_isPos($stream, $workpos));
+		  $self->{buf} =~ m/\G[^"]*/g;              # Note this will always match
+		  my $length = $+[0] - $-[0];
+		  last if (! $length);
+		  $match .= $&;
+		  $workpos += $length;
+	      }
+	      #
+	      # A little overhead if SYSTEMLITERAL is "" or '' - will rarelly happen
+	      #
+	      if ($self->_isPos($stream, $workpos)) {
+		  if ($self->{buf} =~ m/\G["']/g && $& eq $c) {
+		      $match .= $&;
+		  } else {
+		      $match = '';
+		  }
+	      } else {
+		  $match = '';
+	      }
+	  }
       }
       elsif ($terminal eq 'PUDIDLITERAL') {
-        #
-        # PUDIDLITERAL is /"${REG_PUBIDCHAR_NOT_DQUOTE}*"/ or /'${REG_PUBIDCHAR_NOT_SQUOTE}*'/
-        # ------------------------------------------------------------------------------------
-        if (($c[0] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '"') {
-          next if (! $self->_canPos($stream, ++$workpos));
-          my $submatch = '';
-          my $length = 0;
-          my $lastok = 1;
-          while (1) {
-            if (($length > 0) && ! $self->_isPos($stream, ($workpos += $length))) {
-              $lastok = 0;
-              last;
-            }
-            last if ($self->{buf} !~ m/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]*/gc);   # Note the /c modifier
-            $length = $+[0] - $-[0];
-            last if ($length <= 0);
-            $submatch .= $&;
-          }
-          if ($lastok) {
-            if (substr($self->{buf}, pos($self->{buf}), 1) eq '"') {
-              $match = '"' . ${submatch} . '"';
-            }
-          }
-        }
-        elsif (($c[0] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '\'') {
-          next if (! $self->_canPos($stream, ++$workpos));
-          my $submatch = '';
-          my $length = 0;
-          my $lastok = 1;
-          while (1) {
-            if (($length > 0) && ! $self->_isPos($stream, ($workpos += $length))) {
-              $lastok = 0;
-              last;
-            }
-            last if ($self->{buf} !~ m/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]*/gc);   # Note the /c modifier
-            $length = $+[0] - $-[0];
-            last if ($length <= 0);
-            $submatch .= $&;
-          }
-          if ($lastok) {
-            if (substr($self->{buf}, pos($self->{buf}), 1) eq '\'') {
-              $match = '\'' . ${submatch} . '\'';
-            }
-          }
-        }
+	  #
+	  # PUDIDLITERAL is /"${REG_PUBIDCHAR_NOT_DQUOTE}*"/ or /'${REG_PUBIDCHAR_NOT_SQUOTE}*'/
+	  # ------------------------------------------------------------------------------------
+	  if ($self->{buf} =~ m/\G["']/g) {
+	      $match = my $c = $&;
+	      ++$workpos;
+	      my $lastok = 1;
+	      while (1) {
+		  if (! $self->_isPos($stream, $workpos)) {
+		      $lastok = 0;
+		      last;
+		  }
+		  $self->{buf} =~ m/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]*/g;   # Note this will always match
+		  my $length = $+[0] - $-[0];
+		  last if (! $length);
+		  $match .= $&;
+		  $workpos += $length;
+	      }
+	      #
+	      # A little overhead if PUDIDLITERAL is "" or '' - will rarelly happen
+	      #
+	      if ($lastok && $self->{buf} =~ m/\G["']/g && $& eq $c) {
+		  $match .= $&;
+	      } else {
+		  $match = '';
+	      }
+	  }
       }
       elsif ($terminal eq 'CHARDATA') {
-        #
-        # CHARDATA is /${REG_CHARDATA}*/ minus the sequence ']]>'
-        # ------------------------------------------------------------------
-        while ($self->{buf} =~ m/\G[^<&]*/g) {
-          last if ($-[0] == $+[0]);
-          $match .= $&;
-          last if (! $self->_isPos($stream, ($workpos += ($+[0] - $-[0]))));
-        }
-        if (length($match) > 0) {
-          if ($match =~ /\]\]>/i) {
-            substr($match, $-[0]) = '';
-          }
-        }
+	  #
+	  # CHARDATA is /${REG_CHARDATA}*/ minus the sequence ']]>'
+	  # ------------------------------------------------------------------
+	  while ($self->{buf} =~ m/\G[^<&]*/g) {
+	      my $length = $+[0] - $-[0];
+	      last if (! $length);
+	      $match .= $&;
+	      last if (! $self->_isPos($stream, ($workpos += $length)));
+	  }
+	  if ($match =~ /\]\]>/i) {
+	      substr($match, $-[0]) = '';
+	  }
       }
       elsif ($terminal eq 'CDATA' || $terminal eq 'COMMENT' || $terminal eq 'PI_INTERIOR' || $terminal eq 'IGNORE_INTERIOR') {
         #
@@ -527,211 +483,207 @@ sub parse {
         # IGNORE_INTERIOR is /${REG_CHAR}*/ minus the sequence '<![' or ']]>'
         # ------------------------------------------------------------------
         while ($self->{buf} =~ m/\G[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]*/g) {
-          last if ($-[0] == $+[0]);
-          $match .= $&;
-          last if (! $self->_isPos($stream, ($workpos += ($+[0] - $-[0]))));
+	    my $length = $+[0] - $-[0];
+	    last if (! $length);
+	    $match .= $&;
+	    last if (! $self->_isPos($stream, ($workpos += $length)));
         }
-        if (length($match) > 0) {
-          my @exclusionString =
-            ($terminal eq 'CDATA') ? (quotemeta(']]>'))
-              :
-                ($terminal eq 'COMMENT') ? (quotemeta('--'))
-                  :
-                    ($terminal eq 'PI_INTERIOR') ? (quotemeta('?>'))
-                      : (quotemeta('<!['), quotemeta(']]>'));
-          foreach (@exclusionString) {
-            if ($match =~ /$_/i) {
-              substr($match, $-[0]) = '';
-            }
-          }
-        }
+	if (length($match) > 0) {
+	    my @exclusionString =
+		($terminal eq 'CDATA') ? (quotemeta(']]>'))
+		:
+		($terminal eq 'COMMENT') ? (quotemeta('--'))
+		:
+		($terminal eq 'PI_INTERIOR') ? (quotemeta('?>'))
+		: (quotemeta('<!['), quotemeta(']]>'));
+	    foreach (@exclusionString) {
+		if ($match =~ /$_/i) {
+		    substr($match, $-[0]) = '';
+		}
+	    }
+	}
       }
       elsif ($terminal eq 'VERSIONNUM') {
-        #
-        # VERSIONNUM is /1.${REG_DIGIT}+/
-        # -------------------------------
-        if (($c[0] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '1') {
-          next if (! defined($c[1]) && ! $self->_canPos($stream, ++$workpos));
-          if (($c[1] //= substr($self->{buf}, pos($self->{buf}), 1)) eq '.') {
-            next if (! $self->_canPos($stream, ++$workpos));
-            while ($self->{buf} =~ m/\G[0-9]+/g) {
-              $match .= $&;
-              last if (! $self->_isPos($stream, ($workpos += ($+[0] - $-[0]))));
-            }
-          }
-        }
-        $match = '1.' . $match if (length($match) > 0);
+	  #
+	  # VERSIONNUM is /1.${REG_DIGIT}+/
+	  # -------------------------------
+	  if ($self->{buf} =~ m/\G1/g) {
+	      next if (! $self->_isPos($stream, ++$workpos));
+	      if ($self->{buf} =~ m/\G\./g) {
+		  next if (! $self->_isPos($stream, ++$workpos));
+		  while ($self->{buf} =~ m/\G[0-9]+/g) {
+		      $match .= $&;
+		      last if (! $self->_isPos($stream, ($workpos += ($+[0] - $-[0]))));
+		  }
+	      }
+	  }
+	  $match = '1.' . $match if (length($match) > 0);
       }
       elsif ($terminal eq 'ATTVALUE') {
-        #
-        # ATTVALUE is /"(${REG_ATTVALUE_NOT_DQUOTE}|Reference)*"/
-        #          or /'(${REG_ATTVALUE_NOT_SQUOTE}|Reference)*'/
-        #
-        # where Reference is: EntityRef | CharRef
-        #
-        # and EntityRef   is /&${NAME};/
-        #     CharRef     is /&#${REG_DIGIT}+;/ or /&#x${REG_HEXDIGIT}+;/
-        # ------------------------------------------------------
-        $c[0] //= substr($self->{buf}, pos($self->{buf}), 1);
-        if ($c[0] eq '"' || $c[0] eq '\'') {
-	  my $dquoteMode = ($c[0] eq '"');
-          next if (! $self->_canPos($stream, ++$workpos));
-          my $length = 0;
-          my $lastok = 1;
-          $match = $c[0];
-          while (1) {
-            if (($length > 0) && ! $self->_canPos($stream, ($workpos += $length))) {
-              $lastok = 0;
-              last;
-            }
-            if (
-		(
-		 (  $dquoteMode && $self->{buf} =~ m/\G[^<&"]*/gc) ||
-		 (! $dquoteMode && $self->{buf} =~ m/\G[^<&']*/gc)
-		 )
-		&& $-[0] != $+[0]) {  # Note the /c modifier
-              $length = $+[0] - $-[0];
-              $match .= $&;
-            } elsif (substr($self->{buf}, pos($self->{buf}), 1) eq '&') {
-		my $subworkpos = $workpos;
-              last if (! $self->_canPos($stream, ++$subworkpos));
-              if (substr($self->{buf}, pos($self->{buf}), 1) eq '#') {
-                last if (! $self->_canPos($stream, ++$subworkpos));
-                if (substr($self->{buf}, pos($self->{buf}), 1) eq 'x') {
-                  last if (! $self->_canPos($stream, ++$subworkpos));
-                  #
-                  # We expect ${REG_HEXDIGIT}+ followed by ';'
-                  #
-                  my $submatch = '';
-                  my $sublastok = 1;
-                  while ($self->{buf} =~ m/\G[0-9a-fA-F]+/gc) {   # Note the /c modifier
-                    $submatch .= $&;
-                    if (! $self->_isPos($stream, ($subworkpos += ($+[0] - $-[0])))) {
-                      $sublastok = 0;
-                      last;
-                    }
-                  }
-                  if ($sublastok && length($submatch) > 0) {
-                    if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
-                      $match .= "&#x${submatch};";
-                      $length = 4 + length($submatch);
-                    } else {
-                      last;
-                    }
-                  } else {
-                    last;
-                  }
-                } else {
-                  #
-                  # We expect ${REG_DIGIT}+ followed by ';'
-                  #
-                  my $submatch = '';
-                  my $sublastok = 1;
-                  while ($self->{buf} =~ m/\G[0-9]+/gc) {   # Note the /c modifier
-                    $submatch .= $&;
-                    if (! $self->_isPos($stream, ($subworkpos += ($+[0] - $-[0])))) {
-                      $sublastok = 0;
-                      last;
-                    }
-                  }
-                  if ($sublastok && length($submatch) > 0) {
-                    if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
-                      $match .= "&#${submatch};";
-                      $length = 3 + length($submatch);
-                    } else {
-                      last;
-                    }
-                  } else {
-                    last;
-                  }
-                }
-              } else {
-                #
-                # We expect ${NAME}  followed by ';'
-                #
-                my $submatch = '';
-                my $sublastok = 1;
-                if ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/g) {
-                  $submatch = $&;
-                  my $sublength = 1;
-                  while (1) {
-                    if (! $self->_isPos($stream, ($subworkpos += $sublength))) {
-                      $sublastok = 0;
-                      last;
-                    }
-                    last if ($self->{buf} !~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/gc);   # Note the /c modifier
-                    $sublength = $+[0] - $-[0];
-                    last if ($sublength <= 0);
-                    $submatch .= $&;
-                  }
-                  if ($sublastok) {
-                    if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
-                      $match .= "&${submatch};";
-                      $length = 2 + length($submatch);
-                    } else {
-                      last;
-                    }
-                  } else {
-                    last;
-                  }
-                } else {
-                  last;
-                }
-              }
-            } else {
-              last;
-            }
-          }
-          if ($lastok) {
-            if (substr($self->{buf}, pos($self->{buf}), 1) eq $c[0]) {
-              $match .= $c[0];
-            } else {
-              $match = '';
-            }
-          } else {
-            $match = '';
-          }
-        }
+	  #
+	  # ATTVALUE is /"(${REG_ATTVALUE_NOT_DQUOTE}|Reference)*"/
+	  #          or /'(${REG_ATTVALUE_NOT_SQUOTE}|Reference)*'/
+	  #
+	  # where Reference is: EntityRef | CharRef
+	  #
+	  # and EntityRef   is /&${NAME};/
+	  #     CharRef     is /&#${REG_DIGIT}+;/ or /&#x${REG_HEXDIGIT}+;/
+	  # ------------------------------------------------------
+	  if ($self->{buf} =~ m/\G["']/g) {
+	      $match = my $c = $&;
+	      ++$workpos;
+	      my $dquoteMode = ($c eq '"');
+	      my $lastok = 1;
+	      while (1) {
+		  my $length;
+		  if (! $self->_isPos($stream, $workpos)) {
+		      $lastok = 0;
+		      last;
+		  }
+		  if (
+		      (
+		       (  $dquoteMode && $self->{buf} =~ m/\G[^<&"]*/gc) ||
+		       (! $dquoteMode && $self->{buf} =~ m/\G[^<&']*/gc)
+		      )
+		      && ($length = $+[0] - $-[0]) > 0) {  # Note the /c modifiers
+		      $match .= $&;
+		      $workpos += $length;
+		  } elsif ($self->{buf} =~ m/\G&/gc) {     # Note the /c modifier
+		      my $subworkpos = $workpos;
+		      last if (! $self->_isPos($stream, ++$subworkpos));
+		      if ($self->{buf} =~ m/\G#/gc) {
+			  last if (! $self->_isPos($stream, ++$subworkpos));
+			  if ($self->{buf} =~ m/\Gx/gc) {          # Note the /c modifier
+			      #
+			      # We expect ${REG_HEXDIGIT}+ followed by ';'
+			      #
+			      my $submatch = '';
+			      ++$subworkpos;
+			      my $sublastok = 1;
+			      while (1) {
+				  if (! $self->_isPos($stream, $subworkpos)) {
+				      $sublastok = 0;
+				      last;
+				  }
+				  last if ($self->{buf} !~ m/\G[0-9a-fA-F]+/gc);   # Note the /c modifier
+				  $submatch .= $&;
+				  $subworkpos += $+[0] - $-[0];
+			      }
+			      if ($sublastok && length($submatch) > 0) {
+				  if ($self->{buf} =~ m/\G;/gc) {
+				      $match .= '&#x' . ${submatch} . '"';
+				      $workpos = 4 + length($submatch);
+				  } else {
+				      last;
+				  }
+			      } else {
+				  last;
+			      }
+			  } else {
+			      #
+			      # We expect ${REG_DIGIT}+ followed by ';'
+			      #
+			      my $submatch = '';
+			      ++$subworkpos;
+			      my $sublastok = 1;
+			      while (1) {
+				  if (! $self->_isPos($stream, $subworkpos)) {
+				      $sublastok = 0;
+				      last;
+				  }
+				  last if ($self->{buf} !~ m/\G[0-9]+/gc);   # Note the /c modifier
+				  $submatch .= $&;
+				  $subworkpos += $+[0] - $-[0];
+			      }
+			      if ($sublastok && length($submatch) > 0) {
+				  if ($self->{buf} =~ m/\G;/gc) {
+				      $match .= '&#x' . ${submatch} . '"';
+				      $workpos = 4 + length($submatch);
+				  } else {
+				      last;
+				  }
+			      } else {
+				  last;
+			      }
+			  }
+		      } else {
+			  #
+			  # We expect ${NAME}  followed by ';'
+			  #
+			  if ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/gc) {
+			      my $submatch = $&;
+			      ++$subworkpos;
+			      my $sublastok = 1;
+			      while (1) {
+				  if (! $self->_isPos($stream, $subworkpos)) {
+				      $sublastok = 0;
+				      last;
+				  }
+				  last if ($self->{buf} !~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/gc);   # Note the /c modifier
+				  $submatch .= $&;
+				  $subworkpos += $+[0] - $-[0];
+			      }
+			      if ($sublastok && $self->{buf} =~ m/\G;/gc) {
+				  $match .= '&' . ${submatch} . '"';
+				  $workpos += 2 + length($submatch);
+			      } else {
+				  last;
+			      }
+			  } else {
+			      last;
+			  }
+		      }
+		  } else {
+		      last;
+		  }
+	      }
+	      #
+	      # A little overhead if ATTVALUE is "" or '' - will rarelly happen
+	      #
+	      if ($lastok && $self->{buf} =~ m/\G["']/g && $& eq $c) {
+		  $match .= $&;
+	      } else {
+		  $match = '';
+	      }
+	  }
       }
       elsif ($terminal eq 'ENTITYREF' || $terminal eq 'PEREFERENCE') {
-        #
-        # ENTITYREF   is /&${NAME};/
-        # PEREFERENCE is /%${NAME};/
-        # -------------------------------
-        $c[0] //= substr($self->{buf}, pos($self->{buf}), 1);
-        if ($c[0] eq '&' || $c[0] eq '%') {
-          next if (! $self->_canPos($stream, ++$workpos));
-          #
-          # We expect ${NAME}  followed by ';'
-          #
-          my $submatch = '';
-          my $sublastok = 1;
-          if ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/g) {
-            $submatch = $&;
-            my $sublength = 1;
-            while (1) {
-              if (! $self->_isPos($stream, ($workpos += $sublength))) {
-                $sublastok = 0;
-                last;
+	  #
+	  # ENTITYREF   is /&${NAME};/
+	  # PEREFERENCE is /%${NAME};/
+	  # -------------------------------
+	  if ($self->{buf} =~ m/\G[&%]/g) {
+	      next if (! $self->_isPos($stream, ++$workpos));
+	      my $c = $&;
+	      #
+	      # We expect ${NAME}  followed by ';'
+	      #
+	      if ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/g) {
+		  my $submatch = $&;
+		  my $sublastok = 1;
+		  my $subworkpos = $workpos + 1;
+		  while (1) {
+		      if (! $self->_isPos($stream, $subworkpos)) {
+			  $sublastok = 0;
+			  last;
+		      }
+		      last if ($self->{buf} !~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/gc);   # Note the /c modifier
+		      $submatch .= $&;
+		      $subworkpos += $+[0] - $-[0];
+		  }
+		  if ($sublastok && $self->{buf} =~ m/\G;/g) {
+		      $match .= $c . ${submatch} . ';';
+		      $workpos += 2 + length($submatch);
+		  }
               }
-              last if ($self->{buf} !~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/gc);   # Note the /c modifier
-              $sublength = $+[0] - $-[0];
-              last if ($sublength <= 0);
-              $submatch .= $&;
-            }
-            if ($sublastok) {
-              if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
-                $match = $c[0]. ${submatch}. ';';
-              }
-            }
-          }
-        }
+	  }
       }
       elsif (exists($STRSPLIT{$terminal})) {
 	  if ($STRSPLIT{$terminal}->[0] == 0) {
 	      #
 	      # This terminal is a single character
-	      if (($c[0] //= substr($self->{buf}, pos($self->{buf}), 1)) eq $STR{$terminal}) {
+	      #
+	      if (substr($self->{buf}, pos($self->{buf}), 1) eq $STR{$terminal}) {
 		  $match = $STR{$terminal};
 	      }      
 	  } else {
