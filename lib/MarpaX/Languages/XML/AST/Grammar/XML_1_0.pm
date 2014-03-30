@@ -329,7 +329,7 @@ sub parse {
         if ($self->{buf} =~ m/\G[A-Za-z]/g) {
           next if (! $self->_isPos($stream, ++$workpos));
           $match = $&;
-	  my $length;
+	  my $length = 0;
           while (1) {
             last if (($length > 0) && ! $self->_isPos($stream, ($workpos += $length)));
             last if ($self->{buf} !~ m/\G[A-Za-z0-9._-]*/g);
