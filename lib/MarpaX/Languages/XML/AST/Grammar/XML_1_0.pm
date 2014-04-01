@@ -75,6 +75,8 @@ $STR{LBRACKET}         = '[';
 $STR{RBRACKET}         = ']';
 $STR{XTAG_BEG}         = '<';
 $STR{XTAG_END}         = '>';
+$STR{STAG_END}         = '>';
+$STR{ETAG_END}         = '>';
 $STR{QUESTION_MARK}    = '?';
 $STR{STAR}             = '*';
 $STR{PLUS}             = '+';
@@ -129,10 +131,15 @@ $STR{NOTATION_BEG}     = '<!NOTATION';
 #
 # For optimization, we presplit %STR into its length and list of characters
 #
-our %STRSPLIT = ();
+our %STRLENGTH = ();
 foreach (keys %STR) {
-  $STRSPLIT{$_} = [ length($STR{$_}) - 1, [ split('', $STR{$_}) ] ];
+  $STRLENGTH{$_} = length($STR{$_});
 }
+#
+# Keep track of recursion using STAG_END and ETAG_END lexemes
+#
+our %LEXEME_INC_LEVEL = (STAG_END => 1);
+our %LEXEME_DEC_LEVEL = (ETAG_END => 1);
 #
 # There are several DIFFERENT top-level productions in the XML grammar
 #
@@ -144,6 +151,185 @@ foreach (qw/document/) {
   $G{$top} = Marpa::R2::Scanless::G->new({source => \$DATA, bless_package => 'XML'});
 }
 
+#
+# Exhaustive list of terminals
+#
+our %TERMINALS = (
+    X20              => 1,
+    S                => 1,
+    NAME             => 1,
+    CHAR             => 1,
+    NMTOKEN          => 1,
+    SYSTEMLITERAL    => 1,
+    PUBIDLITERAL     => 1,
+    CHARDATA         => 1,
+    CDATA            => 1,
+    COMMENT_BEG      => 1,
+    COMMENT_END      => 1,
+    COMMENT          => 1,
+    PI_BEG           => 1,
+    PI_END           => 1,
+    PITARGET         => 1,
+    PI_INTERIOR      => 1,
+    CDSTART          => 1,
+    CDEND            => 1,
+    XML_BEG          => 1,
+    XML_END          => 1,
+    VERSION          => 1,
+    DQUOTE           => 1,
+    SQUOTE           => 1,
+    EQUAL            => 1,
+    VERSIONNUM       => 1,
+    DOCTYPE_BEG      => 1,
+    LBRACKET         => 1,
+    RBRACKET         => 1,
+    STANDALONE       => 1,
+    YES              => 1,
+    NO               => 1,
+    XTAG_BEG         => 1,
+    XTAG_END         => 1,
+    ETAG_BEG         => 1,
+    EMPTYELEMTAG_END => 1,
+    ELEMENTDECL_BEG  => 1,
+    EMPTY            => 1,
+    ANY              => 1,
+    QUESTION_MARK    => 1,
+    STAR             => 1,
+    PLUS             => 1,
+    LPAREN           => 1,
+    RPAREN           => 1,
+    PIPE             => 1,
+    COMMA            => 1,
+    RPARENSTAR       => 1,
+    PCDATA           => 1,
+    ATTLIST_BEG      => 1,
+    STRINGTYPE       => 1,
+    TYPE_ID          => 1,
+    TYPE_IDREF       => 1,
+    TYPE_IDREFS      => 1,
+    TYPE_ENTITY      => 1,
+    TYPE_ENTITIES    => 1,
+    TYPE_NMTOKEN     => 1,
+    TYPE_NMTOKENS    => 1,
+    NOTATION         => 1,
+    REQUIRED         => 1,
+    IMPLIED          => 1,
+    FIXED            => 1,
+    SECT_BEG         => 1,
+    INCLUDE          => 1,
+    SECT_END         => 1,
+    IGNORE           => 1,
+    IGNORE_INTERIOR  => 1,
+    CHARREF          => 1,
+    ENTITYREF        => 1,
+    PEREFERENCE      => 1,
+    EDECL_BEG        => 1,
+    PERCENT          => 1,
+    SYSTEM           => 1,
+    PUBLIC           => 1,
+    NDATA            => 1,
+    ENCODING         => 1,
+    ENCNAME          => 1,
+    NOTATION_BEG     => 1,
+    ATTVALUE         => 1,
+    ENTITYVALUE      => 1
+    );
+
+goto noinspection;
+#
+# We inspect the grammars to get the G1 tree. We made sure that any lexeme in the
+# grammar is always a single RHS of an unique LHS, i.e. g1 ::= G0. So we can always
+# identify when a lexeme is needed
+#
+our %GRAPH = ();
+our %TERMINAL = ();
+foreach (keys %G) {
+    my $top = $_;
+    print STDERR "Inspecting $_\n";
+    my $g = $G{$top};
+    $GRAPH{$top} = [];
+    $TERMINAL{$top} = [];
+    my $graph = $GRAPH{$top};
+    my $terminal = $TERMINAL{$top};
+    #
+    # Get all G0 rules
+    #
+    my %G0 = ();
+    foreach ($g->rule_ids('L0')) {
+	my $rule_id = $_;
+	my ($lhs_id, @rhs_ids) = $g->rule_expand($rule_id, 'L0');
+	my $name = $g->symbol_name($lhs_id, 'L0');
+	$G0{$name} = 1;
+    }
+    foreach ($g->rule_ids()) {
+	my $rule_id = $_;
+	my ($lhs_id, @rhs_ids) = $g->rule_expand($rule_id);
+	$graph->[$lhs_id] //= [];
+	push(@{$graph->[$lhs_id]}, [ @rhs_ids ]);
+	if ($#rhs_ids == 0) {
+	    my $name = $g->symbol_name($rhs_ids[0]);
+	    if (exists($G0{$name}) && ! defined($terminal->[$lhs_id])) {
+		$terminal->[$lhs_id] = $name;
+		print STDERR "==> TERMINAL " . $g->symbol_name($lhs_id) . " ::= $name\n";
+	    }
+	}
+    }
+}
+our %G2LEXEME = ();
+
+sub _lhsid2lexemes {
+    my ($g, $graph, $terminal, $lhs_id, $lexemesp, $is_nullablep) = @_;
+
+    ${$is_nullablep} //= 0;
+
+    if (defined($terminal->[$lhs_id])) {
+	print STDERR "=== === " . "$lhs_id is terminal $terminal->[$lhs_id]\n";
+	push(@{$lexemesp}, $terminal->[$lhs_id]);
+    } else {
+	foreach (@{$graph->[$lhs_id]}) {
+	    my $rhs_ids = $_;
+	    print STDERR "... ... " . $g->symbol_name($lhs_id) . ' ::= ' . join(' ', map {$g->symbol_name($_)} @{$rhs_ids}) . "\n";
+	    if (! @{$rhs_ids}) {
+		print STDERR "... ... " . $g->symbol_name($lhs_id) . " is nullable\n";
+		${$is_nullablep} = 1;
+		next;
+	    } else {
+		foreach (@{$rhs_ids}) {
+		    my $rhs_id = $_;
+		    my $is_nullable = 0;
+		    _lhsid2lexemes($g, $graph, $terminal, $rhs_id, $lexemesp, \$is_nullable);
+		    last if (! $is_nullable);
+		}
+	    }
+	}
+    }    
+}
+
+foreach (keys %G) {
+    my $top = $_;
+    print STDERR "Building G1 -> lexemes of $_\n";
+    $G2LEXEME{$top} = [];
+    my $g = $G{$top};
+    my $graph = $GRAPH{$top};
+    my $terminal = $TERMINAL{$top};
+    my $g2lexeme = $G2LEXEME{$top};
+    foreach (0..$#{$graph}) {
+	my $lhs_id = $_;
+	print "... " . $g->symbol_name($lhs_id) . "\n";
+	$g2lexeme->[$lhs_id] = [];
+	_lhsid2lexemes($g, $graph, $terminal, $lhs_id, $g2lexeme->[$lhs_id]);
+    }
+}
+
+foreach (0..$#{$G2LEXEME{document}}) {
+    my $lhs_id = $_;
+    my @lexemes = @{$G2LEXEME{document}->[$lhs_id]};
+    if (@lexemes) {
+	print STDERR $G{document}->symbol_name($lhs_id) . " => @lexemes\n";
+    }
+}
+#exit;
+noinspection:
 #
 # We always work with a single buffer, and handle eventual overlap
 # by appending to current buffer before discarding it
@@ -201,7 +387,7 @@ sub _isPos {
 
     if ($_[2] < $_[0]->{mapend}) {
 	#
-	# Current buffer. pos($self->{buf}) ASSUMED to be already correct.
+	# Current buffer. pos($self->{buf}) ASSUMED to be already correctly positionned.
 	#
 	# $log->tracef('_isPos %d : internal pos %s : %s', $_[2], pos($_[0]->{buf}), substr($_[0]->{buf}, pos($_[0]->{buf})));
 	return 1;
@@ -255,6 +441,20 @@ sub _canPos {
     }
 }
 
+sub _progressToKey {
+    my ($self, $recce) = @_;
+
+    my $key = '';
+
+    my @key = ();
+    foreach (@{$recce->progress()}) {
+      push(@key, "$_->[0].$_->[1]");
+    }
+    $key = join('/', @key);
+
+    return $key;
+}
+
 sub parse {
   my ($self, $input) = @_;
 
@@ -266,6 +466,11 @@ sub parse {
   my $fake_input = ' ';
   $recce->read(\$fake_input);
   #
+  # We used a single event just to pause at the very beginning. We do not
+  # need this event anymore.
+  #
+  $recce->activate('^document', 0);
+  #
   # Current buffer
   #
   my $stream = MarpaX::Languages::XML::AST::StreamIn->new(input => $input);
@@ -274,6 +479,16 @@ sub parse {
   #
   # Loop until nothing left in the buffer
   #
+  my %KEY2TERMINALS = ();
+  my %KEY_TOKENS_TO_NEXTKEY = ();
+  #
+  # We instanciate $key manually
+  #
+  my $level = 0;
+  my $key = $self->_progressToKey($recce, $level);
+  my $countToProgress = 1;
+  my $countCached = 0;
+
   while (1) {
 
     last if (! $self->_canPos($stream, $pos));
@@ -288,13 +503,38 @@ sub parse {
     #
     my $internalPos = pos($self->{buf});
 
-    foreach (@{$recce->events()}) {
-      my ($terminal) = @{$_};
+    #
+    # Loop until error, or eof, or no more terminal expected
+    #
+    my @terminals = @{$KEY2TERMINALS{$key} //= $recce->terminals_expected()};
+    #
+    # In case of fixed strings, we make sure we tried to fetch as many characters
+    # as possible, ordering with longests fixed strings first
+    #
+    my @STR = sort {$STRLENGTH{$b} <=> $STRLENGTH{$a}} grep {exists($STRLENGTH{$_})} @terminals;
+    if (@STR) {
+	#
+	# Try to fetch unless longest length is 1 (already done upper)
+	#
+	if ($STRLENGTH{$STR[0]} > 1) {
+	    # $log->tracef('pos=%6d : trying to fetch %d characters', $pos, $STRLENGTH{$STR[0]});
+	    $self->_canPos($stream, $pos + $STRLENGTH{$STR[0]} - 1);
+	}
+	#
+	# We re-write terminals if there is more than once string and there is a difference in length
+	#
+	if ($#STR > 0 && $STRLENGTH{$STR[0]} != $STRLENGTH{$STR[-1]}) {
+	    my @NONSTR = grep {! exists($STRLENGTH{$_})} @terminals;
+	    @terminals = ((grep {! exists($STRLENGTH{$_})} @terminals), @STR);
+	}
+    }
+
+    foreach my $terminal (@{$KEY2TERMINALS{$key} //= $recce->terminals_expected()}) {
       my $workpos = $pos;
 
       pos($self->{buf}) = $internalPos;
 
-      # $log->tracef('pos=%6d : trying %s, pos($self->{buf})=%s', $pos, $terminal, pos($self->{buf}));
+      # $log->tracef('pos=%6d : trying %s, pos($self->{buf})=%s => %s', $pos, $terminal, pos($self->{buf}), substr($self->{buf}, pos($self->{buf}), 10) . "...");
 
       my $match = '';
       if ($terminal eq 'NAME' || $terminal eq 'PITARGET') {
@@ -571,7 +811,7 @@ sub parse {
 			      }
 			      if ($sublastok && length($submatch) > 0) {
 				  if ($self->{buf} =~ m/\G;/gc) {
-				      $match .= '&#x' . ${submatch} . '"';
+				      $match .= '&#x' . ${submatch} . ';';
 				      $workpos = 4 + length($submatch);
 				  } else {
 				      last;
@@ -597,7 +837,7 @@ sub parse {
 			      }
 			      if ($sublastok && length($submatch) > 0) {
 				  if ($self->{buf} =~ m/\G;/gc) {
-				      $match .= '&#x' . ${submatch} . '"';
+				      $match .= '&#' . ${submatch} . ';';
 				      $workpos = 4 + length($submatch);
 				  } else {
 				      last;
@@ -624,7 +864,7 @@ sub parse {
 				  $subworkpos += $+[0] - $-[0];
 			      }
 			      if ($sublastok && $self->{buf} =~ m/\G;/gc) {
-				  $match .= '&' . ${submatch} . '"';
+				  $match .= '&' . ${submatch} . ';';
 				  $workpos += 2 + length($submatch);
 			      } else {
 				  last;
@@ -678,27 +918,19 @@ sub parse {
               }
 	  }
       }
-      elsif (exists($STRSPLIT{$terminal})) {
-	  if ($STRSPLIT{$terminal}->[0] == 0) {
-	      #
-	      # This terminal is a single character
-	      #
-	      if (substr($self->{buf}, pos($self->{buf}), 1) eq $STR{$terminal}) {
-		  $match = $STR{$terminal};
-	      }      
-	  } else {
-	      my $curpos = pos($self->{buf});
-	      if ($self->_canPos($stream, $workpos + $STRSPLIT{$terminal}->[0])) {
-		  if (substr($self->{buf}, $curpos, pos($self->{buf}) - $curpos + 1) eq $STR{$terminal}) {
-		      $match = $STR{$terminal};
-		  }
-	      }
+      elsif (exists($STR{$terminal})) {
+	  #
+	  # Note we already did a _canPos that fits as maximum as possible
+	  #
+	  if (substr($self->{buf}, pos($self->{buf}), $STRLENGTH{$terminal}) eq $STR{$terminal}) {
+	      $match = $STR{$terminal};
 	  }
       }
 
       my $tokenLength = length($match);
       if ($tokenLength > 0) {
 	  if ($tokenLength > $maxTokenLength) {
+	      # $log->tracef('pos=%6d : Replacing %s by %s', $pos, \@tokens, $terminal) if (@tokens);
 	      @tokens = ($terminal);
 	      $value = $match;
 	      $maxTokenLength = $tokenLength;
@@ -712,22 +944,47 @@ sub parse {
 	    #
 	    # The array is a reference to [$name, $value], where value can be undef
 	    #
-	    # $log->tracef('pos=%6d : lexeme_alternative("%s", "%s")', $pos, $_, $value);
+            # $log->tracef('pos=%6d : lexeme_alternative("%s", "%s")', $pos, $_, $value);
+	    # printf "pos=%6d : lexeme_alternative(\"%s\", \"%s\")\n", $pos, $_, $value;
 	    # $recce->lexeme_alternative($_, $value);
 	    $recce->lexeme_alternative($_);
+            if (exists($LEXEME_INC_LEVEL{$_})) {
+              ++$level;
+              # $log->tracef('pos=%6d : level inc to %d', $pos, $level);
+            } elsif (exists($LEXEME_DEC_LEVEL{$_})) {
+              --$level;
+              # $log->tracef('pos=%6d : level dec to %d', $pos, $level);
+            }
 	}
 	$recce->lexeme_complete(0, 1);
+	# $log->tracef('pos=%6d : +=%d, value=%s', $pos, $maxTokenLength, $value);
 	$pos += $maxTokenLength;
+
+        my $tokens = join('/', sort @tokens);
+        my $newkey;
+	my $levelkey = "[$level]$key";
+	if (exists($KEY_TOKENS_TO_NEXTKEY{$levelkey}) &&
+	    exists($KEY_TOKENS_TO_NEXTKEY{$levelkey}->{$tokens})) {
+            $newkey = $KEY_TOKENS_TO_NEXTKEY{$levelkey}->{$tokens};
+            # $log->tracef('[OLD] pos=%6d : {%s}{%s} => {%s}', $pos, $levelkey, $tokens, $newkey);
+            $countCached++;
+	} else {
+            $newkey = $self->_progressToKey($recce);
+            # $log->tracef('[NEW] pos=%6d : {%s}{%s} => {%s}', $pos, $levelkey, $tokens, $newkey);
+            $KEY_TOKENS_TO_NEXTKEY{$levelkey}->{$tokens} = $newkey;
+            $countToProgress++;
+	}
+        $key = $newkey;
     } else {
 	#
 	# Acceptable only if there are discardable characters
 	#
 	$self->_canPos($stream, $pos);
 	if ($self->{buf} =~ m/\G\s+/g) {
-	    # $log->tracef('pos=%6d : discarding %d characters', $pos, $+[0] - $-[0]);
+	    $log->tracef('pos=%6d : discarding %d characters', $pos, $+[0] - $-[0]);
 	    $pos += $+[0] - $-[0];
 	} else {
-	    # $log->tracef('pos=%6d : no token nor discardable character', $pos);
+	    $log->tracef('pos=%6d : no token nor discardable character', $pos);
 	    last;
 	}
     }
@@ -735,17 +992,24 @@ sub parse {
     if ($pos >= $bigtrace) {
 	$log->tracef('pos=%6d', $pos);
 	$bigtrace += 100000;
+        last if ($bigtrace >= 600000);
     }
 
     $self->_donePos($stream, $pos);
   }
-  #print STDERR $recce->show_progress;
   my $nvalue = 0;
   while (defined($_ = $recce->value)) {
       ++$nvalue;
       #$log->tracef('Value %d: %s', $nvalue, $_);
   }
   $log->tracef('Total number of values: %d', $nvalue);
+  if (! $nvalue) {
+      print "EXPECTED: @{$recce->terminals_expected()}\n";
+      print  "LATEST PROGRESS:\n";
+      print $recce->show_progress();
+  }
+  print "COUNT TO PROGRESS: $countToProgress\n";
+  print "COUNT FROM CACHE : $countCached\n";
 }
 
 1;
@@ -759,12 +1023,15 @@ lexeme default = action => [start,length,value] forgiving => 1
 #
 # We want to pause at the very beginning
 #
+event '^document' = predicted <document>
 document      ::= prolog element MiscAny
 Char          ::= CHAR
 Name          ::= NAME
-Names         ::= Name+ separator => x20
+Names         ::= Name
+                | x20 Names
 Nmtoken       ::= NMTOKEN
-Nmtokens      ::= Nmtoken+ separator => x20
+Nmtokens      ::= Nmtoken
+                | x20 Nmtokens
 EntityValue   ::= ENTITYVALUE
 AttValue      ::= ATTVALUE
 SystemLiteral ::= SYSTEMLITERAL
@@ -881,7 +1148,7 @@ EncodingDecl  ::= WhiteSpace Encoding Eq Dquote EncName Dquote
 EncName       ::= ENCNAME
 NotationDecl  ::= NotationBeg WhiteSpace Name WhiteSpace ExternalID SMaybe NotationEnd
                 | NotationBeg WhiteSpace Name WhiteSpace PublicID   SMaybe NotationEnd
-PublicID      ::= PUBLIC WhiteSpace PubidLiteral
+PublicID      ::= Public WhiteSpace PubidLiteral
 #
 # G1 helpers
 #
@@ -956,9 +1223,9 @@ No ::= NO
 XTagBeg ::= XTAG_BEG
 STagBeg ::= XTagBeg
 XTagEnd ::= XTAG_END
-STagEnd ::= XTagEnd
+STagEnd ::= STAG_END
 ETagBeg ::= ETAG_BEG
-ETagEnd ::= XTagEnd
+ETagEnd ::= ETAG_END
 EmptyElemTagBeg ::= XTagBeg
 EmptyElemTagEnd ::= EMPTYELEMTAG_END
 ElementDeclBeg ::= ELEMENTDECL_BEG
@@ -1039,6 +1306,8 @@ YES              ~ _DUMMY
 NO               ~ _DUMMY
 XTAG_BEG         ~ _DUMMY
 XTAG_END         ~ _DUMMY
+STAG_END         ~ _DUMMY
+ETAG_END         ~ _DUMMY
 ETAG_BEG         ~ _DUMMY
 EMPTYELEMTAG_END ~ _DUMMY
 ELEMENTDECL_BEG  ~ _DUMMY
@@ -1084,84 +1353,3 @@ ENCNAME          ~ _DUMMY
 NOTATION_BEG     ~ _DUMMY
 ATTVALUE         ~ _DUMMY
 ENTITYVALUE      ~ _DUMMY
-#
-# G0 events
-# ---------
-event X20              = predicted x20
-event S                = predicted WhiteSpace
-event NAME             = predicted Name
-event CHAR             = predicted Char
-event NMTOKEN          = predicted Nmtoken
-event SYSTEMLITERAL    = predicted SystemLiteral
-event PUBIDLITERAL     = predicted PubidLiteral
-event CHARDATA         = predicted CharData
-event CDATA            = predicted CData
-event COMMENT_BEG      = predicted CommentBeg
-event COMMENT_END      = predicted CommentEnd
-event COMMENT          = predicted CommentInterior
-event PI_BEG           = predicted PiBeg
-event PI_END           = predicted PiEnd
-event PITARGET         = predicted PITarget
-event PI_INTERIOR      = predicted PiInterior
-event CDSTART          = predicted CDStart
-event CDEND            = predicted CDEnd
-event XML_BEG          = predicted XmlBeg
-event XML_END          = predicted XmlEnd
-event VERSION          = predicted Version
-event DQUOTE           = predicted Dquote
-event SQUOTE           = predicted Squote
-event EQUAL            = predicted Equal
-event VERSIONNUM       = predicted VersionNum
-event DOCTYPE_BEG      = predicted DoctypeBeg
-event LBRACKET         = predicted Lbracket
-event RBRACKET         = predicted Rbracket
-event STANDALONE       = predicted Standalone
-event YES              = predicted Yes
-event NO               = predicted No
-event XTAG_BEG         = predicted XTagBeg
-event XTAG_END         = predicted XTagEnd
-event ETAG_BEG         = predicted ETagBeg
-event EMPTYELEMTAG_END = predicted EmptyElemTagEnd
-event ELEMENTDECL_BEG  = predicted ElementDeclBeg
-event EMPTY            = predicted Empty
-event ANY              = predicted Any
-event QUESTION_MARK    = predicted QuestionMark
-event STAR             = predicted Star
-event PLUS             = predicted Plus
-event LPAREN           = predicted Lparen
-event RPAREN           = predicted Rparen
-event PIPE             = predicted Pipe
-event COMMA            = predicted Comma
-event RPARENSTAR       = predicted RparenStar
-event PCDATA           = predicted Pcdata
-event ATTLIST_BEG      = predicted AttlistBeg
-event STRINGTYPE       = predicted StringType
-event TYPE_ID          = predicted TypeId
-event TYPE_IDREF       = predicted TypeIdref
-event TYPE_IDREFS      = predicted TypeIdrefs
-event TYPE_ENTITY      = predicted TypeEntity
-event TYPE_ENTITIES    = predicted TypeEntities
-event TYPE_NMTOKEN     = predicted TypeNmtoken
-event TYPE_NMTOKENS    = predicted TypeNmtokens
-event NOTATION         = predicted Notation
-event REQUIRED         = predicted Required
-event IMPLIED          = predicted Implied
-event FIXED            = predicted Fixed
-event SECT_BEG         = predicted SectBeg
-event INCLUDE          = predicted Include
-event SECT_END         = predicted SectEnd
-event IGNORE           = predicted TOKIgnore
-event IGNORE_INTERIOR  = predicted Ignore
-event CHARREF          = predicted CharRef
-event ENTITYREF        = predicted EntityRef
-event PEREFERENCE      = predicted PEReference
-event EDECL_BEG        = predicted EdeclBeg
-event PERCENT          = predicted Percent
-event SYSTEM           = predicted System
-event PUBLIC           = predicted Public
-event NDATA            = predicted Ndata
-event ENCODING         = predicted Encoding
-event ENCNAME          = predicted EncName
-event NOTATION_BEG     = predicted NotationBeg
-event ATTVALUE         = predicted AttValue
-event ENTITYVALUE      = predicted EntityValue
