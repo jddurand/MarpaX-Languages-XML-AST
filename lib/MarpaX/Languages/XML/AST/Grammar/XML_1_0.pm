@@ -486,8 +486,6 @@ sub parse {
   #
   my $level = 0;
   my $key = $self->_progressToKey($recce, $level);
-  my $countToProgress = 1;
-  my $countCached = 0;
 
   while (1) {
 
@@ -521,7 +519,7 @@ sub parse {
 	    $self->_canPos($stream, $pos + $STRLENGTH{$STR[0]} - 1);
 	}
 	#
-	# We re-write terminals if there is more than once string and there is a difference in length
+	# We re-write terminals if there is more than one string and there is a difference in length
 	#
 	if ($#STR > 0 && $STRLENGTH{$STR[0]} != $STRLENGTH{$STR[-1]}) {
 	    my @NONSTR = grep {! exists($STRLENGTH{$_})} @terminals;
@@ -544,18 +542,21 @@ sub parse {
         # PITARGET is NAME without /xml/i
         #
         # ----------------------------------------------
-        if ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}]/g) {
-          next if (! $self->_isPos($stream, ++$workpos));
+        if ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/g) {
           $match = $&;
-	  my $length = 0;
-          while (1) {
-            last if (($length > 0) && ! $self->_isPos($stream, ($workpos += $length)));
-            last if ($self->{buf} !~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/g);
-            $length = $+[0] - $-[0];
-            last if (! $length);
-            $match .= $&;
-          }
-        }
+          if ($self->_isPos($stream, $workpos + $+[0] - $-[0])) {
+	      while (1) {
+		  #
+		  # This regexp will always match...
+		  #
+		  $self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/g;
+		  my $length = $+[0] - $-[0];
+		  last if (! $length);
+		  $match .= $&;
+		  last if (! $self->_isPos($stream, ($workpos += $length)));
+	      }
+	  }
+	}
         if ($terminal eq 'PITARGET' && length($match) > 0) {
           if ($match =~ /xml/i) {
             substr($match, $-[0]) = '';
@@ -920,7 +921,7 @@ sub parse {
       }
       elsif (exists($STR{$terminal})) {
 	  #
-	  # Note we already did a _canPos that fits as maximum as possible
+	  # Note we already did a _canPos that fits as maximum as possible.
 	  #
 	  if (substr($self->{buf}, pos($self->{buf}), $STRLENGTH{$terminal}) eq $STR{$terminal}) {
 	      $match = $STR{$terminal};
@@ -960,21 +961,8 @@ sub parse {
 	# $log->tracef('pos=%6d : +=%d, value=%s', $pos, $maxTokenLength, $value);
 	$pos += $maxTokenLength;
 
-        my $tokens = join('/', sort @tokens);
-        my $newkey;
-	my $levelkey = "[$level]$key";
-	if (exists($KEY_TOKENS_TO_NEXTKEY{$levelkey}) &&
-	    exists($KEY_TOKENS_TO_NEXTKEY{$levelkey}->{$tokens})) {
-            $newkey = $KEY_TOKENS_TO_NEXTKEY{$levelkey}->{$tokens};
-            # $log->tracef('[OLD] pos=%6d : {%s}{%s} => {%s}', $pos, $levelkey, $tokens, $newkey);
-            $countCached++;
-	} else {
-            $newkey = $self->_progressToKey($recce);
-            # $log->tracef('[NEW] pos=%6d : {%s}{%s} => {%s}', $pos, $levelkey, $tokens, $newkey);
-            $KEY_TOKENS_TO_NEXTKEY{$levelkey}->{$tokens} = $newkey;
-            $countToProgress++;
-	}
-        $key = $newkey;
+        my $tokens = $#tokens ? join('/', sort @tokens) : $tokens[0];
+	$key = ($KEY_TOKENS_TO_NEXTKEY{"[$level]$key"}->{$tokens} //= $self->_progressToKey($recce));
     } else {
 	#
 	# Acceptable only if there are discardable characters
@@ -992,7 +980,7 @@ sub parse {
     if ($pos >= $bigtrace) {
 	$log->tracef('pos=%6d', $pos);
 	$bigtrace += 100000;
-        last if ($bigtrace >= 600000);
+        # last if ($bigtrace >= 600000);
     }
 
     $self->_donePos($stream, $pos);
@@ -1008,8 +996,6 @@ sub parse {
       print  "LATEST PROGRESS:\n";
       print $recce->show_progress();
   }
-  print "COUNT TO PROGRESS: $countToProgress\n";
-  print "COUNT FROM CACHE : $countCached\n";
 }
 
 1;
