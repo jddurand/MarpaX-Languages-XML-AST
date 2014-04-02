@@ -456,7 +456,7 @@ $MATCH{ATTVALUE} = sub {
 		$pos += $length;
 		next;
 	    }
-	    pos($self->{buf}) = $curpos;
+	    # pos($self->{buf}) = $curpos;              # that means this call is not necessary
 	    if (my $entityref = $MATCH{ENTITYREF}($self, $stream, $pos)) {
 		$match .= $entityref;
 		$pos += length($entityref);
