@@ -516,7 +516,7 @@ sub parse {
 	#
 	if ($STRLENGTH{$STR[0]} > 1) {
 	    # $log->tracef('pos=%6d : trying to fetch %d characters', $pos, $STRLENGTH{$STR[0]});
-	    $self->_canPos($stream, $pos + $STRLENGTH{$STR[0]} - 1);
+	    $self->_isPos($stream, $pos + $STRLENGTH{$STR[0]} - 1);
 	}
 	#
 	# We re-write terminals if there is more than one string and there is a difference in length
