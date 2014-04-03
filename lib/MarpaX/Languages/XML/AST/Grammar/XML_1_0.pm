@@ -18,8 +18,8 @@ our $DATA = do {local $/; <DATA>};
 # -----------------------------------------------------------
 # Keep track of recursion using STAG_END and ETAG_END lexemes
 # -----------------------------------------------------------
-our %LEXEME_INC_LEVEL = (STAG_END => 1);
-our %LEXEME_DEC_LEVEL = (ETAG_END => 1);
+our %LEXEME_LEVEL = (STAG_END => 1,
+		     ETAG_END => -1);
 
 # --------------------------------------------------------------------
 # There are several DIFFERENT top-level productions in the XML grammar
@@ -97,6 +97,16 @@ sub _isPos {
     } else {
 	return $_[0]->_canPos($_[1], $_[2]);
     }
+}
+
+#
+# _moreDataNeeded returns TRUE if the position given is the last uncached data and EOF is not reached
+#
+sub _moreDataNeeded {
+    # my ($self, $stream, $pos) = @_;
+
+  return ($_[2] == $_[0]->{mapend} && ! $_[1]->eof());
+
 }
 
 #
@@ -187,6 +197,7 @@ sub parse {
   # Loop until nothing left in the buffer
   #
   my %KEY2TERMINALS = ();
+  my %KEY2TERMINALS_CONDITIONS = ();
   my %KEY_TOKENS_TO_NEXTKEY = ();
   #
   # We instanciate $key manually
@@ -194,81 +205,108 @@ sub parse {
   my $level = 0;
   my $key = $self->_progressToKey($recce, $level);
 
+  my $nPreviousTry = 0;
+  my $nPreviousMatch = 0;
+
   while (1) {
 
-    last if (! $self->_canPos($stream, $pos));
+    last if (($nPreviousTry != 1 || $nPreviousMatch != 1) &&
+	     ! $self->_canPos($stream, $pos));
 
+    my $internalPos = pos($self->{buf});
     my @tokens = ();
     my $value = '';
     my $maxTokenLength = 0;
+    my @terminals;
 
     #
-    # By definition we know we can pos() here. No need to call again _canPos()
-    # for a predictable result at a predictable position.
+    # Get expected terminals
     #
-    my $internalPos = pos($self->{buf});
+    if (! defined($KEY2TERMINALS{$key})) {
+	@terminals = @{$recce->terminals_expected()};
+	#
+	# In case of fixed strings, we make sure we tried to fetch as many characters
+	# as possible, ordering with longests fixed strings first
+	#
+	my @STR = sort {$STRLENGTH{$b} <=> $STRLENGTH{$a}} grep {exists($STRLENGTH{$_})} @terminals;
+	if (@STR) {
+	    #
+	    # Try to fetch unless longest length is 1
+	    #
+	    if ($STRLENGTH{$STR[0]} > 1) {
+		# $log->tracef('pos=%6d : trying to fetch %d characters', $pos, $STRLENGTH{$STR[0]});
+		$self->_isPos($stream, $pos + $STRLENGTH{$STR[0]} - 1);
+	    }
+	    #
+	    # We re-write terminals if there is more than one string and there is a difference in length
+	    #
+	    if ($#STR > 0 && $STRLENGTH{$STR[0]} != $STRLENGTH{$STR[-1]}) {
+		my @NONSTR = grep {! exists($STRLENGTH{$_})} @terminals;
+		@terminals = (@NONSTR, @STR);
+	    }
+	}
+	$KEY2TERMINALS{$key} = [ @terminals ];
+	#
+	# Set-up conditions: if almost all cases, when multiple terminals are possible
+	# - a terminal is more probable
+	# - terminals are mutually exclusive
 
-    #
-    # Loop until error, or eof, or no more terminal expected
-    #
-    my @terminals = @{$KEY2TERMINALS{$key} //= $recce->terminals_expected()};
-    #
-    # In case of fixed strings, we make sure we tried to fetch as many characters
-    # as possible, ordering with longests fixed strings first
-    #
-    my @STR = sort {$STRLENGTH{$b} <=> $STRLENGTH{$a}} grep {exists($STRLENGTH{$_})} @terminals;
-    if (@STR) {
-	#
-	# Try to fetch unless longest length is 1 (already done upper)
-	#
-	if ($STRLENGTH{$STR[0]} > 1) {
-	    # $log->tracef('pos=%6d : trying to fetch %d characters', $pos, $STRLENGTH{$STR[0]});
-	    $self->_isPos($stream, $pos + $STRLENGTH{$STR[0]} - 1);
-	}
-	#
-	# We re-write terminals if there is more than one string and there is a difference in length
-	#
-	if ($#STR > 0 && $STRLENGTH{$STR[0]} != $STRLENGTH{$STR[-1]}) {
-	    my @NONSTR = grep {! exists($STRLENGTH{$_})} @terminals;
-	    @terminals = ((grep {! exists($STRLENGTH{$_})} @terminals), @STR);
-	}
+    } else {
+	@terminals = @{$KEY2TERMINALS{$key}};
     }
 
-    foreach my $terminal (@{$KEY2TERMINALS{$key} //= $recce->terminals_expected()}) {
-      pos($self->{buf}) = $internalPos;
+    # $log->tracef('pos=%6d : internal pos=%6d : trying %s on ...%s...', $pos, pos($self->{buf}), \@terminals, substr($self->{buf}, pos($self->{buf}), 10));
 
-      # $log->tracef('pos=%6d : trying %s, pos($self->{buf})=%s => %s', $pos, $terminal, pos($self->{buf}), substr($self->{buf}, pos($self->{buf}), 10) . "...");
+    $nPreviousTry = 0;
+    $nPreviousMatch = 0;
+    my $c0 = substr($self->{buf}, pos($self->{buf}), 1);
+    my @MATCHARGS = ($self, $stream, $pos, $c0);
 
-      my $match = $MATCH{$terminal}($self, $stream, $pos);
+    foreach my $iterminal (0..$#terminals) {
+	pos($self->{buf}) = $internalPos if ($iterminal > 0);
+	#
+	# There is always at least one character, and we preload it in case the MATCH
+	# routine want to use it
+	#
+	++$nPreviousTry;
 
-      my $tokenLength = length($match);
-      if ($tokenLength > 0) {
-	  if ($tokenLength > $maxTokenLength) {
-	      # $log->tracef('pos=%6d : Replacing %s by %s', $pos, \@tokens, $terminal) if (@tokens);
-	      @tokens = ($terminal);
-	      $value = $match;
-	      $maxTokenLength = $tokenLength;
-	  } elsif ($tokenLength == $maxTokenLength) {
-	      push(@tokens, $terminal);
-	  }
-      }
+	# $log->tracef('pos=%6d : internal pos=%6d/%6d : trying %s on ...%s...', $pos, $internalPos, pos($self->{buf}), $terminals[$iterminal], substr($self->{buf}, pos($self->{buf}), 10));
+
+	my $match = $MATCH{$terminals[$iterminal]}(@MATCHARGS);
+
+	my $tokenLength = length($match);
+	if ($tokenLength > 0) {
+	    ++$nPreviousMatch;
+	    if ($tokenLength > $maxTokenLength) {
+		# $log->tracef('pos=%6d : Replacing %s by %s', $pos, \@tokens, $terminals[$iterminal]) if (@tokens);
+		@tokens = ($terminals[$iterminal]);
+		$value = $match;
+		$maxTokenLength = $tokenLength;
+	    } elsif ($tokenLength == $maxTokenLength) {
+		push(@tokens, $terminals[$iterminal]);
+	    }
+	    #
+	    # Cases where we can stop immediately
+	    #
+	    if ($terminals[$iterminal] eq 'S' ||
+		$terminals[$iterminal] eq 'ATTVALUE' ||
+		$terminals[$iterminal] eq 'NAME' ||
+		$terminals[$iterminal] eq 'CHARDATA') {
+		last;
+	    }
+	}
+
     }
     if (@tokens) {
 	foreach (@tokens) {
 	    #
 	    # The array is a reference to [$name, $value], where value can be undef
 	    #
-            # $log->tracef('pos=%6d : lexeme_alternative("%s", "%s")', $pos, $_, $value);
+            # $log->tracef('pos=%6d : internal pos=%6d/%6d : lexeme_alternative("%s", "%s")', $pos, $internalPos, pos($self->{buf}), $_, $value);
 	    # printf "pos=%6d : lexeme_alternative(\"%s\", \"%s\")\n", $pos, $_, $value;
 	    # $recce->lexeme_alternative($_, $value);
 	    $recce->lexeme_alternative($_);
-            if (exists($LEXEME_INC_LEVEL{$_})) {
-              ++$level;
-              # $log->tracef('pos=%6d : level inc to %d', $pos, $level);
-            } elsif (exists($LEXEME_DEC_LEVEL{$_})) {
-              --$level;
-              # $log->tracef('pos=%6d : level dec to %d', $pos, $level);
-            }
+	    $level += ($LEXEME_LEVEL{$_} //= 0);
 	}
 	$recce->lexeme_complete(0, 1);
 	# $log->tracef('pos=%6d : +=%d, value=%s', $pos, $maxTokenLength, $value);
@@ -280,9 +318,11 @@ sub parse {
 	#
 	# Acceptable only if there are discardable characters
 	#
-        my $length = length($MATCH{_DISCARD}($self, $stream, $pos));
+	pos($self->{buf}) = $internalPos;
+        my $discard = $MATCH{_DISCARD}(@MATCHARGS);
+        my $length = length($discard);
 	if ($length > 0) {
-          $log->tracef('pos=%6d : discarding %d characters', $pos, $length);
+          $log->tracef('pos=%6d : discarding %d characters (%s)', $pos, $length, $discard);
           $pos += $length;
 	} else {
           $log->tracef('pos=%6d : no token nor discardable character', $pos);
@@ -293,11 +333,12 @@ sub parse {
     if ($pos >= $bigtrace) {
 	$log->tracef('pos=%6d', $pos);
 	$bigtrace += 100000;
-        # last if ($bigtrace >= 300000);
+        last if ($bigtrace >= 300000);
     }
 
     $self->_donePos($stream, $pos);
   }
+  goto novalue;
   my $nvalue = 0;
   while (defined($_ = $recce->value)) {
       ++$nvalue;
@@ -309,6 +350,7 @@ sub parse {
       print  "LATEST PROGRESS:\n";
       print $recce->show_progress();
   }
+ novalue:
 }
 
 1;
