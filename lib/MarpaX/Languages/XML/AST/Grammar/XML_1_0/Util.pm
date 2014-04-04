@@ -108,7 +108,7 @@ foreach (keys %STR) {
 
 our %MATCH = ();
 $MATCH{NAME} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     # ----------------------------------------------
     # NAME is /${REG_NAMESTARTCHAR}${REG_NAMECHAR}*/
     # ----------------------------------------------
@@ -127,7 +127,7 @@ $MATCH{NAME} = sub {
 };
 
 $MATCH{PITARGET} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     # -----------------------------------------------------------------
     # PITARGET is NAME without /xml/i
     # -----------------------------------------------------------------
@@ -143,7 +143,7 @@ $MATCH{PITARGET} = sub {
 };
 
 $MATCH{ENCNAME} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     # ----------------------------------------------
     # ENCNAME is /${REG_ALPHA}${REG_ENCNAME_REST}*/
     # ----------------------------------------------
@@ -162,7 +162,7 @@ $MATCH{ENCNAME} = sub {
 };
 
 $MATCH{CHARREF} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     # ---------------------------------
     # CHARREF is /&#${REG_DIGIT}+;/
     #         or /&#x${REG_HEXDIGIT}+;/
@@ -222,7 +222,7 @@ $MATCH{CHARREF} = sub {
 };
 
 $MATCH{S} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     my $match = '';
     # ----------------
     # S is /${REG_S}+/
@@ -237,7 +237,7 @@ $MATCH{S} = sub {
 };
 
 $MATCH{NMTOKEN} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     my $match = '';
     # -----------------------------
     # NMTOKEN is /${REG_NAMECHAR}+/
@@ -252,7 +252,7 @@ $MATCH{NMTOKEN} = sub {
 };
 
 $MATCH{SYSTEMLITERAL} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     # -----------------------------------------------------------------
     # SYSTEMLITERAL is /"${REG_NOT_DQUOTE}*"/ or /'${REG_NOT_SQUOTE}*'/
     # -----------------------------------------------------------------
@@ -288,7 +288,7 @@ $MATCH{SYSTEMLITERAL} = sub {
 };
 
 $MATCH{PUBIDLITERAL} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     # ------------------------------------------------------------------------------------
     # PUBIDLITERAL is /"${REG_PUBIDCHAR_NOT_DQUOTE}*"/ or /'${REG_PUBIDCHAR_NOT_SQUOTE}*'/
     # ------------------------------------------------------------------------------------
@@ -324,7 +324,8 @@ $MATCH{PUBIDLITERAL} = sub {
 };
 
 $MATCH{CHARDATA} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
+
     my $match = '';
     # -------------------------------------------------------
     # CHARDATA is /${REG_CHARDATA}*/ minus the sequence ']]>'
@@ -348,7 +349,7 @@ $MATCH{CHARDATA} = sub {
 };
 
 $MATCH{_CHAR_ANY} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     my $match = '';
     while ($self->{buf} =~ m/\G[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]*/gc) {  # Note the /c modifier
 	my $length = $+[0] - $-[0];
@@ -362,7 +363,7 @@ $MATCH{_CHAR_ANY} = sub {
 };
 
 $MATCH{CDATA} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     # -------------------------------------------
     # CDATA is _CHAR_ANY minus the sequence ']]>'
     # -------------------------------------------
@@ -378,7 +379,7 @@ $MATCH{CDATA} = sub {
 };
 
 $MATCH{COMMENT} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     # --------------------------------------------
     # COMMENT is _CHAR_ANY minus the sequence '--'
     # --------------------------------------------
@@ -394,7 +395,7 @@ $MATCH{COMMENT} = sub {
 };
 
 $MATCH{PI_INTERIOR} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     # ------------------------------------------------
     # PI_INTERIOR is _CHAR_ANY minus the sequence '?>'
     # ------------------------------------------------
@@ -410,7 +411,7 @@ $MATCH{PI_INTERIOR} = sub {
 };
 
 $MATCH{IGNORE_INTERIOR} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     # ---------------------------------------------------------------
     # IGNORE_INTERIOR is _CHAR_ANY minus the sequences '<![' or ']]>'
     # ---------------------------------------------------------------
@@ -434,7 +435,7 @@ $MATCH{IGNORE_INTERIOR} = sub {
 };
 
 $MATCH{VERSIONNUM} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     # -------------------------------
     # VERSIONNUM is /1.${REG_DIGIT}+/
     # -------------------------------
@@ -466,12 +467,14 @@ $MATCH{VERSIONNUM} = sub {
 };
 
 $MATCH{ENTITYREF} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     # --------------------------
     # ENTITYREF   is /&${NAME};/
     # --------------------------
     if ($c0 eq '&' && $self->_canPos($stream, ++$pos)) {
-      if (my $name = $MATCH{NAME}($self, $stream, $pos)) {
+      my $newInternalPos = $internalPos + 1;
+      my $newc0 = substr($self->{buf}, $newInternalPos, 1);
+      if (my $name = $MATCH{NAME}($self, $stream, $pos, $newc0, $newInternalPos, $tokenp)) {
         if ($self->_isPos($stream, ($pos += length($name)))) {
           if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
             pos($self->{buf}) += 1;
@@ -490,12 +493,14 @@ $MATCH{ENTITYREF} = sub {
 };
 
 $MATCH{PEREFERENCE} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     # --------------------------
-    # ENTITYREF   is /%${NAME};/
+    # PEREFERENCE   is /%${NAME};/
     # --------------------------
     if ($c0 eq '%' && $self->_canPos($stream, ++$pos)) {
-      if (my $name = $MATCH{NAME}($self, $stream, $pos)) {
+      my $newInternalPos = $internalPos + 1;
+      my $newc0 = substr($self->{buf}, $newInternalPos, 1);
+      if (my $name = $MATCH{NAME}($self, $stream, $pos, $newc0, $newInternalPos, $tokenp)) {
         if ($self->_isPos($stream, ($pos += length($name)))) {
           if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
             pos($self->{buf}) += 1;
@@ -514,7 +519,8 @@ $MATCH{PEREFERENCE} = sub {
 };
 
 $MATCH{ATTVALUE} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
+
     #
     # ------------------------------------------------------
     # ATTVALUE is /"(${REG_ATTVALUE_NOT_DQUOTE}|Reference)*"/
@@ -531,6 +537,10 @@ $MATCH{ATTVALUE} = sub {
 	my $match = $c0;
 	my $dquoteMode = ($c0 eq '"');
 	my $lastok = 1;
+        my $newInternalPos = $internalPos + 1;
+        my $newc0 = substr($self->{buf}, $newInternalPos, 1);
+        my $subTokenName;
+        my $subTokenValue;
 	while (1) {
           if (
               (
@@ -544,29 +554,25 @@ $MATCH{ATTVALUE} = sub {
               $lastok = 0;
               last;
             } else {
+              $newInternalPos = $internalPos + $length;
+              $newc0 = substr($self->{buf}, $newInternalPos, 1);
               next;
             }
-          } elsif (my $entityref = $MATCH{ENTITYREF}($self, $stream, $pos)) {
-            $match .= $entityref;
-            $pos += length($entityref);
-            if (! $self->_isPos($stream, $pos)) {
-              $lastok = 0;
-              last;
-            } else {
-              next;
-            }
-          } elsif (my $charref = $MATCH{CHARREF}($self, $stream, $pos)) {
-            $match .= $charref;
-            $pos += length($charref);
-            if (! $self->_isPos($stream, $pos)) {
-              $lastok = 0;
-              last;
-            } else {
-              next;
-            }
-          } else {
-            last;
           }
+          if (my $subTokenValue = $MATCH{CHARREF_OR_ENTITYREF}($self, $stream, $pos, $newc0, $newInternalPos, \$subTokenName)) {
+            $match .= $subTokenValue;
+            my $length = length($subTokenValue);
+            $pos += $length;
+            if (! $self->_isPos($stream, $pos)) {
+              $lastok = 0;
+              last;
+            } else {
+              $newInternalPos = $internalPos + $length;
+              $newc0 = substr($self->{buf}, $newInternalPos, 1);
+              next;
+            }
+          }
+          last;
 	}
 	if ($lastok && substr($self->{buf}, pos($self->{buf}), 1) eq $c0) {
           pos($self->{buf}) += 1;
@@ -580,7 +586,8 @@ $MATCH{ATTVALUE} = sub {
 };
 
 $MATCH{ENTITYVALUE} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
+
     #
     # ------------------------------------------------------
     # ENTITYVALUE is /"(${REG_ENTITYVALUE_NOT_DQUOTE}|PEReference|Reference)*"/
@@ -599,6 +606,10 @@ $MATCH{ENTITYVALUE} = sub {
 	my $match = $c0;
 	my $dquoteMode = ($c0 eq '"');
 	my $lastok = 1;
+        my $newInternalPos = $internalPos + 1;
+        my $newc0 = substr($self->{buf}, $newInternalPos, 1);
+        my $subTokenName;
+        my $subTokenValue;
 	while (1) {
           if (
               (
@@ -612,38 +623,41 @@ $MATCH{ENTITYVALUE} = sub {
               $lastok = 0;
               last;
             } else {
+              $newInternalPos = $internalPos + $length;
+              $newc0 = substr($self->{buf}, $newInternalPos, 1);
               next;
             }
-          } elsif (my $pereference = $MATCH{PEREFERENCE}($self, $stream, $pos)) {
-            $match .= $pereference;
-            $pos += length($pereference);
-            if (! $self->_isPos($stream, $pos)) {
-              $lastok = 0;
-              last;
-            } else {
-              next;
-            }
-          } elsif (my $entityref = $MATCH{ENTITYREF}($self, $stream, $pos)) {
-            $match .= $entityref;
-            $pos += length($entityref);
-            if (! $self->_isPos($stream, $pos)) {
-              $lastok = 0;
-              last;
-            } else {
-              next;
-            }
-          } elsif (my $charref = $MATCH{CHARREF}($self, $stream, $pos)) {
-            $match .= $charref;
-            $pos += length($charref);
-            if (! $self->_isPos($stream, $pos)) {
-              $lastok = 0;
-              last;
-            } else {
-              next;
-            }
-          } else {
-            last;
           }
+          if (my $subTokenValue = $MATCH{CHARREF_OR_ENTITYREF}($self, $stream, $pos, $newc0, $newInternalPos, \$subTokenName)) {
+            $match .= $subTokenValue;
+            my $length = length($subTokenValue);
+            $pos += $length;
+            if (! $self->_isPos($stream, $pos)) {
+              $lastok = 0;
+              last;
+            } else {
+              $newInternalPos = $internalPos + $length;
+              $newc0 = substr($self->{buf}, $newInternalPos, 1);
+              next;
+            }
+          }
+          #
+          # We put PEREFERENCE after CHARREF or ENTITYREF because it is much more frequent
+          #
+          if (my $pereference = $MATCH{PEREFERENCE}($self, $stream, $pos, $newc0, $newInternalPos, $tokenp)) {
+            $match .= $pereference;
+            my $length = length($pereference);
+            $pos += $length;
+            if (! $self->_isPos($stream, $pos)) {
+              $lastok = 0;
+              last;
+            } else {
+              $newInternalPos = $internalPos + $length;
+              $newc0 = substr($self->{buf}, $newInternalPos, 1);
+              next;
+            }
+          }
+          last;
 	}
 	if ($lastok && substr($self->{buf}, pos($self->{buf}), 1) eq $c0) {
           pos($self->{buf}) += 1;
@@ -657,7 +671,7 @@ $MATCH{ENTITYVALUE} = sub {
 };
 
 $MATCH{_DISCARD} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
     my $match = '';
 
     while ($self->{buf} =~ m/\G\s+/gc) {     # Note the /c modifier
@@ -668,6 +682,90 @@ $MATCH{_DISCARD} = sub {
     }
 
     return $match;
+};
+
+$MATCH{CHARREF_OR_ENTITYREF} = sub {
+    my ($self, $stream, $pos, $c0, $internalPos, $tokenp) = @_;
+    # --------------------------
+    # ENTITYREF   is /&${NAME};/
+    # --------------------------
+    if ($c0 eq '&' && $self->_canPos($stream, ++$pos)) {
+      my $newInternalPos = $internalPos + 1;
+      my $newc0 = substr($self->{buf}, $newInternalPos, 1);
+      if ($newc0 eq '#' && $self->_canPos($stream, ++$pos)) {
+        # ---------------------------------
+        # CHARREF is /&#${REG_DIGIT}+;/
+        #         or /&#x${REG_HEXDIGIT}+;/
+        # ---------------------------------
+        if ($self->{buf} =~ m/\G(?:[0-9]+|x[0-9a-fA-F]+);/gc &&      # Note the /c modifier
+            ! $self->_moreDataNeeded($stream, $pos + $+[0] - $-[0])) {
+          ${$tokenp} = 'CHARREF';
+          return "&#$&";
+        } else {
+          if ($self->{buf} =~ m/\Gx/gc) {                          # Note the /c modifier
+            if ($self->_isPos($stream, ++$pos)) {
+              #
+              # We expect ${REG_HEXDIGIT}+ followed by ';'
+              #
+              my $submatch = '';
+              my $submatchok = 0;
+              while ($self->{buf} =~ m/\G[0-9a-fA-F]+/gc) {   # Note the /c modifier
+                $submatch .= $&;
+                $submatchok = 1;
+                last if (! $self->_isPos($stream, ($pos += ($+[0] - $-[0]))));
+              }
+              if ($submatchok && substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
+                pos($self->{buf}) += 1;
+                ${$tokenp} = 'CHARREF';
+                return "&#x${submatch};";
+              } else {
+                pos($self->{buf}) = $internalPos;
+              }
+            } else {
+              pos($self->{buf}) = $internalPos;
+            }
+          } else {
+            #
+            # We expect ${REG_DIGIT}+ followed by ';'
+            #
+            my $submatch = '';
+            my $submatchok = 0;
+            while ($self->{buf} =~ m/\G[0-9]+/gc) {   # Note the /c modifier
+              $submatch .= $&;
+              $submatchok = 1;
+              last if (! $self->_isPos($stream, ($pos += ($+[0] - $-[0]))));
+            }
+            if ($submatchok && substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
+              pos($self->{buf}) += 1;
+              ${$tokenp} = 'CHARREF';
+              return "&#${submatch};";
+            } else {
+              pos($self->{buf}) = $internalPos;
+            }
+          }
+        }
+      } else {
+        # --------------------------
+        # ENTITYREF   is /&${NAME};/
+        # --------------------------
+        if (my $name = $MATCH{NAME}($self, $stream, $pos, $newc0, $newInternalPos, $tokenp)) {
+          if ($self->_isPos($stream, ($pos += length($name)))) {
+            if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
+              pos($self->{buf}) += 1;
+              ${$tokenp} = 'ENTITYREF';
+              return "&${name};";
+            } else {
+              pos($self->{buf}) = $internalPos;
+            }
+          } else {
+            pos($self->{buf}) = $internalPos;
+          }
+        } else {
+          pos($self->{buf}) = $internalPos;
+        }
+      }
+    }
+    return '';
 };
 
 1;

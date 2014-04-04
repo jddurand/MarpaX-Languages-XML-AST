@@ -1,7 +1,7 @@
 use strict;
 use warnings FATAL => 'all';
 
-package MarpaX::Languages::XML::AST::R;
+package MarpaX::Languages::XML::AST::SLR;
 
 #
 # We subclass Marpa::R2::Scanless::R to get some

@@ -8,7 +8,7 @@ use MarpaX::Languages::XML::AST::Util qw/:all/;
 use Carp qw/croak/;
 use Marpa::R2 2.082000;
 use Log::Any qw/$log/;
-use MarpaX::Languages::XML::AST::R;
+use MarpaX::Languages::XML::AST::SLR;
 
 # ABSTRACT: XML-1-0. Extensible Markup Language (XML) 1.0 (Fifth Edition) written in Marpa BNF
 
@@ -122,7 +122,7 @@ sub _canPos {
 	# Current buffer
 	#
 	pos($_[0]->{buf}) = $_[2] - $_[0]->{mapbeg};
-	$log->tracef('_canPos %d : internal pos %s : %s...', $_[2], pos($_[0]->{buf}), substr($_[0]->{buf}, pos($_[0]->{buf}), 10));
+	# $log->tracef('_canPos %d : internal pos %s : %s...', $_[2], pos($_[0]->{buf}), substr($_[0]->{buf}, pos($_[0]->{buf}), 10));
 	return 1;
     } else {
 	if (! $_[0]->{mapend}) {
@@ -145,7 +145,7 @@ sub _canPos {
 	    # Need to append. We take the next uncached buffer
 	    #
 	    my $nextBufNo = $_[0]->{lastBufNo} + 1;
-	    $log->tracef('_canPos %d : append buffer %d', $_[2], $nextBufNo);
+	    # $log->tracef('_canPos %d : append buffer %d', $_[2], $nextBufNo);
 	    my $append = $_[1]->fetchb($nextBufNo);
 	    if (defined($append)) {
 		$_[0]->{buf} .= $append;
@@ -173,6 +173,21 @@ sub _progressToKey {
     return $key;
 }
 
+our %REGEXP_COMBINE = (
+                       #
+                       # CHARREF and ENTITYREF are very often expected at the same time
+                       # and the decision between the twos can be easily done withing a
+                       # single routine, because:
+                       # CHARREF   is /&#${REG_DIGIT}+;/ or /&#x${REG_HEXDIGIT}+;/
+                       # ENTITYREF is /&${NAME};/
+                       # i.e. they have the same start '&' and can be completely
+                       # disjoined using the next character, because ${NAME} cannot start
+                       # with a dash
+                       #
+                       'CHARREF'   => 'CHARREF_OR_ENTITYREF',
+                       'ENTITYREF' => 'CHARREF_OR_ENTITYREF',
+);
+
 our %REGEXP_PRIORITY = (
                         SYSTEMLITERAL => 2,
                         PUBIDLITERAL  => 2,
@@ -182,9 +197,23 @@ our %REGEXP_PRIORITY = (
                         NAME          => 2,
                         PITARGET      => 1,
                         ENCNAME       => 1,
-                        NMTOKEN       => 2,
-                        S             => -1
+                        NMTOKEN       => 1,
+                        #
+                        # Zero is the default for any lexeme not listed
+                        #
+                        S             => -99
 );
+our %STRING_PRIORITY = (
+                        #
+                        # ETAG_BEG is much more frequent then PI_BEG
+                        #
+                        ETAG_BEG   => 2,
+                        PI_BEG     => 1,
+                        #
+                        # Zero is the default for any lexeme not listed
+                        #
+);
+
 sub _sortRegexpTerminals {
   #
   # We always place at the top the "greedy"-like regexps
@@ -192,6 +221,21 @@ sub _sortRegexpTerminals {
   #
   my $aWeight = $REGEXP_PRIORITY{$a} || 0;
   my $bWeight = $REGEXP_PRIORITY{$b} || 0;
+
+  return $bWeight <=> $aWeight;
+}
+
+sub _sortStringTerminals {
+  my $aWeight;
+  my $bWeight;
+
+  if ($STRLENGTH{$a} != $STRLENGTH{$b}) {
+    $aWeight = $STRLENGTH{$a};
+    $bWeight = $STRLENGTH{$b};
+  } else {
+    $aWeight = $STRING_PRIORITY{$a} || 0;
+    $bWeight = $STRING_PRIORITY{$b} || 0;
+  }
 
   return $bWeight <=> $aWeight;
 }
@@ -249,9 +293,6 @@ sub parse {
 
     $internalPos = pos($self->{buf});
     $c0 = substr($self->{buf}, $internalPos, 1);
-    if (! defined($c0)) {
-      $log->errorf('pos=%6d : oups $c0 is undef', $pos);
-    }
     #
     # Get expected terminals
     #
@@ -262,10 +303,16 @@ sub parse {
       #
       my @REGEXP = sort _sortRegexpTerminals grep {! exists($STR{$_})} @terminals_expected;
       #
+      # Apply regexp combine if any
+      #
+      my @REGEXP_COMBINE = map {$REGEXP_COMBINE{$_} || $_} @REGEXP;
+      my %tmp = ();
+      @REGEXP = grep {++$tmp{$_} == 1} @REGEXP_COMBINE;
+      #
       # In case of fixed strings, we will always make sure that the maximum
       # string to matched is available. So we sort the string by length.
       #
-      my @STRING = sort {$STRLENGTH{$b} <=> $STRLENGTH{$a}} grep {exists($STR{$_})} @terminals_expected;
+      my @STRING = sort _sortStringTerminals grep {exists($STR{$_})} @terminals_expected;
       #
       # Fill the cached terminals
       #
@@ -290,9 +337,10 @@ sub parse {
 
     # $log->tracef('pos=%6d : internal pos=%6d : trying regexps %s, then strings %s, on ...%s...', $pos, pos($self->{buf}), $KEY2TERMINALS{$key}->[0], $KEY2TERMINALS{$key}->[2], substr($self->{buf}, pos($self->{buf}), 10));
 
-    @MATCHARGS = ($self, $stream, $pos, $c0, $internalPos);
+    my $forcedToken = undef;
     my $token = undef;
     my $value = '';
+    @MATCHARGS = ($self, $stream, $pos, $c0, $internalPos, \$forcedToken);
     #
     # Match the regexps first
     #
@@ -303,7 +351,8 @@ sub parse {
       $value = $MATCH{$regexp}(@MATCHARGS);
 
       if (length($value) > 0) {
-        $token = $regexp;
+        $token = $forcedToken || $regexp;
+        $forcedToken = undef if (defined($forcedToken));
         last;
       }
     }
@@ -345,7 +394,7 @@ sub parse {
       my $discard = $MATCH{_DISCARD}(@MATCHARGS);
       my $length = length($discard);
       if ($length > 0) {
-        $log->tracef('pos=%6d : discarding %d characters (%s)', $pos, $length, $discard);
+        # $log->tracef('pos=%6d : discarding %d characters (%s)', $pos, $length, $discard);
         $pos += $length;
       } else {
         $log->tracef('pos=%6d : no token nor discardable character', $pos);

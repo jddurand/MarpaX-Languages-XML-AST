@@ -64,7 +64,7 @@ sub _init {
 	if (! $self->[ 0]->can('read')) {
 	    croak 'Blessed input must support the read() method';
 	}
-	#$log->tracef('Input is a blessed object that can read()');
+	# $log->tracef('Input is a blessed object that can read()');
 	$self->[ 6] = 1;
     } else {
 	$self->[ 7] = fileno($self->[ 0]) // -1;
@@ -133,7 +133,7 @@ sub _read {
     $self->[ 8] = $idata + 1;
     if ($self->[ 5]) {
 	$self->[10] = $self->[ 9];
-	#$log->tracef('Input max position found to be %s', $self->[10]);
+	# $log->tracef('Input max position found to be %s', $self->[10]);
     }
     if ($n <= 0) {
 	#
@@ -291,7 +291,7 @@ sub fetchb {
 		return undef;
 	    }
 	} else {
-	    # $log->tracef('Buffer %d and maps to [%d-%d]', $n, $self->[ 4]->[$n], $self->[ 3]->[$n]);
+	    # $log->tracef('Buffer No %d maps to positions [%d-%d[', $n, $self->[ 4]->[$n], $self->[ 3]->[$n]);
 	    return $self->[ 1]->[$n];
 	}
     }
@@ -406,24 +406,24 @@ sub substr {
 	# This is okay only if we hitted eof, in which end is overwriten
 	#
 	if (! $self->[ 5]) {
-	    #$log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is not available', $offset, $length, $start, $end, $end);
+            $log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is not available', $offset, $length, $start, $end, $end);
 	    return undef;
 	}
-	#$log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is beyond eof: [%d-%d] applied', $offset, $length, $start, $end, $end, $start, $self->[10]);
+	$log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is beyond eof: [%d-%d] applied', $offset, $length, $start, $end, $end, $start, $self->[10]);
 	$end = $self->[10];
     }
     #
     # Make sure start is not beyond end
     #
     if ($start > $end) {
-	#$log->warnf('substr(%s, %s) converted to range [%d-%d]', $offset, $length, $start, $end);
+	$log->warnf('substr(%s, %s) converted to range [%d-%d]', $offset, $length, $start, $end);
 	return undef;
     }
     #
     # Make sure start is reachable
     #
     if (! defined($self->fetchc($start))) {
-	#$log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is not available', $offset, $length, $start, $end, $start);
+	$log->warnf('substr(%s, %s) converted to range [%d-%d] but position %d is not available', $offset, $length, $start, $end, $start);
 	return undef;
     }
     #
@@ -495,7 +495,7 @@ sub stringsToSub {
 	foreach (keys %{$length2Strings{$length}}) {
 	    my $stringValue = $_;
 	    if ($#{$length2Strings{$length}->{$stringValue}} > 0) {
-		#$log->warnf('More than one candidate for string \'%s\': %s', $stringValue, [ sort @{$length2Strings{$length}->{$stringValue}} ]);
+		$log->warnf('More than one candidate for string \'%s\': %s', $stringValue, [ sort @{$length2Strings{$length}->{$stringValue}} ]);
 	    }
 	}
     }
