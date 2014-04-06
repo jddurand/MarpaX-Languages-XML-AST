@@ -40,7 +40,7 @@ foreach (qw/document/) {
 sub new {
   my ($class, %opts) = @_;
 
-  my $self = {buf => undef, mapbeg => 0, origmapend => 0, mapend => 0, lastBufNo => 0};
+  my $self = {buf => undef, mapbeg => 0, origmapend => 0, mapend => 0, maxInternalPos => -1, lastBufNo => 0};
 
   bless($self, $class);
 
@@ -76,6 +76,7 @@ sub _donePos {
 	$_[0]->{buf} = undef;
 	$_[0]->{mapbeg} = 0;
 	$_[0]->{mapend} = 0;
+	$_[0]->{maxInternalPos} = -1;
 	$_[0]->{origmapend} = 0;
 	$_[0]->{lastBufNo} = 0;
     }
@@ -105,8 +106,20 @@ sub _isPos {
 #
 sub _moreDataNeeded {
     # my ($self, $stream, $pos) = @_;
+    return undef if ($_[2] < $_[0]->{mapend});
+    return undef if ($_[1]->eof());
+    return 1;
 
-  return ($_[2] == $_[0]->{mapend} && ! $_[1]->eof());
+}
+
+#
+# _moreDataNeededUsingInternalPos returns TRUE if the position given is the last cached data and EOF is not reached
+#
+sub _moreDataNeededUsingInternalPos {
+    # my ($self, $stream, $internalPos) = @_;
+    return undef if ($_[0]->{maxInternalPos} > 0 && $_[2] < $_[0]->{maxInternalPos});
+    return undef if ($_[1]->eof());
+    return 1;
 
 }
 
@@ -117,12 +130,14 @@ sub _moreDataNeeded {
 sub _canPos {
     # my ($self, $stream, $pos) = @_;
 
+    # $log->tracef('_canPos %d : internal pos %s : buffer is HERE>%s<HERE, mapend is %d', $_[2], pos($_[0]->{buf}), $_[0]->{buf}, $_[0]->{mapbeg});
+
     if ($_[2] < $_[0]->{mapend}) {
 	#
 	# Current buffer
 	#
 	pos($_[0]->{buf}) = $_[2] - $_[0]->{mapbeg};
-	# $log->tracef('_canPos %d : internal pos %s : %s...', $_[2], pos($_[0]->{buf}), substr($_[0]->{buf}, pos($_[0]->{buf}), 10));
+	# $log->tracef('_canPos %d : internal pos %s : buffer is HERE>%s<HERE, mapend is %d', $_[2], pos($_[0]->{buf}), $_[0]->{buf}, $_[0]->{mapbeg});
 	return 1;
     } else {
 	if (! $_[0]->{mapend}) {
@@ -136,6 +151,7 @@ sub _canPos {
 		# $log->tracef('_canPos %d : fetched buffer 0: %s', $_[2], $_[0]->{buf});
 		$_[0]->{mapbeg} = $_[1]->mapbeg(0);
 		$_[0]->{mapend} = $_[1]->mapend(0);
+		$_[0]->{maxInternalPos} = length($_[0]->{buf}) - 1;
 		$_[0]->{origmapend} = $_[0]->{mapend};
 		$_[0]->{lastBufNo} = 0;
 		return $_[0]->_canPos($_[1], $_[2]);
@@ -149,6 +165,7 @@ sub _canPos {
 	    my $append = $_[1]->fetchb($nextBufNo);
 	    if (defined($append)) {
 		$_[0]->{buf} .= $append;
+		$_[0]->{maxInternalPos} = length($_[0]->{buf}) - 1;
 		$_[0]->{mapend} = $_[1]->mapend($nextBufNo);
 		$_[0]->{lastBufNo} = $nextBufNo;
 		return $_[0]->_canPos($_[1], $_[2]);
@@ -184,8 +201,8 @@ our %REGEXP_COMBINE = (
                        # disjoined using the next character, because ${NAME} cannot start
                        # with a dash
                        #
-                       'CHARREF'   => 'CHARREF_OR_ENTITYREF',
-                       'ENTITYREF' => 'CHARREF_OR_ENTITYREF',
+                       # 'CHARREF'   => 'CHARREF_OR_ENTITYREF',
+                       # 'ENTITYREF' => 'CHARREF_OR_ENTITYREF',
 );
 
 our %REGEXP_PRIORITY = (
@@ -212,6 +229,9 @@ our %STRING_PRIORITY = (
                         #
                         # Zero is the default for any lexeme not listed
                         #
+                        STAG_END   => -1,
+                        ETAG_END   => -2,
+                        EMPTYELEMTAG_END => -3,
 );
 
 sub _sortRegexpTerminals {
@@ -259,13 +279,17 @@ sub parse {
   #
   # Current buffer
   #
-  my $stream = MarpaX::Languages::XML::AST::StreamIn->new(input => $input);
+  my $stream = MarpaX::Languages::XML::AST::StreamIn->new(
+      input => $input ,
+      # length => 5
+      );
   my $pos = 0;
   my $bigtrace = 100000;
   #
   # Loop until nothing left in the buffer
   #
   my %KEY2TERMINALS = ();
+  my %KEY2LONGEST_STRLENGTH_MINUS_ONE = ();
   my %KEY2TERMINALS_CONDITIONS = ();
   my %KEY_TOKENS_TO_NEXTKEY = ();
   my %SYMBOL_ID = ();
@@ -276,10 +300,7 @@ sub parse {
   my $key = $self->_progressToKey($recce, $level);
   my $internalPos;
   my $value;
-  my $stringToMatch;
-  my $stringToMatchLength;
   my $c0;
-  my @MATCHARGS;
 
   return if (! $self->_canPos($stream, $pos));
 
@@ -289,126 +310,99 @@ sub parse {
 
   while (1) {
 
-    last if (! $self->_isPos($stream, $pos));
+      #
+      # Unless of end buffer we are already correcly positionned per def
+      #
+      last if ($self->_moreDataNeededUsingInternalPos($stream, pos($self->{buf})) &&
+	       ! $self->_isPos($stream, $pos));
 
-    $internalPos = pos($self->{buf});
-    $c0 = substr($self->{buf}, $internalPos, 1);
-    #
-    # Get expected terminals
-    #
-    if (! defined($KEY2TERMINALS{$key})) {
-      my @terminals_expected = @{$recce->terminals_expected()};
+      $internalPos = pos($self->{buf});
+      $c0 = substr($self->{buf}, $internalPos, 1);
       #
-      # We distinguish REGEXP and STRINGS
+      # Get expected terminals
       #
-      my @REGEXP = sort _sortRegexpTerminals grep {! exists($STR{$_})} @terminals_expected;
-      #
-      # Apply regexp combine if any
-      #
-      my @REGEXP_COMBINE = map {$REGEXP_COMBINE{$_} || $_} @REGEXP;
-      my %tmp = ();
-      @REGEXP = grep {++$tmp{$_} == 1} @REGEXP_COMBINE;
-      #
-      # In case of fixed strings, we will always make sure that the maximum
-      # string to matched is available. So we sort the string by length.
-      #
-      my @STRING = sort _sortStringTerminals grep {exists($STR{$_})} @terminals_expected;
-      #
-      # Fill the cached terminals
-      #
-      $KEY2TERMINALS{$key} = [ [ @REGEXP ], $#STRING, [ @STRING] ];
-    }
+      if (! exists($KEY2TERMINALS{$key})) {
+	  my @terminals_expected = @{$recce->terminals_expected()};
+	  #
+	  # We distinguish REGEXP and STRINGS
+	  #
+	  my @REGEXP = sort _sortRegexpTerminals grep {! exists($STR{$_})} @terminals_expected;
+	  #
+	  # Apply regexp combine if any
+	  #
+	  my @REGEXP_COMBINE = map {$REGEXP_COMBINE{$_} || $_} @REGEXP;
+	  my %tmp = ();
+	  @REGEXP = grep {++$tmp{$_} == 1} @REGEXP_COMBINE;
+	  #
+	  # In case of fixed strings, we will always make sure that the maximum
+	  # string to matched is available. So we sort the string by length.
+	  #
+	  my @STRING = sort _sortStringTerminals grep {exists($STR{$_})} @terminals_expected;
+	  #
+	  # Fill the cached terminals
+	  #
+	  $KEY2TERMINALS{$key} = [ @STRING, @REGEXP ];
+	  $KEY2LONGEST_STRLENGTH_MINUS_ONE{$key} = $#STRING > 0 ? ($STRLENGTH{$STRING[0]} - 1) : 0;
+      }
 
-    if ($KEY2TERMINALS{$key}->[1] >= 0) {
       #
       # Try to fetch unless longest length is 1
       #
-      if ($STRLENGTH{$KEY2TERMINALS{$key}->[2]->[0]} == 1) {
-        $stringToMatch = $c0;
-        $stringToMatchLength = 1;
-      } else {
-        # $log->tracef('pos=%6d : trying to fetch %d characters', $pos, $STRLENGTH{$KEY2TERMINALS{$key}->[2]->[0]});
-        $self->_isPos($stream, $pos + $STRLENGTH{$KEY2TERMINALS{$key}->[2]->[0]} - 1);
-        pos($self->{buf}) = $internalPos;
-        $stringToMatch = substr($self->{buf}, $internalPos, $STRLENGTH{$KEY2TERMINALS{$key}->[2]->[0]});
-        $stringToMatchLength = length($stringToMatch);
+      if ($KEY2LONGEST_STRLENGTH_MINUS_ONE{$key}) {
+	  # $log->tracef('pos=%6d : trying to fetch %d characters', $pos, $KEY2LONGEST_STRLENGTH{$key});
+	  $self->_isPos($stream, $pos + $KEY2LONGEST_STRLENGTH_MINUS_ONE{$key}, 1);
+	  pos($self->{buf}) = $internalPos;
       }
-    }
 
-    # $log->tracef('pos=%6d : internal pos=%6d : trying regexps %s, then strings %s, on ...%s...', $pos, pos($self->{buf}), $KEY2TERMINALS{$key}->[0], $KEY2TERMINALS{$key}->[2], substr($self->{buf}, pos($self->{buf}), 10));
+      # $log->tracef('pos=%6d : internal pos=%6d : trying %s, on HERE>%s<HERE', $pos, pos($self->{buf}), $KEY2TERMINALS{$key}, substr($self->{buf}, pos($self->{buf}), 10));
 
-    my $forcedToken = undef;
-    my $token = undef;
-    my $value = '';
-    @MATCHARGS = ($self, $stream, $pos, $c0, $internalPos, \$forcedToken);
-    #
-    # Match the regexps first
-    #
-    foreach my $regexp (@{$KEY2TERMINALS{$key}->[0]}) {
-
-      # $log->tracef('pos=%6d : internal pos=%6d/%6d : trying %s on ...%s...', $pos, $internalPos, pos($self->{buf}), $regexp, substr($self->{buf}, pos($self->{buf}), 10));
-
-      $value = $MATCH{$regexp}(@MATCHARGS);
-
-      if (length($value) > 0) {
-        $token = $forcedToken || $regexp;
-        $forcedToken = undef if (defined($forcedToken));
-        last;
-      }
-    }
-    #
-    # The strings if no regexp matched. Strings are easier and do not need a CODE reference
-    #
-    if (! defined($token)) {
-      foreach my $string (@{$KEY2TERMINALS{$key}->[2]}) {
-
-        if ($stringToMatchLength > $STRLENGTH{$string}) {
-          substr($stringToMatch, $STRLENGTH{$string}) = '';
-          $stringToMatchLength = $STRLENGTH{$string};
-        }
-
-        # $log->tracef('pos=%6d : internal pos=%6d/%6d : trying %s (length %d) on ...%s...', $pos, $internalPos, pos($self->{buf}), $string, $STRLENGTH{$string}, $stringToMatch);
-
-        if ($stringToMatch eq $STR{$string}) {
-          $token = $string;
-          $value = $stringToMatch;
-          pos($self->{buf}) += $stringToMatchLength;
-          last;
-        }
-      }
-    }
-    if (defined($token)) {
-      # $log->tracef('pos=%6d : internal pos=%6d/%6d : lexeme_alternative("%s", "%s")', $pos, $internalPos, pos($self->{buf}), $token, $value);
-      # $recce->lexeme_alternative($token, $value);
-      # $recce->lexeme_alternative($token);
-      $thin_slr->lexeme_alternative(($SYMBOL_ID{$token} //= $recce->symbol_id($token)));
-      $level += ($LEXEME_LEVEL{$token} //= 0);
-      $thin_slr->lexeme_complete(0, 1);
-      # $log->tracef('pos=%6d : +=%d, value=%s', $pos, $maxTokenLength, $value);
-      $pos += length($value);
-      $key = ($KEY_TOKENS_TO_NEXTKEY{"[$level]$key"}->{$token} //= $self->_progressToKey($recce));
-    } else {
+      my $token = undef;
+      my $value = '';
       #
-      # Acceptable only if there are discardable characters
-      #
-      my $discard = $MATCH{_DISCARD}(@MATCHARGS);
-      my $length = length($discard);
-      if ($length > 0) {
-        # $log->tracef('pos=%6d : discarding %d characters (%s)', $pos, $length, $discard);
-        $pos += $length;
-      } else {
-        $log->tracef('pos=%6d : no token nor discardable character', $pos);
-        last;
+      # Match the strings first
+      # -----------------------
+      foreach (@{$KEY2TERMINALS{$key}}) {
+	  #
+	  # Every $MATCH{} subroutine return 1 on success, undef on failure
+	  #
+	  if (length($value = $MATCH{$_}($self, $stream, $pos, $c0, $internalPos, $value)) > 0) {
+	      $token = $_;
+	      last;
+	  }
       }
-    }
 
-    if ($pos >= $bigtrace) {
-      $log->tracef('pos=%6d', $pos);
-      $bigtrace += 100000;
-      # last if ($bigtrace >= 300000);
-    }
+      if (defined($token)) {
+	  # $log->tracef('pos=%6d : internal pos=%6d/%6d : lexeme_alternative("%s", "%s")', $pos, pos($self->{buf}), $internalPos, $token, $value);
+	  # $recce->lexeme_alternative($token, $value);
+	  # $recce->lexeme_alternative($token);
+	  $thin_slr->lexeme_alternative(($SYMBOL_ID{$token} //= $recce->symbol_id($token)));
+	  $level += ($LEXEME_LEVEL{$token} //= 0);
+	  $thin_slr->lexeme_complete(0, 1);
+	  # $log->tracef('pos=%6d + %d, value=%s', $pos, length($value), $value);
+	  $pos += length($value);
+	  $key = ($KEY_TOKENS_TO_NEXTKEY{"[$level]$key"}->{$token} //= $self->_progressToKey($recce));
+      } else {
+	  #
+	  # Acceptable only if there are discardable characters
+	  #
+	  my $discard = $MATCH{_DISCARD}($self, $stream, $pos, $c0, $internalPos);
+	  my $length = length($discard);
+	  if ($length > 0) {
+	      # $log->tracef('pos=%6d : discarding %d characters (%s)', $pos, $length, $discard);
+	      $pos += $length;
+	  } else {
+	      $log->tracef('pos=%6d : no token nor discardable character', $pos);
+	      last;
+	  }
+      }
 
-    $self->_donePos($stream, $pos);
+      if ($pos >= $bigtrace) {
+	  $log->tracef('pos=%6d', $pos);
+	  $bigtrace += 100000;
+	  last if ($bigtrace >= 600000);
+      }
+
+      $self->_donePos($stream, $pos);
   }
   goto novalue;
   my $nvalue = 0;
