@@ -94,33 +94,11 @@ sub _isPos {
 	#
 	# Current buffer. pos($self->{buf}) ASSUMED to be already correctly positionned.
 	#
-	# $log->tracef('_isPos %d : internal pos %s : %s', $_[2], pos($_[0]->{buf}), substr($_[0]->{buf}, pos($_[0]->{buf})));
+	# $log->tracef('_isPos %d : mapend is %s', $_[2], $_[0]->{mapend});
 	return 1;
     } else {
 	return $_[0]->_canPos($_[1], $_[2]);
     }
-}
-
-#
-# _moreDataNeeded returns TRUE if the position given is the last uncached data and EOF is not reached
-#
-sub _moreDataNeeded {
-    # my ($self, $stream, $pos) = @_;
-    return undef if ($_[2] < $_[0]->{mapend});
-    return undef if ($_[1]->eof());
-    return 1;
-
-}
-
-#
-# _moreDataNeededUsingInternalPos returns TRUE if the position given is the last cached data and EOF is not reached
-#
-sub _moreDataNeededUsingInternalPos {
-    # my ($self, $stream, $internalPos) = @_;
-    return undef if ($_[0]->{maxInternalPos} > 0 && $_[2] < $_[0]->{maxInternalPos});
-    return undef if ($_[1]->eof());
-    return 1;
-
 }
 
 #
@@ -298,7 +276,6 @@ sub parse {
   #
   my $level = 0;
   my $key = $self->_progressToKey($recce, $level);
-  my $internalPos;
   my $value;
   my $c0;
 
@@ -313,11 +290,9 @@ sub parse {
       #
       # Unless of end buffer we are already correcly positionned per def
       #
-      last if ($self->_moreDataNeededUsingInternalPos($stream, pos($self->{buf})) &&
-	       ! $self->_isPos($stream, $pos));
+      last if (! $self->_isPos($stream, $pos));
 
-      $internalPos = pos($self->{buf});
-      $c0 = substr($self->{buf}, $internalPos, 1);
+      $c0 = substr($self->{buf}, pos($self->{buf}), 1);
       #
       # Get expected terminals
       #
@@ -342,16 +317,17 @@ sub parse {
 	  # Fill the cached terminals
 	  #
 	  $KEY2TERMINALS{$key} = [ @STRING, @REGEXP ];
-	  $KEY2LONGEST_STRLENGTH_MINUS_ONE{$key} = $#STRING > 0 ? ($STRLENGTH{$STRING[0]} - 1) : 0;
+	  $KEY2LONGEST_STRLENGTH_MINUS_ONE{$key} = $#STRING >= 0 ? ($STRLENGTH{$STRING[0]} - 1) : 0;
       }
 
       #
       # Try to fetch unless longest length is 1
       #
-      if ($KEY2LONGEST_STRLENGTH_MINUS_ONE{$key}) {
-	  # $log->tracef('pos=%6d : trying to fetch %d characters', $pos, $KEY2LONGEST_STRLENGTH{$key});
-	  $self->_isPos($stream, $pos + $KEY2LONGEST_STRLENGTH_MINUS_ONE{$key}, 1);
-	  pos($self->{buf}) = $internalPos;
+      if ((my $wantedPos = $pos + $KEY2LONGEST_STRLENGTH_MINUS_ONE{$key}) >= $_[0]->{mapend}) {
+        # $log->tracef('pos=%6d : trying to fetch %d characters', $pos, $KEY2LONGEST_STRLENGTH_MINUS_ONE{$key});
+        my $internalPos = pos($self->{buf});
+        $self->_isPos($stream, $wantedPos, 1);
+        pos($self->{buf}) = $internalPos;
       }
 
       # $log->tracef('pos=%6d : internal pos=%6d : trying %s, on HERE>%s<HERE', $pos, pos($self->{buf}), $KEY2TERMINALS{$key}, substr($self->{buf}, pos($self->{buf}), 10));
@@ -364,32 +340,31 @@ sub parse {
       foreach (@{$KEY2TERMINALS{$key}}) {
 	  #
 	  # Every $MATCH{} subroutine return 1 on success, undef on failure
+	  # If success, $pos and $value are updated on the stack
 	  #
-	  if (length($value = $MATCH{$_}($self, $stream, $pos, $c0, $internalPos, $value)) > 0) {
+	  # $log->tracef('pos=%6d : internal pos=%6d : trying %s, on HERE>%s<HERE', $pos, pos($self->{buf}), $_, substr($self->{buf}, pos($self->{buf}), 10));
+
+	  if ($MATCH{$_}($self, $stream, $pos, $c0, $value)) {
 	      $token = $_;
 	      last;
 	  }
       }
 
       if (defined($token)) {
-	  # $log->tracef('pos=%6d : internal pos=%6d/%6d : lexeme_alternative("%s", "%s")', $pos, pos($self->{buf}), $internalPos, $token, $value);
+	  # $log->tracef('pos=%6d : internal pos=%6d : lexeme_alternative("%s", "%s")', $pos, pos($self->{buf}), $token, $value);
 	  # $recce->lexeme_alternative($token, $value);
 	  # $recce->lexeme_alternative($token);
 	  $thin_slr->lexeme_alternative(($SYMBOL_ID{$token} //= $recce->symbol_id($token)));
 	  $level += ($LEXEME_LEVEL{$token} //= 0);
 	  $thin_slr->lexeme_complete(0, 1);
 	  # $log->tracef('pos=%6d + %d, value=%s', $pos, length($value), $value);
-	  $pos += length($value);
 	  $key = ($KEY_TOKENS_TO_NEXTKEY{"[$level]$key"}->{$token} //= $self->_progressToKey($recce));
       } else {
 	  #
 	  # Acceptable only if there are discardable characters
 	  #
-	  my $discard = $MATCH{_DISCARD}($self, $stream, $pos, $c0, $internalPos);
-	  my $length = length($discard);
-	  if ($length > 0) {
-	      # $log->tracef('pos=%6d : discarding %d characters (%s)', $pos, $length, $discard);
-	      $pos += $length;
+	  if ($MATCH{_DISCARD}($self, $stream, $pos, $c0, $value)) {
+	      $log->tracef('pos=%6d : discarded %d characters (%s)', $pos, length($value));
 	  } else {
 	      $log->tracef('pos=%6d : no token nor discardable character', $pos);
 	      last;
@@ -418,6 +393,13 @@ sub parse {
   }
  novalue:
 }
+
+#
+# A context is a hash that is:
+# {ruleName} -> [ positionNo ] -> {token} -> 'ruleName'
+#
+our %CONTEXT = (
+);
 
 1;
 __DATA__

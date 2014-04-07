@@ -115,115 +115,162 @@ foreach (keys %STR) {
 # We check regexps are NOT up to the end of the string with a zero-length look-ahead
 # assertion whenever possible, using at least \z and sometimes a character range
 # to make sure everything needed was eated.
+#
+# Every $MATCH{} is a CODE reference that has this signature:
+# -----------------------------------------------------------
+# my ($self, $stream, $pos, $c0, $value) = @_;
+# -----------------------------------------------------------
+# If success:
+# - $pos and and $valuep will be changed, internal buffer pos() will be changed, and return value will be 1
+# If failure:
+# - $pos will have its initial value at return, internal buffer pos() unchanged, and return value is undef
+# - $value may have something, that is irrelevant
+#
 # -------------------------------------------------------------------------------------------------------------
 
 our %MATCH = ();
 $MATCH{NAME} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $value) = @_;
 
     # ----------------------------------------------
     # NAME is /${REG_NAMESTARTCHAR}${REG_NAMECHAR}*/
     # ----------------------------------------------
 
-    if ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*(?![:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]|\z)/gc) {   # Note the /c modifier
+    if ($_[0]->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*(?![:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]|\z)/gc) {   # Note the /c modifier
 	#
 	# Per def: NAME matched entirely, and there is at least one other character left in the buffer
 	#
-	return $&;
-    } elsif ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/gc) {   # Note the /c modifier
-	#
-	# Buffer boundary overhead.
-	#
-	return $& if (! $self->_moreDataNeededUsingInternalPos($stream, pos($self->{buf})));
-	return $& if (! $self->_isPos($stream, $pos += ($+[0] - $-[0])));
-
-	my $match = $&;                 # From now on there is a match
-	while ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]+/gc) {    # Note the /c modifier
-	    $match .= $&;
-	    last if (! $self->_isPos($stream, ($pos += ($+[0] - $-[0]))));
-	}
-	return $match;
+	$_[4] = $&;                          # $value
+	$_[2] += length($_[4]);              # $pos
+	# Internal position in buffer is already correct
+	return 1;
     }
-    return '';
+    elsif ($_[0]->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*/gc) {   # Note the /c modifier
+	#
+	# There is a match. Is there anything left uncached ?
+	#
+	$_[4] = $&;                          # $value
+	$_[2] += length($_[4]);              # $pos
+	return 1 if (! $_[0]->_isPos($_[1], $_[2]));
+
+	while ($_[0]->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]+/gc) {    # Note the /c modifier
+	    $_[4] .= $&;                     # $value
+	    $_[2] += length($&);             # $pos
+	    last if (! $_[0]->_isPos($_[1], $_[2]));
+	}
+	# Internal position in buffer is already correct
+	return 1;
+    }
+    return undef;
 };
 
 $MATCH{PITARGET} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $value) = @_;
 
     # -------------------------------
     # PITARGET is NAME without /xml/i
     # -------------------------------
 
-    my $match = $MATCH{NAME}(@_);
-    if ($match =~ /xml/i) {
-      #
-      # We have to reposition manually
-      #
-      pos($self->{buf}) -= (length($match) - $-[0]);
-      substr($match, $-[0]) = '';
+    my ($savPos, $savInternalPos) = ($_[2], pos($_[0]->{buf}));
+    if ($MATCH{NAME}(@_)) {
+	if ($_[4] =~ /xml/i) {
+	    if (! $-[0]) {                               # /xml/i is at the very beginning
+		$_[2] = $savPos;                         # Restore $pos
+		pos($_[0]->{buf}) = $savInternalPos;     # Restore internal position
+		return undef;
+	    } else {
+		#
+		# We have to go back with the return values
+		#
+		substr($_[4], $-[0]) = '';                       # $value
+		my $length = length($_[4]);
+		$_[2] = $savPos + $length;                       # $pos
+		pos($_[0]->{buf}) = $savInternalPos + $length;   # internal position
+		return 1;
+	    }
+	}
     }
-    return $match;
+    return undef;
 };
 
 $MATCH{ENCNAME} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
 
     # ----------------------------------------------
     # ENCNAME is /${REG_ALPHA}${REG_ENCNAME_REST}*/
     # ----------------------------------------------
 
-    if ($self->{buf} =~ m/\G([A-Za-z][A-Za-z0-9._-]*)((?![A-Za-z0-9._-]|\z))/gc) {    # Note the /c modifier
-	return $&;
-    } elsif ($self->{buf} =~ m/\G[A-Za-z][A-Za-z0-9._-]*/gc) {    # Note the /c modifier
+    if ($_[0]->{buf} =~ m/\G([A-Za-z][A-Za-z0-9._-]*)((?![A-Za-z0-9._-]|\z))/gc) {    # Note the /c modifier
+	$_[4] = $&;                          # $value
+	$_[2] += length($_[4]);              # $pos
+	# Internal position in buffer is already correct
+	return 1;
+    } elsif ($_[0]->{buf} =~ m/\G[A-Za-z][A-Za-z0-9._-]*/gc) {    # Note the /c modifier
 	#
-	# From now on there is match
+	# There is a match. Is there anything left uncached ?
 	#
-	return $& if (! $self->_moreDataNeededUsingInternalPos($stream, pos($self->{buf})));
-	return $& if (! $self->_isPos($stream, $pos += ($+[0] - $-[0])));
-	my $match = $&;                                      # From now on there is match
-	while ($self->{buf} =~ m/\G[A-Za-z0-9._-]+/gc) {  # Note the /c modifier
-	    $match .= $&;
-	    last if (! $self->_isPos($stream, ($pos += ($+[0] - $-[0]))));
+	$_[4] = $&;                          # $value
+	$_[2] += length($_[4]);              # $pos
+	return 1 if (! $_[0]->_isPos($_[1], $_[2]));
+
+	while ($_[0]->{buf} =~ m/\G[A-Za-z0-9._-]+/gc) {  # Note the /c modifier
+	    $_[4] .= $&;                     # $value
+	    $_[2] += length($&);             # $pos
+	    last if (! $_[0]->_isPos($_[1], $_[2]));
 	}
-	return $match;
+	# Internal position in buffer is already correct
+	return 1;
     }
-    return '';
+    return undef;
 };
 
 $MATCH{CHARREF} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
     # ---------------------------------
     # CHARREF is /&#${REG_DIGIT}+;/
     #         or /&#x${REG_HEXDIGIT}+;/
     # ---------------------------------
-    if ($self->{buf} =~ m/\G&#(?:[0-9]+|x[0-9a-fA-F]+);/gc) { # Note the /c modifier
-	return $&;
-    } elsif ($self->{buf} =~ m/\G&#(?:[0-9]+|x[0-9a-fA-F]+);/gc) { # Note the /c modifier
-      return $&;
+
+    if ($_[0]->{buf} =~ m/\G&#(?:[0-9]+|x[0-9a-fA-F]+);/gc) { # Note the /c modifier
+	$_[4] = $&;                          # $value
+	$_[2] += length($_[4]);              # $pos
+	# Internal position in buffer is already correct
+	return 1;
     }
-    elsif ($c0 eq '&') {                                           # For speed
-      if ($self->_canPos($stream, ++$pos)) {                       # will do a buffer test + pos()
-        if ($self->{buf} =~ m/\G#/g && $self->_isPos($stream, ++$pos)) {
-          if ($self->{buf} =~ m/\Gx/gc) {                          # Note the /c modifier
-            if ($self->_isPos($stream, ++$pos)) {
+    elsif ($_[3] eq '&') {                                           # For speed
+	my ($savPos, $newPos, $savInternalPos) = ($_[2], $_[2], pos($_[0]->{buf}));
+	if (! $_[0]->_canPos($_[1], ++$newPos)) {              # will do a buffer test + pos()
+	    ($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+	    return undef;
+	}
+        if ($_[0]->{buf} =~ m/\G#/g && ! $_[0]->_isPos($_[1], ++$newPos)) {
+	    ($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+	    return undef;
+	}
+	if ($_[0]->{buf} =~ m/\Gx/gc) {                          # Note the /c modifier
+            if ($_[0]->_isPos($_[1], ++$newPos)) {
               #
               # We expect ${REG_HEXDIGIT}+ followed by ';'
               #
               my $submatch = '';
               my $submatchok = 0;
-              while ($self->{buf} =~ m/\G[0-9a-fA-F]+/gc) {   # Note the /c modifier
+              while ($_[0]->{buf} =~ m/\G[0-9a-fA-F]+/gc) {   # Note the /c modifier
                 $submatch .= $&;
                 $submatchok = 1;
-                last if (! $self->_isPos($stream, ($pos += ($+[0] - $-[0]))));
+                last if (! $_[0]->_isPos($_[1], ($newPos += ($+[0] - $-[0]))));
               }
-              if ($submatchok && substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
-                pos($self->{buf}) += 1;
-                return "&#x${submatch};";
+              if ($submatchok && substr($_[0]->{buf}, pos($_[0]->{buf}), 1) eq ';') {
+                $_[4] = "&#x${submatch};";                    # $value
+		$_[2] = $newPos;                              # $pos
+                pos($_[0]->{buf}) += 1;                       # internal position
+		return 1;
               } else {
-                pos($self->{buf}) = $internalPos;
+		  ($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+		  return undef;
               }
             } else {
-              pos($self->{buf}) = $internalPos;
+		($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+		return undef;
             }
           } else {
             #
@@ -231,371 +278,435 @@ $MATCH{CHARREF} = sub {
             #
             my $submatch = '';
             my $submatchok = 0;
-            while ($self->{buf} =~ m/\G[0-9]+/gc) {   # Note the /c modifier
+            while ($_[0]->{buf} =~ m/\G[0-9]+/gc) {   # Note the /c modifier
               $submatch .= $&;
               $submatchok = 1;
-              last if (! $self->_isPos($stream, ($pos += ($+[0] - $-[0]))));
+              last if (! $_[0]->_isPos($_[1], ($newPos += ($+[0] - $-[0]))));
             }
-            if ($submatchok && substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
-              pos($self->{buf}) += 1;
-              return "&#${submatch};";
+            if ($submatchok && substr($_[0]->{buf}, pos($_[0]->{buf}), 1) eq ';') {
+		$_[4] = "&#${submatch};";                     # $value
+		$_[2] = $newPos;                              # $pos
+		pos($_[0]->{buf}) += 1;                       # internal position
+		return 1;
             } else {
-              pos($self->{buf}) = $internalPos;
+		($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+		return undef;
             }
           }
-        } else {
-          pos($self->{buf}) = $internalPos;
-        }
-      }
     }
-    return '';
+    return undef;
 };
 
 $MATCH{S} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
 
     # ----------------
     # S is /${REG_S}+/
     # ----------------
 
-    if ($self->{buf} =~ m/\G[\x{20}\x{9}\x{D}\x{A}]+(?![\x{20}\x{9}\x{D}\x{A}]|\z)/gc) { # Note the /c modifier
-	return $&;
+    if ($_[0]->{buf} =~ m/\G[\x{20}\x{9}\x{D}\x{A}]+(?![\x{20}\x{9}\x{D}\x{A}]|\z)/gc) { # Note the /c modifier
+	$_[4] = $&;                          # $value
+	$_[2] += length($_[4]);              # $pos
+	# Internal position in buffer is already correct
+	return 1;
     }
 
-    my $match = '';
-    while ($self->{buf} =~ m/\G[\x{20}\x{9}\x{D}\x{A}]+/gc) { # Note the /c modifier
-	$match .= $&;                                         # From now on there is a match
-        last if (! $self->_moreDataNeededUsingInternalPos($stream, pos($self->{buf})));
-	last if (! $self->_isPos($stream, $pos += ($+[0] - $-[0])));
+    my $rc = undef;
+    $_[4] = '';
+    while ($_[0]->{buf} =~ m/\G[\x{20}\x{9}\x{D}\x{A}]+/gc) { # Note the /c modifier
+	$_[4] .= $&;                                         # $value
+	$_[2] += length($&);                                 # $pos
+	$rc = 1;
+	last if (! $_[0]->_isPos($_[1], $_[2]));
     }
-    return $match;
+    #
+    # Internal position already correct
+    #
+    return $rc;
 };
 
 $MATCH{NMTOKEN} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
 
     # -----------------------------
     # NMTOKEN is /${REG_NAMECHAR}+/
     # -----------------------------
 
-    if ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]+(?![:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]|\z)/gc) { # Note the /c modifier
-	return $&;
+    if ($_[0]->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]+(?![:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]|\z)/gc) { # Note the /c modifier
+	$_[4] = $&;                          # $value
+	$_[2] += length($_[4]);              # $pos
+	# Internal position in buffer is already correct
+	return 1;
     }
 
-    my $match = '';
-    while ($self->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]+/gc) { # Note the /c modifier
-	$match .= $&;                                          # From now on there is match
-        last if (! $self->_moreDataNeededUsingInternalPos($stream, pos($self->{buf})));
-	last if (! $self->_isPos($stream, $pos += ($+[0] - $-[0])));
+    my $rc = undef;
+    while ($_[0]->{buf} =~ m/\G[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]+/gc) { # Note the /c modifier
+	$_[4] .= $&;                                         # $value
+	$_[2] += length($&);                                 # $pos
+	$rc = 1;
+	last if (! $_[0]->_isPos($_[1], $_[2]));
     }
-    return $match;
+    return $rc;
 };
 
 $MATCH{SYSTEMLITERAL} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
 
     # -----------------------------------------------------------------
     # SYSTEMLITERAL is /"${REG_NOT_DQUOTE}*"/ or /'${REG_NOT_SQUOTE}*'/
     # -----------------------------------------------------------------
 
-    if (($c0 eq '"'  && $self->{buf} =~ m/\G"[^"]*"/gc) ||  # Note the /c modifier
-	($c0 eq '\'' && $self->{buf} =~ m/\G'[^']*'/gc)) {  # Note the /c modifier
-	#
-	# Note: call to $self->_moreDataNeededUsingInternalPos is not needed
-	#
-	return $&;
+    if (($_[3] eq '"'  && $_[0]->{buf} =~ m/\G"[^"]*"/gc) ||  # Note the /c modifier
+	($_[3] eq '\'' && $_[0]->{buf} =~ m/\G'[^']*'/gc)) {  # Note the /c modifier
+	$_[4] = $&;                          # $value
+	$_[2] += length($_[4]);              # $pos
+	# Internal position in buffer is already correct
+	return 1;
     }
-    elsif ($c0 eq '"' || $c0 eq '\'') {                            # For speed
-	if ($self->_canPos($stream, ++$pos)) {
-	    my $match = $c0;
-	    my $dquoteMode = ($c0 eq '"');
+    elsif ($_[3] eq '"' || $_[3] eq '\'') {                            # For speed
+	my ($savPos, $newPos, $savInternalPos) = ($_[2], $_[2], pos($_[0]->{buf}));
+	if ($_[0]->_canPos($_[1], ++$newPos)) {
+	    $_[4] = $_[3];
+	    my $dquoteMode = ($_[3] eq '"');
 	    my $lastok = 1;
 	    my $length;
 	    while (1) {
-		if ((  $dquoteMode && $self->{buf} =~ m/\G[^"]*/gc) ||    # Note this will always match
-		    (! $dquoteMode && $self->{buf} =~ m/\G[^']*/gc)) {    # Note this will always match
+		if ((  $dquoteMode && $_[0]->{buf} =~ m/\G[^"]*/gc) ||    # Note this will always match
+		    (! $dquoteMode && $_[0]->{buf} =~ m/\G[^']*/gc)) {    # Note this will always match
 		    $length = $+[0] - $-[0];
 		    last if (! $length);
-		    $match .= $&;
+		    $_[4] .= $&;
+		    $newPos += $length;
 		}
-		$pos += $length;
-		if (! $self->_isPos($stream, $pos)) {
+		if (! $_[0]->_isPos($_[1], $newPos)) {
 		    $lastok = 0;
 		    last;
 		}
 	    }
-	    if ($lastok && substr($self->{buf}, pos($self->{buf}), 1) eq $c0) {
-		pos($self->{buf}) += 1;
-		return "${match}${c0}";
+	    if ($lastok && substr($_[0]->{buf}, pos($_[0]->{buf}), 1) eq $_[3]) {
+		pos($_[0]->{buf}) += 1;
+		$_[4] .= $_[3];
+		$_[2] = ++$newPos;
+		return 1;
 	    } else {
-		pos($self->{buf}) = $internalPos;
+		($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+		return undef;
 	    }
+	} else {
+	    pos($_[0]->{buf}) = $savInternalPos;
 	}
     }
-    return '';
+    return undef;
 };
 
 $MATCH{PUBIDLITERAL} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
 
     # ------------------------------------------------------------------------------------
     # PUBIDLITERAL is /"${REG_PUBIDCHAR_NOT_DQUOTE}*"/ or /'${REG_PUBIDCHAR_NOT_SQUOTE}*'/
 
     # ------------------------------------------------------------------------------------
-    if (($c0 eq '"'  && $self->{buf} =~ m/\G"[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]*"/gc) ||  # Note the /c modifier
-	($c0 eq '\'' && $self->{buf} =~ m/\G'[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]*'/gc)) {   # Note the /c modifier
-	#
-	# Note: call to $self->_moreDataNeededUsingInternalPos is not needed
-	#
-	return $&;
+    if (($_[3] eq '"'  && $_[0]->{buf} =~ m/\G"[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]*"/gc) ||  # Note the /c modifier
+	($_[3] eq '\'' && $_[0]->{buf} =~ m/\G'[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]*'/gc)) {   # Note the /c modifier
+	$_[4] = $&;                          # $value
+	$_[2] += length($_[4]);              # $pos
+	# Internal position in buffer is already correct
+	return 1;
     }
-    elsif ($c0 eq '"' || $c0 eq '\'') {                     # For speed
-	if ($self->_canPos($stream, ++$pos)) {
-	    my $match = $c0;
-	    my $dquoteMode = ($c0 eq '"');
+    elsif ($_[3] eq '"' || $_[3] eq '\'') {                     # For speed
+	my ($savPos, $newPos, $savInternalPos) = ($_[2], $_[2], pos($_[0]->{buf}));
+	if ($_[0]->_canPos($_[1], ++$newPos)) {
+	    $_[4] = $_[3];
+	    my $dquoteMode = ($_[3] eq '"');
 	    my $lastok = 1;
 	    my $length;
 	    while (1) {
-		if ((  $dquoteMode && $self->{buf} =~ m/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]*/gc) ||   # Note this will always match
-		    (! $dquoteMode && $self->{buf} =~ m/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]*/gc)) {    # Note this will always match
+		if ((  $dquoteMode && $_[0]->{buf} =~ m/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]*/gc) ||   # Note this will always match
+		    (! $dquoteMode && $_[0]->{buf} =~ m/\G[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]*/gc)) {    # Note this will always match
 		    $length = $+[0] - $-[0];
 		    last if (! $length);
-		    $match .= $&;
+		    $_[4] .= $&;
+		    $newPos += $length;
 		}
-		$pos += $length;
-		if (! $self->_isPos($stream, $pos)) {
+		if (! $_[0]->_isPos($_[1], $newPos)) {
 		    $lastok = 0;
 		    last;
 		}
 	    }
-	    if ($lastok && substr($self->{buf}, pos($self->{buf}), 1) eq $c0) {
-		pos($self->{buf}) += 1;
-		return "${match}${c0}";
+	    if ($lastok && substr($_[0]->{buf}, pos($_[0]->{buf}), 1) eq $_[3]) {
+		pos($_[0]->{buf}) += 1;
+		$_[4] .= $_[3];
+		$_[2] = ++$newPos;
+		return 1;
 	    } else {
-		pos($self->{buf}) = $internalPos;
+		($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+		return undef;
 	    }
+	} else {
+	    pos($_[0]->{buf}) = $savInternalPos;
 	}
     }
-    return '';
+    return undef;
 };
 
 $MATCH{CHARDATA} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
 
     # -------------------------------------------------------
     # CHARDATA is /${REG_CHARDATA}*/ minus the sequence ']]>'
     # -------------------------------------------------------
 
-    if ($self->{buf} =~ m/\G([^<&]*)(?>\]\]>)/gc) { # Note the /c modifier
+    if ($_[0]->{buf} =~ m/\G([^<&]+)(?:(?>\]\]>)|(?![^<&]|\z))/gc) { # Note the /c modifier
 	#
-	# Per def there is ']]>' after $1
+	# Per def there is ']]>' or something else not of interest after $1
 	#
-	pos($self->{buf}) -= 3;
-	return $1;
-    }
-    elsif ($self->{buf} =~ m/\G[^<&]*(?![^<&]|\z)/gc) { # Note the /c modifier
-	return $&;
+	$_[4] = $1;                          # $value
+	$_[2] += length($_[4]);              # $pos
+	# Internal position in buffer is already correct
+	return 1;
     }
 
-    my $match = '';
-    while ($self->{buf} =~ m/\G[^<&]*/gc) { # Note the /c modifier
-	my $length = $+[0] - $-[0];
-	last if (! $length);
-	$match .= $&;        # From now on there is match
-        last if (! $self->_moreDataNeededUsingInternalPos($stream, pos($self->{buf})));
-	last if (! $self->_isPos($stream, $pos += $length));
+    my ($savPos, $newPos, $savInternalPos) = ($_[2], $_[2], pos($_[0]->{buf}));
+    my $rc = undef;
+    $_[4] = '';
+    while ($_[0]->{buf} =~ m/\G[^<&]+/gc) { # Note the /c modifier
+	$_[4] .= $&;                                         # $value
+	$newPos += length($&);                               # $pos
+	$rc = 1;
+	last if (! $_[0]->_isPos($_[1], $newPos));
     }
-    if ((my $index = index($match, ']]>')) >= 0) {
-      #
-      # We have to reposition manually
-      #
-      pos($self->{buf}) -= (length($match) - $index);
-      substr($match, $index) = '';
+    if ($rc) {
+      my $index = index($_[4], ']]>');
+      if ($index < 0) {
+        $_[2] = $newPos;
+        return 1;
+      } elsif ($index == 0) {
+        ($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+        return undef;
+      } else {
+        #
+        # We have to go back with the return values
+        #
+        substr($_[4], $index) = '';                       # $value
+        my $length = length($_[4]);
+        $_[2] = $savPos + $length;                       # $pos
+        pos($_[0]->{buf}) = $savInternalPos + $length;   # internal position
+        return 1;
+      }
     }
-    return $match;
+    return $rc;
 };
 
 $MATCH{_CHAR_ANY} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
 
     # ---------------------------
     # _CHAR_ANY is /${REG_CHAR}*/
     # ---------------------------
 
-    if ($self->{buf} =~ m/\G[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]*(?![\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]|\z)/gc) {  # Note the /c modifier
-	return $&;
+    if ($_[0]->{buf} =~ m/\G[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]*(?![\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]|\z)/gc) {  # Note the /c modifier
+	$_[4] = $&;                          # $value
+	$_[2] += length($&);                 # $pos
+	# Internal position in buffer is already correct
+	return 1;
     }
 
-    my $match = '';
-    while ($self->{buf} =~ m/\G[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]*/gc) {  # Note the /c modifier
-	my $length = $+[0] - $-[0];
-	last if (! $length);
-	$match .= $&;        # From now on there is match
-        last if (! $self->_moreDataNeededUsingInternalPos($stream, pos($self->{buf})));
-	last if (! $self->_isPos($stream, $pos += $length));
+    my ($savPos, $savInternalPos) = ($_[2], pos($_[0]->{buf}));
+    my $rc = undef;
+    $_[4] = '';
+    while ($_[0]->{buf} =~ m/\G[\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]*/gc) {  # Note the /c modifier
+	$_[4] .= $&;                                         # $value
+	$_[2] += length($&);                                 # $pos
+	$rc = 1;
+	last if (! $_[0]->_isPos($_[1], $_[2]));
     }
-    return $match;
+    return $rc;
 };
 
-$MATCH{CDATA} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+$MATCH{_CHAR_ANY_AND_EXCLUSION} = sub {
+    # my ($self, $stream, $pos, $c0, $valuep, $exclusion) = @_;
     # -------------------------------------------
     # CDATA is _CHAR_ANY minus the sequence ']]>'
     # -------------------------------------------
-    my $match = $MATCH{_CHAR_ANY}(@_);
-    if ((my $index = index($match, ']]>')) >= 0) {
-      #
-      # We have to reposition manually
-      #
-      pos($self->{buf}) -= (length($match) - $index);
-      substr($match, $index) = '';
+    my ($savPos, $savInternalPos) = ($_[2], pos($_[0]->{buf}));
+    if ($MATCH{_CHAR_ANY}(@_)) {
+      if ((my $index = index($_[4], $_[5])) >= 0) {
+        if ($index == 0) {
+          ($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+          return undef;
+        } else {
+          #
+          # We have to go back with the return values
+          #
+          substr($_[4], $index) = '';                       # $value
+          my $length = length($_[4]);
+          $_[2] = $savPos + $length;                       # $pos
+          pos($_[0]->{buf}) = $savInternalPos + $length;   # internal position
+          return 1;
+        }
+      } else {
+        return 1;
+      }
     }
-    return $match;
+    return undef;
+};
+
+$MATCH{_CHAR_ANY_AND_EXCLUSIONS} = sub {
+    # my ($self, $stream, $pos, $c0, $valuep, $exclusionArrayp) = @_;
+    # -------------------------------------------
+    # CDATA is _CHAR_ANY minus the sequence ']]>'
+    # -------------------------------------------
+    my ($savPos, $savInternalPos) = ($_[2], pos($_[0]->{buf}));
+    if ($MATCH{_CHAR_ANY}(@_)) {
+      my $index;
+      foreach (@{$_[5]}) {
+        if (($index = index($_[4], $_)) >= 0) {
+          if ($index == 0) {
+            ($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+            return undef;
+          } else {
+            #
+            # We have to go back with the return values
+            #
+            substr($_[4], $index) = '';                       # $value
+            my $length = length($_[4]);
+            $_[2] = $savPos + $length;                       # $pos
+            pos($_[0]->{buf}) = $savInternalPos + $length;   # internal position
+          }
+        }
+      }
+      return 1;
+    }
+    return undef;
+};
+
+$MATCH{CDATA} = sub {
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
+    # -------------------------------------------
+    # CDATA is _CHAR_ANY minus the sequence ']]>'
+    # -------------------------------------------
+    return $MATCH{_CHAR_ANY_AND_EXCLUSION}(@_, ']]>');
 };
 
 $MATCH{COMMENT} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
     # --------------------------------------------
     # COMMENT is _CHAR_ANY minus the sequence '--'
     # --------------------------------------------
-    my $match = $MATCH{_CHAR_ANY}(@_);
-    if ((my $index = index($match, '--')) >= 0) {
-      #
-      # We have to reposition manually
-      #
-      pos($self->{buf}) -= (length($match) - $index);
-      substr($match, $index) = '';
-    }
-    return $match;
+    return $MATCH{_CHAR_ANY_AND_EXCLUSION}(@_, '--');
 };
 
 $MATCH{PI_INTERIOR} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
     # ------------------------------------------------
     # PI_INTERIOR is _CHAR_ANY minus the sequence '?>'
     # ------------------------------------------------
-    my $match = $MATCH{_CHAR_ANY}(@_);
-    if ((my $index = index($match, '?>')) >= 0) {
-      #
-      # We have to reposition manually
-      #
-      pos($self->{buf}) -= (length($match) - $index);
-      substr($match, $index) = '';
-    }
-    return $match;
+    return $MATCH{_CHAR_ANY_AND_EXCLUSION}(@_, '?>');
 };
 
 $MATCH{IGNORE_INTERIOR} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
     # ---------------------------------------------------------------
     # IGNORE_INTERIOR is _CHAR_ANY minus the sequences '<![' or ']]>'
     # ---------------------------------------------------------------
-    my $match = $MATCH{_CHAR_ANY}(@_);
-    my $index;
-    if (($index = index($match, '<![')) >= 0) {
-      #
-      # We have to reposition manually
-      #
-      pos($self->{buf}) -= (length($match) - $index);
-      substr($match, $index) = '';
-    }
-    if (($index = index($match, ']]>')) >= 0) {
-      #
-      # We have to reposition manually
-      #
-      pos($self->{buf}) -= (length($match) - $index);
-      substr($match, $index) = '';
-    }
-    return $match;
+    return $MATCH{_CHAR_ANY_AND_EXCLUSIONS}(@_, ['<![', ']]>']);
 };
 
 $MATCH{VERSIONNUM} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
     # -------------------------------
     # VERSIONNUM is /1.${REG_DIGIT}+/
     # -------------------------------
-    if ($c0 eq '1' && $self->_canPos($stream, ++$pos)) {
-      my $match = $c0;
-      if ($self->{buf} =~ m/\G\./g && $self->_isPos($stream, ++$pos)) {
-        $match .= '.';
-        if ($self->_isPos($stream, ++$pos)) {
-          my $ok = 0;
-          while ($self->{buf} =~ m/\G[0-9]+/gc) { # Note the /c modifier
-            $match .= $&;
-            $pos += ($+[0] - $-[0]);
-            $ok = 1;
-            last if (! $self->_isPos($stream, $pos));
-          }
-          if ($ok) {
-            return $match;
-          } else {
-            pos($self->{buf}) = $internalPos;
-          }
-        } else {
-          pos($self->{buf}) = $internalPos;
-        }
-      } else {
-        pos($self->{buf}) = $internalPos;
-      }
+    my ($savPos, $newPos, $savInternalPos) = ($_[2], $_[2], pos($_[0]->{buf}));
+    if ($_[3] eq '1' && $_[0]->_canPos($_[1], ++$newPos)) {
+	$_[4] = $_[3];
+	if ($_[0]->{buf} =~ m/\G\./g && $_[0]->_isPos($_[1], ++$newPos)) {
+	    $_[4] .= '.';
+	    if ($_[0]->_isPos($_[1], $newPos+1)) {
+		my $ok = 0;
+		while ($_[0]->{buf} =~ m/\G[0-9]+/gc) { # Note the /c modifier
+		    $_[4] .= $&;
+		    $newPos += ($+[0] - $-[0]);
+		    $ok = 1;
+		    last if (! $_[0]->_isPos($_[1], $newPos));
+		}
+		if ($ok) {
+		    $_[2] = $newPos;                              # $pos
+		    # value is already ok
+		    # internal position is already ok
+		    return 1;
+		} else {
+		    ($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+		    return undef;
+		}
+	    } else {
+		($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+		return undef;
+	    }
+	} else {
+	    ($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+	    return undef;
+	}
     }
-    return '';
+    return undef;
 };
 
 $MATCH{ENTITYREF} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
     # --------------------------
     # ENTITYREF   is /&${NAME};/
     # --------------------------
-    if ($c0 eq '&' && $self->_canPos($stream, ++$pos)) {
-      my $newInternalPos = $internalPos + 1;
-      my $newc0 = substr($self->{buf}, $newInternalPos, 1);
-      if (my $name = $MATCH{NAME}($self, $stream, $pos, $newc0, $newInternalPos)) {
-        if ($self->_isPos($stream, ($pos += length($name)))) {
-          if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
-            pos($self->{buf}) += 1;
-            return "&${name};";
-          } else {
-            pos($self->{buf}) = $internalPos;
-          }
-        } else {
-          pos($self->{buf}) = $internalPos;
-        }
-      } else {
-        pos($self->{buf}) = $internalPos;
-      }
+    my ($savPos, $newPos, $savInternalPos) = ($_[2], $_[2], pos($_[0]->{buf}));
+    if ($_[3] eq '&' && $_[0]->_canPos($_[1], ++$newPos)) {
+	my $newc0 = substr($_[0]->{buf}, pos($_[0]->{buf}), 1);
+	my $name;
+	if ($MATCH{NAME}($_[0], $_[1], $newPos, $newc0, $name)) {
+	    if (substr($_[0]->{buf}, pos($_[0]->{buf}), 1) eq ';') {
+		$_[4] = "&${name};";               # $value
+		$_[2] = ++$newPos;                 # $pos
+		pos($_[0]->{buf}) += 1;            # internal buffer position
+		return 1;
+	    } else {
+		($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+		return undef;
+	    }
+	} else {
+	    ($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+	    return undef;
+	}
     }
-    return '';
+    return undef;
 };
 
 $MATCH{PEREFERENCE} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
-    # --------------------------
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
+    # ----------------------------
     # PEREFERENCE   is /%${NAME};/
-    # --------------------------
-    if ($c0 eq '%' && $self->_canPos($stream, ++$pos)) {
-      my $newInternalPos = $internalPos + 1;
-      my $newc0 = substr($self->{buf}, $newInternalPos, 1);
-      if (my $name = $MATCH{NAME}($self, $stream, $pos, $newc0, $newInternalPos)) {
-        if ($self->_isPos($stream, ($pos += length($name)))) {
-          if (substr($self->{buf}, pos($self->{buf}), 1) eq ';') {
-            pos($self->{buf}) += 1;
-            return "&${name};";
-          } else {
-            pos($self->{buf}) = $internalPos;
-          }
-        } else {
-          pos($self->{buf}) = $internalPos;
-        }
-      } else {
-        pos($self->{buf}) = $internalPos;
-      }
+    # ----------------------------
+    my ($savPos, $newPos, $savInternalPos) = ($_[2], $_[2], pos($_[0]->{buf}));
+    if ($_[3] eq '%' && $_[0]->_canPos($_[1], ++$newPos)) {
+	my $newc0 = substr($_[0]->{buf}, pos($_[0]->{buf}), 1);
+	my $name;
+	if ($MATCH{NAME}($_[0], $_[1], $newPos, $newc0, $name)) {
+	    if (substr($_[0]->{buf}, pos($_[0]->{buf}), 1) eq ';') {
+		$_[4] = "&${name};";               # $value
+		$_[2] = ++$newPos;                 # $pos
+		pos($_[0]->{buf}) += 1;            # internal buffer position
+		return 1;
+	    } else {
+		($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+		return undef;
+	    }
+	} else {
+	    ($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+	    return undef;
+	}
     }
-    return '';
+    return undef;
 };
 
 $MATCH{ATTVALUE} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
-
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
     #
     # ------------------------------------------------------
     # ATTVALUE is /"(${REG_ATTVALUE_NOT_DQUOTE}|Reference)*"/
@@ -603,78 +714,74 @@ $MATCH{ATTVALUE} = sub {
     #
     # where Reference is: EntityRef | CharRef
     # ------------------------------------------------------  
-    if (($c0 eq '"'  && $self->{buf} =~ m/\G"(?:[^<&"]|&[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*;|&#[0-9]+;|&#x[0-9a-fA-F]+;)*"/gc) ||  # Note the /c modifier
-	($c0 eq '\'' && $self->{buf} =~ m/\G'(?:[^<&']|&[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*;|&#[0-9]+;|&#x[0-9a-fA-F]+;)*'/gc)) {  # Note the /c modifier
-      return $&;
+    if (($_[3] eq '"'  && $_[0]->{buf} =~ m/\G"(?:[^<&"]|&[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*;|&#[0-9]+;|&#x[0-9a-fA-F]+;)*"/gc) ||  # Note the /c modifier
+	($_[3] eq '\'' && $_[0]->{buf} =~ m/\G'(?:[^<&']|&[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*;|&#[0-9]+;|&#x[0-9a-fA-F]+;)*'/gc)) {  # Note the /c modifier
+	$_[4] = $&;                          # $value
+	$_[2] += length($_[4]);              # $pos
+	# Internal position in buffer is already correct
+	return 1;
     }
-    elsif ($c0 eq '"' || $c0 eq '\'') {           # For speed
-      if ($self->_canPos($stream, ++$pos)) {
-	my $match = $c0;
-	my $dquoteMode = ($c0 eq '"');
-	my $lastok = 1;
-        my $newInternalPos = $internalPos + 1;
-        my $newc0 = substr($self->{buf}, $newInternalPos, 1);
-        my $subTokenName;
-        my $subTokenValue;
-	while (1) {
-          if (
-              (
-               (  $dquoteMode && $self->{buf} =~ m/\G[^<&"]*/gc) ||   # Note the /c modifier
-               (! $dquoteMode && $self->{buf} =~ m/\G[^<&']*/gc)      # Note the /c modifier
-              )
-              && (my $length = $+[0] - $-[0]) > 0) {
-            $match .= $&;
-            $pos += $length;
-            if (! $self->_isPos($stream, $pos)) {
-              $lastok = 0;
-              last;
-            } else {
-              $newInternalPos += $length;
-              $newc0 = substr($self->{buf}, $newInternalPos, 1);
-              next;
-            }
-          }
-          if (my $subTokenValue = $MATCH{CHARREF}($self, $stream, $pos, $newc0, $newInternalPos)) {
-            $match .= $subTokenValue;
-            my $length = length($subTokenValue);
-            $pos += $length;
-            if (! $self->_isPos($stream, $pos)) {
-              $lastok = 0;
-              last;
-            } else {
-              $newInternalPos += $length;
-              $newc0 = substr($self->{buf}, $newInternalPos, 1);
-              next;
-            }
-          }
-          if (my $subTokenValue = $MATCH{ENTITYREF}($self, $stream, $pos, $newc0, $newInternalPos)) {
-            $match .= $subTokenValue;
-            my $length = length($subTokenValue);
-            $pos += $length;
-            if (! $self->_isPos($stream, $pos)) {
-              $lastok = 0;
-              last;
-            } else {
-              $newInternalPos += $length;
-              $newc0 = substr($self->{buf}, $newInternalPos, 1);
-              next;
-            }
-          }
-          last;
+    elsif ($_[3] eq '"' || $_[3] eq '\'') {           # For speed
+	my ($savPos, $newPos, $savInternalPos) = ($_[2], $_[2], pos($_[0]->{buf}));
+	if ($_[0]->_canPos($_[1], ++$newPos)) {
+	    $_[4] = $_[3];
+	    my $dquoteMode = ($_[3] eq '"');
+	    my $lastok = 1;
+	    my $newInternalPos = $savInternalPos + 1;
+	    my $newc0 = substr($_[0]->{buf}, $newInternalPos, 1);
+	    my $subTokenName;
+	    my $subTokenValue;
+	    while (1) {
+		if (
+		    (
+		     (  $dquoteMode && $_[0]->{buf} =~ m/\G[^<&"]*/gc) ||   # Note the /c modifier
+		     (! $dquoteMode && $_[0]->{buf} =~ m/\G[^<&']*/gc)      # Note the /c modifier
+		    )
+		    && (my $length = $+[0] - $-[0]) > 0) {
+		    $_[4] .= $&;
+		    $newPos += $length;
+		    if (! $_[0]->_isPos($_[1], $newPos)) {
+			$lastok = 0;
+			last;
+		    } else {
+			$newInternalPos += $length;
+			$newc0 = substr($_[0]->{buf}, $newInternalPos, 1);
+			next;
+		    }
+		}
+		my $subTokenValue = undef;
+		foreach (qw/CHARREF ENTITYREF/) {
+		    if ($MATCH{$_}($_[0], $_[1], $newPos, $newc0, $subTokenValue)) {
+			$_[4] .= $subTokenValue;
+			my $length = length($subTokenValue);
+			$newPos += $length;
+			if (! $_[0]->_isPos($_[1], $newPos)) {
+			    $lastok = 0;
+			} else {
+			    $newInternalPos += $length;
+			    $newc0 = substr($_[0]->{buf}, $newInternalPos, 1);
+			}
+			last;
+		    }
+		}
+		last if (! defined($subTokenValue) || ! $lastok);
+	    }
+	    if ($lastok && substr($_[0]->{buf}, pos($_[0]->{buf}), 1) eq $_[3]) {
+		$_[4] .= $_[3];                     # $value
+		$_[2] = ++$newPos;                  # $pos
+		pos($_[0]->{buf}) += 1;             # internal buffer position
+		return 1;
+	    } else {
+		($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+		return undef;
+	    }
 	}
-	if ($lastok && substr($self->{buf}, pos($self->{buf}), 1) eq $c0) {
-          pos($self->{buf}) += 1;
-          return "${match}${c0}";
-	} else {
-          pos($self->{buf}) = $internalPos;
-        }
-      }
     }
-    return '';
+    return undef;
 };
 
 $MATCH{ENTITYVALUE} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
+    # my ($self, $stream, $pos, $c0, $internalPos) = @_;
 
     #
     # ------------------------------------------------------
@@ -685,163 +792,145 @@ $MATCH{ENTITYVALUE} = sub {
     # and   EntityRef  is: &${NAME};
     # and   PERference is: %${NAME};
     # ------------------------------------------------------
-    if ((($c0 eq '"'  && $self->{buf} =~ m/\G"(?:[^<&"]|[&%][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*;|&#[0-9]+;|&#x[0-9a-fA-F]+;)*"/gc) ||                # Note the /c modifier
-	 ($c0 eq '\'' && $self->{buf} =~ m/\G'(?:[^<&']|[&%][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*;|&#[0-9]+;|&#x[0-9a-fA-F]+;)*'/gc))                  # Note the /c modifier
-        && ! $self->_moreDataNeededUsingInternalPos($stream, pos($self->{buf}))) {
-      return $&;
+    if (($_[3] eq '"'  && $_[0]->{buf} =~ m/\G"(?:[^<&"]|[&%][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*;|&#[0-9]+;|&#x[0-9a-fA-F]+;)*"/gc) ||                # Note the /c modifier
+	($_[3] eq '\'' && $_[0]->{buf} =~ m/\G'(?:[^<&']|[&%][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*;|&#[0-9]+;|&#x[0-9a-fA-F]+;)*'/gc)) {                # Note the /c modifier
+	$_[4] = $&;                          # $value
+	$_[2] += length($_[4]);              # $pos
+	# Internal position in buffer is already correct
+	return 1;
     }
-    elsif ($c0 eq '"' || $c0 eq '\'') {   # For speed
-      if ($self->_canPos($stream, ++$pos)) {
-	my $match = $c0;
-	my $dquoteMode = ($c0 eq '"');
-	my $lastok = 1;
-        my $newInternalPos = $internalPos + 1;
-        my $newc0 = substr($self->{buf}, $newInternalPos, 1);
-        my $subTokenName;
-        my $subTokenValue;
-	while (1) {
-          if (
-              (
-               (  $dquoteMode && $self->{buf} =~ m/\G[^%&"]*/gc) ||  # Note the /c modifier
-               (! $dquoteMode && $self->{buf} =~ m/\G[^%&']*/gc)     # Note the /c modifier
-              )
-              && (my $length = $+[0] - $-[0]) > 0) {
-            $match .= $&;
-            $pos += $length;
-            if (! $self->_isPos($stream, $pos)) {
-              $lastok = 0;
-              last;
-            } else {
-              $newInternalPos += $length;
-              $newc0 = substr($self->{buf}, $newInternalPos, 1);
-              next;
-            }
-          }
-          if (my $subTokenValue = $MATCH{CHARREF}($self, $stream, $pos, $newc0, $newInternalPos)) {
-            $match .= $subTokenValue;
-            my $length = length($subTokenValue);
-            $pos += $length;
-            if (! $self->_isPos($stream, $pos)) {
-              $lastok = 0;
-              last;
-            } else {
-              $newInternalPos += $length;
-              $newc0 = substr($self->{buf}, $newInternalPos, 1);
-              next;
-            }
-          }
-          if (my $subTokenValue = $MATCH{ENTITYREF}($self, $stream, $pos, $newc0, $newInternalPos)) {
-            $match .= $subTokenValue;
-            my $length = length($subTokenValue);
-            $pos += $length;
-            if (! $self->_isPos($stream, $pos)) {
-              $lastok = 0;
-              last;
-            } else {
-              $newInternalPos += $length;
-              $newc0 = substr($self->{buf}, $newInternalPos, 1);
-              next;
-            }
-          }
-          if (my $subTokenValue = $MATCH{PEREFERENCE}($self, $stream, $pos, $newc0, $newInternalPos)) {
-            $match .= $subTokenValue;
-            my $length = length($subTokenValue);
-            $pos += $length;
-            if (! $self->_isPos($stream, $pos)) {
-              $lastok = 0;
-              last;
-            } else {
-              $newInternalPos += $length;
-              $newc0 = substr($self->{buf}, $newInternalPos, 1);
-              next;
-            }
-          }
-          last;
+    elsif ($_[3] eq '"' || $_[3] eq '\'') {           # For speed
+	my ($savPos, $newPos, $savInternalPos) = ($_[2], $_[2], pos($_[0]->{buf}));
+	if ($_[0]->_canPos($_[1], ++$newPos)) {
+	    $_[4] = $_[3];
+	    my $dquoteMode = ($_[3] eq '"');
+	    my $lastok = 1;
+	    my $newInternalPos = $savInternalPos + 1;
+	    my $newc0 = substr($_[0]->{buf}, $newInternalPos, 1);
+	    my $subTokenName;
+	    my $subTokenValue;
+	    while (1) {
+		if (
+		    (
+		     (  $dquoteMode && $_[0]->{buf} =~ m/\G[^<&"]*/gc) ||   # Note the /c modifier
+		     (! $dquoteMode && $_[0]->{buf} =~ m/\G[^<&']*/gc)      # Note the /c modifier
+		    )
+		    && (my $length = $+[0] - $-[0]) > 0) {
+		    $_[4] .= $&;
+		    $newPos += $length;
+		    if (! $_[0]->_isPos($_[1], $newPos)) {
+			$lastok = 0;
+			last;
+		    } else {
+			$newInternalPos += $length;
+			$newc0 = substr($_[0]->{buf}, $newInternalPos, 1);
+			next;
+		    }
+		}
+		my $subTokenValue = undef;
+		foreach (qw/CHARREF ENTITYREF PEREFERENCE/) {
+		    if ($MATCH{$_}($_[0], $_[1], $newPos, $newc0, $subTokenValue)) {
+			$_[4] .= $subTokenValue;
+			my $length = length($subTokenValue);
+			$newPos += $length;
+			if (! $_[0]->_isPos($_[1], $newPos)) {
+			    $lastok = 0;
+			} else {
+			    $newInternalPos += $length;
+			    $newc0 = substr($_[0]->{buf}, $newInternalPos, 1);
+			}
+			last;
+		    }
+		}
+		last if (! defined($subTokenValue) || ! $lastok);
+	    }
+	    if ($lastok && substr($_[0]->{buf}, pos($_[0]->{buf}), 1) eq $_[3]) {
+		$_[4] .= $_[3];                     # $value
+		$_[2] = ++$newPos;                  # $pos
+		pos($_[0]->{buf}) += 1;             # internal buffer position
+		return 1;
+	    } else {
+		($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
+		return undef;
+	    }
 	}
-	if ($lastok && substr($self->{buf}, pos($self->{buf}), 1) eq $c0) {
-          pos($self->{buf}) += 1;
-          return "${match}${c0}";
-	} else {
-          pos($self->{buf}) = $internalPos;
-        }
-      }
     }
-    return '';
+    return undef;
 };
 
 $MATCH{_DISCARD} = sub {
-    my ($self, $stream, $pos, $c0, $internalPos) = @_;
-    my $match = '';
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
 
-    while ($self->{buf} =~ m/\G\s+/gc) {     # Note the /c modifier
-	$match .= $&;
-        last if (! $self->_moreDataNeededUsingInternalPos($stream, pos($self->{buf})));
-	last if (! $self->_isPos($stream, $pos += ($+[0] - $-[0])));
+    my $rc = undef;
+    $_[4] = '';
+    while ($_[0]->{buf} =~ m/\G\s+/gc) {     # Note the /c modifier
+	$_[4] .= $&;
+	last if (! $_[0]->_isPos($_[1], $_[2] += ($+[0] - $-[0])));
     }
 
-    return $match;
+    return $rc;
 };
 
-$MATCH{X20}              = sub { return ($_[0]->{buf} =~ m/\G\x{20}/gc)      ? $& : ''; };
-$MATCH{DQUOTE}           = sub { return ($_[0]->{buf} =~ m/\G"/gc)           ? $& : ''; };
-$MATCH{SQUOTE}           = sub { return ($_[0]->{buf} =~ m/\G'/gc)           ? $& : ''; };
-$MATCH{EQUAL}            = sub { return ($_[0]->{buf} =~ m/\G=/gc)           ? $& : ''; };
-$MATCH{LBRACKET}         = sub { return ($_[0]->{buf} =~ m/\G\[/gc)          ? $& : ''; };
-$MATCH{RBRACKET}         = sub { return ($_[0]->{buf} =~ m/\G\]/gc)          ? $& : ''; };
-$MATCH{XTAG_BEG}         = sub { return ($_[0]->{buf} =~ m/\G</gc)           ? $& : ''; };
-$MATCH{XTAG_END}         = sub { return ($_[0]->{buf} =~ m/\G>/gc)           ? $& : ''; };
-$MATCH{STAG_END}         = sub { return ($_[0]->{buf} =~ m/\G>/gc)           ? $& : ''; };
-$MATCH{ETAG_END}         = sub { return ($_[0]->{buf} =~ m/\G>/gc)           ? $& : ''; };
-$MATCH{QUESTION_MARK}    = sub { return ($_[0]->{buf} =~ m/\G\?/gc)          ? $& : ''; };
-$MATCH{STAR}             = sub { return ($_[0]->{buf} =~ m/\G\*/gc)          ? $& : ''; };
-$MATCH{PLUS}             = sub { return ($_[0]->{buf} =~ m/\G\+/gc)          ? $& : ''; };
-$MATCH{LPAREN}           = sub { return ($_[0]->{buf} =~ m/\G\(/gc)          ? $& : ''; };
-$MATCH{RPAREN}           = sub { return ($_[0]->{buf} =~ m/\G\)/gc)          ? $& : ''; };
-$MATCH{PIPE}             = sub { return ($_[0]->{buf} =~ m/\G\|/gc)          ? $& : ''; };
-$MATCH{COMMA}            = sub { return ($_[0]->{buf} =~ m/\G,/gc)           ? $& : ''; };
-$MATCH{PERCENT}          = sub { return ($_[0]->{buf} =~ m/\G%/gc)           ? $& : ''; };
-$MATCH{COMMENT_BEG}      = sub { return ($_[0]->{buf} =~ m/\G<!\-\-/gc)      ? $& : ''; };
-$MATCH{COMMENT_END}      = sub { return ($_[0]->{buf} =~ m/\G\-\->/gc)       ? $& : ''; };
-$MATCH{PI_BEG}           = sub { return ($_[0]->{buf} =~ m/\G<\?/gc)         ? $& : ''; };
-$MATCH{PI_END}           = sub { return ($_[0]->{buf} =~ m/\G\?>/gc)         ? $& : ''; };
-$MATCH{CDSTART}          = sub { return ($_[0]->{buf} =~ m/\G<!\[CDATA\[/gc) ? $& : ''; };
-$MATCH{CDEND}            = sub { return ($_[0]->{buf} =~ m/\G\]\]>/gc)       ? $& : ''; };
-$MATCH{XML_BEG}          = sub { return ($_[0]->{buf} =~ m/\G<\?xml/gc)      ? $& : ''; };
-$MATCH{XML_END}          = sub { return ($_[0]->{buf} =~ m/\G\?>/gc)         ? $& : ''; };
-$MATCH{VERSION}          = sub { return ($_[0]->{buf} =~ m/\Gversion/gc)     ? $& : ''; };
-$MATCH{DOCTYPE_BEG}      = sub { return ($_[0]->{buf} =~ m/\G<!DOCTYPE/gc)   ? $& : ''; };
-$MATCH{STANDALONE}       = sub { return ($_[0]->{buf} =~ m/\Gstandalone/gc)  ? $& : ''; };
-$MATCH{YES}              = sub { return ($_[0]->{buf} =~ m/\Gyes/gc)         ? $& : ''; };
-$MATCH{NO}               = sub { return ($_[0]->{buf} =~ m/\Gno/gc)          ? $& : ''; };
-$MATCH{ETAG_BEG}         = sub { return ($_[0]->{buf} =~ m/\G<\//gc)         ? $& : ''; };
-$MATCH{EMPTYELEMTAG_END} = sub { return ($_[0]->{buf} =~ m/\G\/>/gc)         ? $& : ''; };
-$MATCH{ELEMENTDECL_BEG}  = sub { return ($_[0]->{buf} =~ m/\G<!ELEMENT/gc)   ? $& : ''; };
-$MATCH{EMPTY}            = sub { return ($_[0]->{buf} =~ m/\GEMPTY/gc)       ? $& : ''; };
-$MATCH{ANY}              = sub { return ($_[0]->{buf} =~ m/\GANY/gc)         ? $& : ''; };
-$MATCH{RPARENSTAR}       = sub { return ($_[0]->{buf} =~ m/\G\(\*/gc)        ? $& : ''; };
-$MATCH{PCDATA}           = sub { return ($_[0]->{buf} =~ m/\G#PCDATA/gc)     ? $& : ''; };
-$MATCH{ATTLIST_BEG}      = sub { return ($_[0]->{buf} =~ m/\G<!ATTLIST/gc)   ? $& : ''; };
-$MATCH{STRINGTYPE}       = sub { return ($_[0]->{buf} =~ m/\GCDATA/gc)       ? $& : ''; };
-$MATCH{TYPE_ID}          = sub { return ($_[0]->{buf} =~ m/\GID/gc)          ? $& : ''; };
-$MATCH{TYPE_IDREF}       = sub { return ($_[0]->{buf} =~ m/\GIDREF/gc)       ? $& : ''; };
-$MATCH{TYPE_IDREFS}      = sub { return ($_[0]->{buf} =~ m/\GIDREFS/gc)      ? $& : ''; };
-$MATCH{TYPE_ENTITY}      = sub { return ($_[0]->{buf} =~ m/\GENTITY/gc)      ? $& : ''; };
-$MATCH{TYPE_ENTITIES}    = sub { return ($_[0]->{buf} =~ m/\GENTITIES/gc)    ? $& : ''; };
-$MATCH{TYPE_NMTOKEN}     = sub { return ($_[0]->{buf} =~ m/\GNMTOKEN/gc)     ? $& : ''; };
-$MATCH{TYPE_NMTOKENS}    = sub { return ($_[0]->{buf} =~ m/\GNMTOKENS/gc)    ? $& : ''; };
-$MATCH{NOTATION}         = sub { return ($_[0]->{buf} =~ m/\GNOTATION/gc)    ? $& : ''; };
-$MATCH{REQUIRED}         = sub { return ($_[0]->{buf} =~ m/\G#REQUIRED/gc)   ? $& : ''; };
-$MATCH{IMPLIED}          = sub { return ($_[0]->{buf} =~ m/\G#IMPLIED/gc)    ? $& : ''; };
-$MATCH{FIXED}            = sub { return ($_[0]->{buf} =~ m/\G#FIXED/gc)      ? $& : ''; };
-$MATCH{SECT_BEG}         = sub { return ($_[0]->{buf} =~ m/\G<!\[/gc)        ? $& : ''; };
-$MATCH{INCLUDE}          = sub { return ($_[0]->{buf} =~ m/\GINCLUDE/gc)     ? $& : ''; };
-$MATCH{SECT_END}         = sub { return ($_[0]->{buf} =~ m/\G\]\]>/gc)       ? $& : ''; };
-$MATCH{IGNORE}           = sub { return ($_[0]->{buf} =~ m/\GIGNORE/gc)      ? $& : ''; };
-$MATCH{EDECL_BEG}        = sub { return ($_[0]->{buf} =~ m/\G<!ENTITY/gc)    ? $& : ''; };
-$MATCH{SYSTEM}           = sub { return ($_[0]->{buf} =~ m/\GSYSTEM/gc)      ? $& : ''; };
-$MATCH{PUBLIC}           = sub { return ($_[0]->{buf} =~ m/\GPUBLIC/gc)      ? $& : ''; };
-$MATCH{NDATA}            = sub { return ($_[0]->{buf} =~ m/\GNDATA/gc)       ? $& : ''; };
-$MATCH{ENCODING}         = sub { return ($_[0]->{buf} =~ m/\Gencoding/gc)    ? $& : ''; };
-$MATCH{NOTATION_BEG}     = sub { return ($_[0]->{buf} =~ m/\G<!NOTATION/gc)  ? $& : ''; };
+$MATCH{X20}              = sub { if ($_[0]->{buf} =~ m/\G\x{20}/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{DQUOTE}           = sub { if ($_[0]->{buf} =~ m/\G"/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{SQUOTE}           = sub { if ($_[0]->{buf} =~ m/\G'/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{EQUAL}            = sub { if ($_[0]->{buf} =~ m/\G=/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{LBRACKET}         = sub { if ($_[0]->{buf} =~ m/\G\[/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{RBRACKET}         = sub { if ($_[0]->{buf} =~ m/\G\]/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{XTAG_BEG}         = sub { if ($_[0]->{buf} =~ m/\G</gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{XTAG_END}         = sub { if ($_[0]->{buf} =~ m/\G>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{STAG_END}         = sub { if ($_[0]->{buf} =~ m/\G>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{ETAG_END}         = sub { if ($_[0]->{buf} =~ m/\G>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{QUESTION_MARK}    = sub { if ($_[0]->{buf} =~ m/\G\?/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{STAR}             = sub { if ($_[0]->{buf} =~ m/\G\*/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{PLUS}             = sub { if ($_[0]->{buf} =~ m/\G\+/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{LPAREN}           = sub { if ($_[0]->{buf} =~ m/\G\(/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{RPAREN}           = sub { if ($_[0]->{buf} =~ m/\G\)/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{PIPE}             = sub { if ($_[0]->{buf} =~ m/\G\|/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{COMMA}            = sub { if ($_[0]->{buf} =~ m/\G,/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{PERCENT}          = sub { if ($_[0]->{buf} =~ m/\G%/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{COMMENT_BEG}      = sub { if ($_[0]->{buf} =~ m/\G<!\-\-/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{COMMENT_END}      = sub { if ($_[0]->{buf} =~ m/\G\-\->/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{PI_BEG}           = sub { if ($_[0]->{buf} =~ m/\G<\?/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{PI_END}           = sub { if ($_[0]->{buf} =~ m/\G\?>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{CDSTART}          = sub { if ($_[0]->{buf} =~ m/\G<!\[CDATA\[/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{CDEND}            = sub { if ($_[0]->{buf} =~ m/\G\]\]>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{XML_BEG}          = sub { if ($_[0]->{buf} =~ m/\G<\?xml/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{XML_END}          = sub { if ($_[0]->{buf} =~ m/\G\?>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{VERSION}          = sub { if ($_[0]->{buf} =~ m/\Gversion/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{DOCTYPE_BEG}      = sub { if ($_[0]->{buf} =~ m/\G<!DOCTYPE/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{STANDALONE}       = sub { if ($_[0]->{buf} =~ m/\Gstandalone/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{YES}              = sub { if ($_[0]->{buf} =~ m/\Gyes/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{NO}               = sub { if ($_[0]->{buf} =~ m/\Gno/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{ETAG_BEG}         = sub { if ($_[0]->{buf} =~ m/\G<\//gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{EMPTYELEMTAG_END} = sub { if ($_[0]->{buf} =~ m/\G\/>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{ELEMENTDECL_BEG}  = sub { if ($_[0]->{buf} =~ m/\G<!ELEMENT/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{EMPTY}            = sub { if ($_[0]->{buf} =~ m/\GEMPTY/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{ANY}              = sub { if ($_[0]->{buf} =~ m/\GANY/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{RPARENSTAR}       = sub { if ($_[0]->{buf} =~ m/\G\(\*/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{PCDATA}           = sub { if ($_[0]->{buf} =~ m/\G#PCDATA/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{ATTLIST_BEG}      = sub { if ($_[0]->{buf} =~ m/\G<!ATTLIST/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{STRINGTYPE}       = sub { if ($_[0]->{buf} =~ m/\GCDATA/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{TYPE_ID}          = sub { if ($_[0]->{buf} =~ m/\GID/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{TYPE_IDREF}       = sub { if ($_[0]->{buf} =~ m/\GIDREF/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{TYPE_IDREFS}      = sub { if ($_[0]->{buf} =~ m/\GIDREFS/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{TYPE_ENTITY}      = sub { if ($_[0]->{buf} =~ m/\GENTITY/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{TYPE_ENTITIES}    = sub { if ($_[0]->{buf} =~ m/\GENTITIES/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{TYPE_NMTOKEN}     = sub { if ($_[0]->{buf} =~ m/\GNMTOKEN/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{TYPE_NMTOKENS}    = sub { if ($_[0]->{buf} =~ m/\GNMTOKENS/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{NOTATION}         = sub { if ($_[0]->{buf} =~ m/\GNOTATION/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{REQUIRED}         = sub { if ($_[0]->{buf} =~ m/\G#REQUIRED/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{IMPLIED}          = sub { if ($_[0]->{buf} =~ m/\G#IMPLIED/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{FIXED}            = sub { if ($_[0]->{buf} =~ m/\G#FIXED/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{SECT_BEG}         = sub { if ($_[0]->{buf} =~ m/\G<!\[/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{INCLUDE}          = sub { if ($_[0]->{buf} =~ m/\GINCLUDE/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{SECT_END}         = sub { if ($_[0]->{buf} =~ m/\G\]\]>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{IGNORE}           = sub { if ($_[0]->{buf} =~ m/\GIGNORE/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{EDECL_BEG}        = sub { if ($_[0]->{buf} =~ m/\G<!ENTITY/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{SYSTEM}           = sub { if ($_[0]->{buf} =~ m/\GSYSTEM/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{PUBLIC}           = sub { if ($_[0]->{buf} =~ m/\GPUBLIC/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{NDATA}            = sub { if ($_[0]->{buf} =~ m/\GNDATA/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{ENCODING}         = sub { if ($_[0]->{buf} =~ m/\Gencoding/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+$MATCH{NOTATION_BEG}     = sub { if ($_[0]->{buf} =~ m/\G<!NOTATION/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
 
 1;
