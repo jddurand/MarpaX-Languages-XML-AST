@@ -34,14 +34,4 @@ sub Marpa::R2::Scanless::R::symbol_id {
   return $symbol_id;
 }
 
-sub Marpa::R2::Thin::SLR::lexeme_alternative {
-  # my ($thin_slr, $symbol_id, @value) = @_;
-  return $_[0]->g1_alternative($_[1], @_[2..$#_]);
-}
-
-sub Marpa::R2::Thin::SLR::lexeme_complete {
-  # my ($thin_slr, $start, $length) = @_;
-  return $_[0]->g1_lexeme_complete($_[1], $_[2]);
-}
-
 1;

@@ -168,21 +168,6 @@ sub _progressToKey {
     return $key;
 }
 
-our %REGEXP_COMBINE = (
-                       #
-                       # CHARREF and ENTITYREF are very often expected at the same time
-                       # and the decision between the twos can be easily done withing a
-                       # single routine, because:
-                       # CHARREF   is /&#${REG_DIGIT}+;/ or /&#x${REG_HEXDIGIT}+;/
-                       # ENTITYREF is /&${NAME};/
-                       # i.e. they have the same start '&' and can be completely
-                       # disjoined using the next character, because ${NAME} cannot start
-                       # with a dash
-                       #
-                       # 'CHARREF'   => 'CHARREF_OR_ENTITYREF',
-                       # 'ENTITYREF' => 'CHARREF_OR_ENTITYREF',
-);
-
 our %REGEXP_PRIORITY = (
                         SYSTEMLITERAL => 2,
                         PUBIDLITERAL  => 2,
@@ -271,6 +256,7 @@ sub parse {
   my %KEY2TERMINALS_CONDITIONS = ();
   my %KEY_TOKENS_TO_NEXTKEY = ();
   my %SYMBOL_ID = ();
+  my %STATS = ();
   #
   # We instanciate $key manually
   #
@@ -286,7 +272,6 @@ sub parse {
   #
 
   while (1) {
-
       #
       # Unless of end buffer we are already correcly positionned per def
       #
@@ -302,12 +287,6 @@ sub parse {
 	  # We distinguish REGEXP and STRINGS
 	  #
 	  my @REGEXP = sort _sortRegexpTerminals grep {! exists($STR{$_})} @terminals_expected;
-	  #
-	  # Apply regexp combine if any
-	  #
-	  my @REGEXP_COMBINE = map {$REGEXP_COMBINE{$_} || $_} @REGEXP;
-	  my %tmp = ();
-	  @REGEXP = grep {++$tmp{$_} == 1} @REGEXP_COMBINE;
 	  #
 	  # In case of fixed strings, we will always make sure that the maximum
 	  # string to matched is available. So we sort the string by length.
@@ -332,53 +311,48 @@ sub parse {
 
       # $log->tracef('pos=%6d : internal pos=%6d : trying %s, on HERE>%s<HERE', $pos, pos($self->{buf}), $KEY2TERMINALS{$key}, substr($self->{buf}, pos($self->{buf}), 10));
 
-      my $token = undef;
-      my $value = '';
       #
-      # Match the strings first
-      # -----------------------
+      # Match the lexemes, regexps are always first
+      # -------------------------------------------
       foreach (@{$KEY2TERMINALS{$key}}) {
-	  #
-	  # Every $MATCH{} subroutine return 1 on success, undef on failure
-	  # If success, $pos and $value are updated on the stack
-	  #
-	  # $log->tracef('pos=%6d : internal pos=%6d : trying %s, on HERE>%s<HERE', $pos, pos($self->{buf}), $_, substr($self->{buf}, pos($self->{buf}), 10));
+        #
+        # Every $MATCH{} subroutine return 1 on success, undef on failure
+        # If success, $pos and $value are updated on the stack
+        #
+        # $log->tracef('pos=%6d : internal pos=%6d : trying %s, on HERE>%s<HERE', $pos, pos($self->{buf}), $_, substr($self->{buf}, pos($self->{buf}), 10));
 
-	  if ($MATCH{$_}($self, $stream, $pos, $c0, $value)) {
-	      $token = $_;
-	      last;
-	  }
+        $STATS{$_} //= {calls => 0, ok => 0};
+        $STATS{$_}->{calls}++;
+        if ($MATCH{$_}($self, $stream, $pos, $c0, $value)) {
+          $STATS{$_}->{ok}++;
+          # $log->tracef('pos=%6d : internal pos=%6d : lexeme_alternative("%s", "%s")', $pos, pos($self->{buf}), $_, $value);
+          $thin_slr->g1_alternative(($SYMBOL_ID{$_} //= $recce->symbol_id($_)));
+          $level += ($LEXEME_LEVEL{$_} //= 0);
+          $thin_slr->g1_lexeme_complete(0, 1);
+          $key = ($KEY_TOKENS_TO_NEXTKEY{"[$level]$key"}->{$_} //= $self->_progressToKey($recce));
+          goto NEXT;
+        }
       }
 
-      if (defined($token)) {
-	  # $log->tracef('pos=%6d : internal pos=%6d : lexeme_alternative("%s", "%s")', $pos, pos($self->{buf}), $token, $value);
-	  # $recce->lexeme_alternative($token, $value);
-	  # $recce->lexeme_alternative($token);
-	  $thin_slr->lexeme_alternative(($SYMBOL_ID{$token} //= $recce->symbol_id($token)));
-	  $level += ($LEXEME_LEVEL{$token} //= 0);
-	  $thin_slr->lexeme_complete(0, 1);
-	  # $log->tracef('pos=%6d + %d, value=%s', $pos, length($value), $value);
-	  $key = ($KEY_TOKENS_TO_NEXTKEY{"[$level]$key"}->{$token} //= $self->_progressToKey($recce));
+      #
+      # Acceptable only if there are discardable characters
+      #
+      if ($MATCH{_DISCARD}($self, $stream, $pos, $c0, $value)) {
+        $log->tracef('pos=%6d : discarded %d characters (%s)', $pos, length($value));
       } else {
-	  #
-	  # Acceptable only if there are discardable characters
-	  #
-	  if ($MATCH{_DISCARD}($self, $stream, $pos, $c0, $value)) {
-	      $log->tracef('pos=%6d : discarded %d characters (%s)', $pos, length($value));
-	  } else {
-	      $log->tracef('pos=%6d : no token nor discardable character', $pos);
-	      last;
-	  }
+        $log->tracef('pos=%6d : no token nor discardable character', $pos);
+        last;
       }
+    NEXT:
 
       if ($pos >= $bigtrace) {
-	  $log->tracef('pos=%6d', $pos);
-	  $bigtrace += 100000;
-	  last if ($bigtrace >= 600000);
+        $log->tracef('pos=%6d', $pos);
+        $bigtrace += 100000;
+        # last if ($bigtrace >= 600000);
       }
 
       $self->_donePos($stream, $pos);
-  }
+    }
   goto novalue;
   my $nvalue = 0;
   while (defined($_ = $recce->value)) {
@@ -392,6 +366,11 @@ sub parse {
       print $recce->show_progress();
   }
  novalue:
+  # goto nostats;
+  foreach (sort {$STATS{$b}->{calls} <=> $STATS{$a}->{calls}} keys %STATS) {
+    printf "%20s %10d %10d\n", $_, $STATS{$_}->{calls}, $STATS{$_}->{ok};
+  }
+ nostats:
 }
 
 #
