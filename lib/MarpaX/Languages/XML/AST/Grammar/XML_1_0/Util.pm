@@ -90,6 +90,23 @@ foreach (keys %STR) {
     $STRFIRST{$_} = substr($STR{$_}, 0, 1);
 }
 
+#
+# For fixed-string lexing there is NO NEED to do character-per-character
+# comparison:
+# - all strings are using character that are in the ASCII range [0-128]
+#
+# Let M be the maximum number of characters between all these fixed strings:
+# For instance, in our case, M will be 10.
+#
+our $M = 0;
+foreach (keys %STR) {
+    if (length($STR{$_}) > $M) {
+	$M = length($STR{$_});
+    }
+}
+#
+# Let B be the number SUM(
+
 # -------------------------------------------------------------------------------------------------------------
 # About regexp, unfortunately, you can try all ways you want, doing:
 #
