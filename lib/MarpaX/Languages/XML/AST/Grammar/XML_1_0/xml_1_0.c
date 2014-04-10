@@ -36,9 +36,6 @@
   gperf -C --struct-type -P -n xml10.gperf > xml10.c
   cc -o xml10 xml10.c
 */
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 /* maximum key range = 131, duplicates = 0 */
 
 #ifdef __GNUC__
@@ -226,111 +223,111 @@ in_word_set_xml10 (register const char *str, register unsigned int len)
 
   static const struct s_xml10_token wordlist_xml10[] =
     {
-#line 36 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str0, "QUESTION_MARK"},
-#line 65 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str1, "TYPE_ID"},
-#line 72 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str2, "NOTATION"},
-#line 47 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str3, "END"},
-#line 60 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str4, "ANY"},
-#line 35 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str5, "TAG_END"},
-#line 83 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str6, "ENCODING"},
-#line 31 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str7, "EQUAL"},
-#line 46 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str8, "PI_BEG"},
-#line 58 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str9, "ELEMENTDECL_BEG"},
-#line 70 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str10, "TYPE_NMTOKEN"},
-#line 81 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str11, "PUBLIC"},
-#line 42 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str12, "COMMA"},
-#line 49 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str13, "END2"},
-#line 79 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str14, "EDECL_BEG"},
-#line 34 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str15, "TAG_BEG"},
-#line 57 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str16, "EMPTYELEMTAG_END"},
-#line 38 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str17, "PLUS"},
-#line 84 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str18, "NOTATION_BEG"},
-#line 82 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str19, "NDATA"},
-#line 64 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str20, "STRINGTYPE"},
 #line 33 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str21, "RBRACKET"},
-#line 56 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str22, "ETAG_BEG"},
-#line 40 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str23, "RPAREN"},
-#line 76 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str24, "SECT_BEG"},
-#line 48 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str25, "CDSTART"},
-#line 66 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str26, "TYPE_IDREF"},
-#line 63 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str27, "ATTLIST_BEG"},
-#line 30 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str28, "SQUOTE"},
-#line 77 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str29, "INCLUDE"},
-#line 55 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str30, "NO"},
-#line 32 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str31, "LBRACKET"},
-#line 50 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str32, "XML_BEG"},
-#line 43 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str33, "PERCENT"},
-#line 71 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str34, "TYPE_NMTOKENS"},
-#line 45 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str35, "COMMENT_END"},
-#line 67 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str36, "TYPE_IDREFS"},
-#line 53 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str37, "STANDALONE"},
-#line 29 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str38, "DQUOTE"},
-#line 78 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str39, "IGNORE"},
-#line 44 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str40, "COMMENT_BEG"},
-#line 80 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str41, "SYSTEM"},
-#line 28 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str42, "X20"},
-#line 68 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str43, "TYPE_ENTITY"},
-#line 52 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str44, "DOCTYPE_BEG"},
-#line 59 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str45, "EMPTY"},
-#line 37 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str46, "STAR"},
-#line 61 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str47, "RPARENSTAR"},
-#line 39 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str48, "LPAREN"},
-#line 54 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str49, "YES"},
-#line 41 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str50, "PIPE"},
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str0, "QUESTION_MARK"},
+#line 62 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str1, "TYPE_ID"},
 #line 69 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str51, "TYPE_ENTITIES"},
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str2, "NOTATION"},
+#line 44 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str3, "END"},
+#line 57 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str4, "ANY"},
+#line 32 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str5, "TAG_END"},
+#line 80 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str6, "ENCODING"},
+#line 28 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str7, "EQUAL"},
+#line 43 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str8, "PI_BEG"},
+#line 55 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str9, "ELEMENTDECL_BEG"},
+#line 67 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str10, "TYPE_NMTOKEN"},
+#line 78 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str11, "PUBLIC"},
+#line 39 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str12, "COMMA"},
+#line 46 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str13, "END2"},
+#line 76 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str14, "EDECL_BEG"},
+#line 31 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str15, "TAG_BEG"},
+#line 54 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str16, "EMPTYELEMTAG_END"},
+#line 35 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str17, "PLUS"},
+#line 81 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str18, "NOTATION_BEG"},
+#line 79 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str19, "NDATA"},
+#line 61 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str20, "STRINGTYPE"},
+#line 30 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str21, "RBRACKET"},
+#line 53 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str22, "ETAG_BEG"},
+#line 37 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str23, "RPAREN"},
+#line 73 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str24, "SECT_BEG"},
+#line 45 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str25, "CDSTART"},
+#line 63 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str26, "TYPE_IDREF"},
+#line 60 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str27, "ATTLIST_BEG"},
+#line 27 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str28, "SQUOTE"},
+#line 74 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str29, "INCLUDE"},
+#line 52 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str30, "NO"},
+#line 29 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str31, "LBRACKET"},
+#line 47 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str32, "XML_BEG"},
+#line 40 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str33, "PERCENT"},
+#line 68 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str34, "TYPE_NMTOKENS"},
+#line 42 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str35, "COMMENT_END"},
+#line 64 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str36, "TYPE_IDREFS"},
+#line 50 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str37, "STANDALONE"},
+#line 26 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str38, "DQUOTE"},
+#line 75 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str39, "IGNORE"},
+#line 41 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str40, "COMMENT_BEG"},
+#line 77 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str41, "SYSTEM"},
+#line 25 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str42, "X20"},
+#line 65 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str43, "TYPE_ENTITY"},
+#line 49 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str44, "DOCTYPE_BEG"},
+#line 56 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str45, "EMPTY"},
+#line 34 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str46, "STAR"},
+#line 58 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str47, "RPARENSTAR"},
+#line 36 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str48, "LPAREN"},
 #line 51 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str49, "YES"},
+#line 38 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str50, "PIPE"},
+#line 66 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str51, "TYPE_ENTITIES"},
+#line 48 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
       {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str52, "VERSION"}
     };
 
@@ -516,7 +513,7 @@ in_word_set_xml10 (register const char *str, register unsigned int len)
     }
   return 0;
 }
-#line 85 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+#line 82 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
 
 int
 main (int argc, const char** argv)
