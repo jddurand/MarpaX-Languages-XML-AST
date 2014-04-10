@@ -17,16 +17,17 @@ our %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 # not character per character
 #
 our %STR = ();
+our %STR2GPERFTOK = ();
 $STR{X20}              = "\x{20}";
 $STR{DQUOTE}           = '"';
 $STR{SQUOTE}           = "'";
 $STR{EQUAL}            = '=';
 $STR{LBRACKET}         = '[';
 $STR{RBRACKET}         = ']';
-$STR{XTAG_BEG}         = '<';
-$STR{XTAG_END}         = '>';
-$STR{STAG_END}         = '>';
-$STR{ETAG_END}         = '>';
+$STR{XTAG_BEG}         = '<';           $STR2GPERFTOK{XTAG_BEG} = 'TAG_BEG';
+$STR{XTAG_END}         = '>';           $STR2GPERFTOK{XTAG_END} = 'TAG_END';
+$STR{STAG_END}         = '>';           $STR2GPERFTOK{STAG_END} = 'TAG_END';
+$STR{ETAG_END}         = '>';           $STR2GPERFTOK{ETAG_END} = 'TAG_END';
 $STR{QUESTION_MARK}    = '?';
 $STR{STAR}             = '*';
 $STR{PLUS}             = '+';
@@ -38,11 +39,11 @@ $STR{PERCENT}          = '%';
 $STR{COMMENT_BEG}      = '<!--';
 $STR{COMMENT_END}      = '-->';
 $STR{PI_BEG}           = '<?';
-$STR{PI_END}           = '?>';
+$STR{PI_END}           = '?>';          $STR2GPERFTOK{PI_END} = 'END';
 $STR{CDSTART}          = '<![CDATA[';
-$STR{CDEND}            = ']]>';
+$STR{CDEND}            = ']]>';         $STR2GPERFTOK{CDEND} = 'END2';
 $STR{XML_BEG}          = '<?xml';
-$STR{XML_END}          = '?>';
+$STR{XML_END}          = '?>';          $STR2GPERFTOK{XML_END} = 'END';
 $STR{VERSION}          = 'version';
 $STR{DOCTYPE_BEG}      = '<!DOCTYPE';
 $STR{STANDALONE}       = 'standalone';
@@ -70,7 +71,7 @@ $STR{IMPLIED}          = '#IMPLIED';
 $STR{FIXED}            = '#FIXED';
 $STR{SECT_BEG}         = '<![';
 $STR{INCLUDE}          = 'INCLUDE';
-$STR{SECT_END}         = ']]>';
+$STR{SECT_END}         = ']]>';         $STR2GPERFTOK{SECT_ENT} = 'END2';
 $STR{IGNORE}           = 'IGNORE';
 $STR{EDECL_BEG}        = '<!ENTITY';
 $STR{SYSTEM}           = 'SYSTEM';
@@ -78,6 +79,12 @@ $STR{PUBLIC}           = 'PUBLIC';
 $STR{NDATA}            = 'NDATA';
 $STR{ENCODING}         = 'encoding';
 $STR{NOTATION_BEG}     = '<!NOTATION';
+#
+# Fill the other mappings with gperf
+#
+foreach (keys %STR) {
+  $STR2GPERFTOK{$_} //= $_;
+}
 #
 # For optimization, we presplit %STR into its length and list of characters
 #
@@ -888,66 +895,23 @@ $MATCH{_DISCARD} = sub {
     return $rc;
 };
 
-$MATCH{X20}              = sub { if ($_[0]->{buf} =~ m/\G\x{20}/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{DQUOTE}           = sub { if ($_[0]->{buf} =~ m/\G"/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{SQUOTE}           = sub { if ($_[0]->{buf} =~ m/\G'/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{EQUAL}            = sub { if ($_[0]->{buf} =~ m/\G=/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{LBRACKET}         = sub { if ($_[0]->{buf} =~ m/\G\[/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{RBRACKET}         = sub { if ($_[0]->{buf} =~ m/\G\]/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{XTAG_BEG}         = sub { if ($_[0]->{buf} =~ m/\G</gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{XTAG_END}         = sub { if ($_[0]->{buf} =~ m/\G>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{STAG_END}         = sub { if ($_[0]->{buf} =~ m/\G>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{ETAG_END}         = sub { if ($_[0]->{buf} =~ m/\G>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{QUESTION_MARK}    = sub { if ($_[0]->{buf} =~ m/\G\?/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{STAR}             = sub { if ($_[0]->{buf} =~ m/\G\*/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{PLUS}             = sub { if ($_[0]->{buf} =~ m/\G\+/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{LPAREN}           = sub { if ($_[0]->{buf} =~ m/\G\(/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{RPAREN}           = sub { if ($_[0]->{buf} =~ m/\G\)/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{PIPE}             = sub { if ($_[0]->{buf} =~ m/\G\|/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{COMMA}            = sub { if ($_[0]->{buf} =~ m/\G,/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{PERCENT}          = sub { if ($_[0]->{buf} =~ m/\G%/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{COMMENT_BEG}      = sub { if ($_[0]->{buf} =~ m/\G<!\-\-/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{COMMENT_END}      = sub { if ($_[0]->{buf} =~ m/\G\-\->/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{PI_BEG}           = sub { if ($_[0]->{buf} =~ m/\G<\?/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{PI_END}           = sub { if ($_[0]->{buf} =~ m/\G\?>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{CDSTART}          = sub { if ($_[0]->{buf} =~ m/\G<!\[CDATA\[/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{CDEND}            = sub { if ($_[0]->{buf} =~ m/\G\]\]>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{XML_BEG}          = sub { if ($_[0]->{buf} =~ m/\G<\?xml/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{XML_END}          = sub { if ($_[0]->{buf} =~ m/\G\?>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{VERSION}          = sub { if ($_[0]->{buf} =~ m/\Gversion/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{DOCTYPE_BEG}      = sub { if ($_[0]->{buf} =~ m/\G<!DOCTYPE/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{STANDALONE}       = sub { if ($_[0]->{buf} =~ m/\Gstandalone/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{YES}              = sub { if ($_[0]->{buf} =~ m/\Gyes/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{NO}               = sub { if ($_[0]->{buf} =~ m/\Gno/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{ETAG_BEG}         = sub { if ($_[0]->{buf} =~ m/\G<\//gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{EMPTYELEMTAG_END} = sub { if ($_[0]->{buf} =~ m/\G\/>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{ELEMENTDECL_BEG}  = sub { if ($_[0]->{buf} =~ m/\G<!ELEMENT/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{EMPTY}            = sub { if ($_[0]->{buf} =~ m/\GEMPTY/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{ANY}              = sub { if ($_[0]->{buf} =~ m/\GANY/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{RPARENSTAR}       = sub { if ($_[0]->{buf} =~ m/\G\(\*/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{PCDATA}           = sub { if ($_[0]->{buf} =~ m/\G#PCDATA/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{ATTLIST_BEG}      = sub { if ($_[0]->{buf} =~ m/\G<!ATTLIST/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{STRINGTYPE}       = sub { if ($_[0]->{buf} =~ m/\GCDATA/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{TYPE_ID}          = sub { if ($_[0]->{buf} =~ m/\GID/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{TYPE_IDREF}       = sub { if ($_[0]->{buf} =~ m/\GIDREF/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{TYPE_IDREFS}      = sub { if ($_[0]->{buf} =~ m/\GIDREFS/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{TYPE_ENTITY}      = sub { if ($_[0]->{buf} =~ m/\GENTITY/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{TYPE_ENTITIES}    = sub { if ($_[0]->{buf} =~ m/\GENTITIES/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{TYPE_NMTOKEN}     = sub { if ($_[0]->{buf} =~ m/\GNMTOKEN/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{TYPE_NMTOKENS}    = sub { if ($_[0]->{buf} =~ m/\GNMTOKENS/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{NOTATION}         = sub { if ($_[0]->{buf} =~ m/\GNOTATION/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{REQUIRED}         = sub { if ($_[0]->{buf} =~ m/\G#REQUIRED/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{IMPLIED}          = sub { if ($_[0]->{buf} =~ m/\G#IMPLIED/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{FIXED}            = sub { if ($_[0]->{buf} =~ m/\G#FIXED/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{SECT_BEG}         = sub { if ($_[0]->{buf} =~ m/\G<!\[/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{INCLUDE}          = sub { if ($_[0]->{buf} =~ m/\GINCLUDE/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{SECT_END}         = sub { if ($_[0]->{buf} =~ m/\G\]\]>/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{IGNORE}           = sub { if ($_[0]->{buf} =~ m/\GIGNORE/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{EDECL_BEG}        = sub { if ($_[0]->{buf} =~ m/\G<!ENTITY/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{SYSTEM}           = sub { if ($_[0]->{buf} =~ m/\GSYSTEM/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{PUBLIC}           = sub { if ($_[0]->{buf} =~ m/\GPUBLIC/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{NDATA}            = sub { if ($_[0]->{buf} =~ m/\GNDATA/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{ENCODING}         = sub { if ($_[0]->{buf} =~ m/\Gencoding/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
-$MATCH{NOTATION_BEG}     = sub { if ($_[0]->{buf} =~ m/\G<!NOTATION/gc) { $_[4] = $&; $_[2] += length($_[4]); return 1} else { return undef; } };
+foreach (keys %STR) {
+  my $string = $_;
+  $MATCH{$string} = sub {
+    # my ($self, $stream, $pos, $c0, $valuep) = @_;
+    if (MarpaX::Languages::XML::AST::Grammar::XML_1_0::match
+        (
+         substr($_[0]->{buf}, pos($_[0]->{buf}), $STRLENGTH{$string}),
+         $STR2GPERFTOK{$string}
+        )
+       ) {
+      $_[4] = $string;                           # $value
+      $_[2] += $STRLENGTH{$string};              # $pos
+      pos($_[0]->{buf}) += $STRLENGTH{$string};  # internal buffer position
+    } else {
+      return undef;
+    }
+  };
+}
 
 1;

@@ -3,11 +3,11 @@ use warnings FATAL => 'all';
 
 package MarpaX::Languages::XML::AST::SLR;
 
-#
-# We subclass Marpa::R2::Scanless::R to get some
-# of its internals
-#
-use parent 'Marpa::R2::SLR';
+# ABSTRACT: Marpa::R2's SLR extension
+
+use Marpa::R2;
+
+# VERSION
 
 sub Marpa::R2::Scanless::R::thin_slr {
   my ($slr) = @_;

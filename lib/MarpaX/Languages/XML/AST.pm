@@ -6,10 +6,24 @@ package MarpaX::Languages::XML::AST;
 # ABSTRACT: Translate XML source to an AST
 
 use MarpaX::Languages::XML::AST::Grammar qw//;
+# VERSION
+use XSLoader;
+XSLoader::load(
+    # Taken from Package::Stash::XS
+    __PACKAGE__,
+    # we need to be careful not to touch $VERSION at compile time, otherwise
+    # DynaLoader will assume it's set and check against it, which will cause
+    # fail when being run in the checkout without dzil having set the actual
+    # $VERSION
+    # we need to be careful not to touch $VERSION at compile time, otherwise
+    # DynaLoader will assume it's set and check against it, which will cause
+    # fail when being run in the checkout without dzil having set the actual
+    # $VERSION
+    exists $MarpaX::Languages::XML::AST::{VERSION}
+        ? ${ $MarpaX::Languages::XML::AST::{VERSION} } : (),
+);
 
 use Log::Any qw/$log/;
-
-# VERSION
 
 =head1 DESCRIPTION
 
