@@ -209,7 +209,7 @@ static const struct stringpool_xml10_t stringpool_xml10_contents =
 #ifdef __GNUC__
 __inline
 #endif
-const struct s_xml10_token *
+const struct s_xml_token *
 in_word_set_xml10 (register const char *str, register unsigned int len)
 {
   enum
@@ -221,7 +221,7 @@ in_word_set_xml10 (register const char *str, register unsigned int len)
       MAX_HASH_VALUE = 130
     };
 
-  static const struct s_xml10_token wordlist_xml10[] =
+  static const struct s_xml_token wordlist_xml10[] =
     {
 #line 33 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
       {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str0, "QUESTION_MARK"},
@@ -337,7 +337,7 @@ in_word_set_xml10 (register const char *str, register unsigned int len)
 
       if (key <= MAX_HASH_VALUE && key >= MIN_HASH_VALUE)
         {
-          register const struct s_xml10_token *resword;
+          register const struct s_xml_token *resword;
 
           switch (key)
             {
@@ -519,9 +519,9 @@ int
 main (int argc, const char** argv)
 {
   for (--argc, ++argv; argc; --argc, ++argv) {
-    const struct s_xml10 *xml10 = in_word_set_xml10 (*argv, strlen (*argv));
-    if (xml10 != NULL) {
-      printf ("Ok: %s", xml10_token->value);
+    const struct s_xml_token *xml_token = in_word_set_xml10 (*argv, strlen (*argv));
+    if (xml_token != NULL) {
+      printf ("Ok: %s", xml_token->value);
     } else {
       printf ("Huh? What the f* `%s'?\n", *argv);
     }
