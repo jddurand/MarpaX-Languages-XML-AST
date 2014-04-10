@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.0.1 */
-/* Command-line: gperf -C --struct-type -P -n lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf  */
+/* Command-line: gperf --struct-type -n lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf  */
 /* Computed positions: -k'1,4,$' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -29,7 +29,7 @@
 #error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
 #endif
 
-#line 10 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+#line 12 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
   /* -*- C -*- */
 /*
   # gperf --language=ANSI-C -l -C --struct-type -C -I -P -S 1 -n xml10.gperf > xml10.c
@@ -226,111 +226,111 @@ in_word_set_xml10 (register const char *str, register unsigned int len)
 
   static const struct s_xml10_token wordlist_xml10[] =
     {
-#line 34 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str0, "QUESTION_MARK"},
-#line 63 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str1, "TYPE_ID"},
-#line 70 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str2, "NOTATION"},
-#line 45 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str3, "END"},
-#line 58 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str4, "ANY"},
-#line 33 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str5, "TAG_END"},
-#line 81 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str6, "ENCODING"},
-#line 29 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str7, "EQUAL"},
-#line 44 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str8, "PI_BEG"},
-#line 56 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str9, "ELEMENTDECL_BEG"},
-#line 68 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str10, "TYPE_NMTOKEN"},
-#line 79 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str11, "PUBLIC"},
-#line 40 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str12, "COMMA"},
-#line 47 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str13, "END2"},
-#line 77 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str14, "EDECL_BEG"},
-#line 32 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str15, "TAG_BEG"},
-#line 55 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str16, "EMPTYELEMTAG_END"},
 #line 36 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str17, "PLUS"},
-#line 82 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str18, "NOTATION_BEG"},
-#line 80 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str19, "NDATA"},
-#line 62 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str20, "STRINGTYPE"},
-#line 31 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str21, "RBRACKET"},
-#line 54 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str22, "ETAG_BEG"},
-#line 38 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str23, "RPAREN"},
-#line 74 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str24, "SECT_BEG"},
-#line 46 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str25, "CDSTART"},
-#line 64 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str26, "TYPE_IDREF"},
-#line 61 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str27, "ATTLIST_BEG"},
-#line 28 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str28, "SQUOTE"},
-#line 75 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str29, "INCLUDE"},
-#line 53 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str30, "NO"},
-#line 30 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str31, "LBRACKET"},
-#line 48 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str32, "XML_BEG"},
-#line 41 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str33, "PERCENT"},
-#line 69 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str34, "TYPE_NMTOKENS"},
-#line 43 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str35, "COMMENT_END"},
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str0, "QUESTION_MARK"},
 #line 65 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str36, "TYPE_IDREFS"},
-#line 51 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str37, "STANDALONE"},
-#line 27 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str38, "DQUOTE"},
-#line 76 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str39, "IGNORE"},
-#line 42 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str40, "COMMENT_BEG"},
-#line 78 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str41, "SYSTEM"},
-#line 26 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str42, "X20"},
-#line 66 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str43, "TYPE_ENTITY"},
-#line 50 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str44, "DOCTYPE_BEG"},
-#line 57 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str45, "EMPTY"},
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str1, "TYPE_ID"},
+#line 72 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str2, "NOTATION"},
+#line 47 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str3, "END"},
+#line 60 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str4, "ANY"},
 #line 35 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str46, "STAR"},
-#line 59 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str47, "RPARENSTAR"},
-#line 37 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str48, "LPAREN"},
-#line 52 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str49, "YES"},
-#line 39 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str50, "PIPE"},
-#line 67 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
-      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str51, "TYPE_ENTITIES"},
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str5, "TAG_END"},
+#line 83 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str6, "ENCODING"},
+#line 31 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str7, "EQUAL"},
+#line 46 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str8, "PI_BEG"},
+#line 58 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str9, "ELEMENTDECL_BEG"},
+#line 70 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str10, "TYPE_NMTOKEN"},
+#line 81 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str11, "PUBLIC"},
+#line 42 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str12, "COMMA"},
 #line 49 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str13, "END2"},
+#line 79 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str14, "EDECL_BEG"},
+#line 34 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str15, "TAG_BEG"},
+#line 57 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str16, "EMPTYELEMTAG_END"},
+#line 38 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str17, "PLUS"},
+#line 84 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str18, "NOTATION_BEG"},
+#line 82 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str19, "NDATA"},
+#line 64 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str20, "STRINGTYPE"},
+#line 33 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str21, "RBRACKET"},
+#line 56 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str22, "ETAG_BEG"},
+#line 40 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str23, "RPAREN"},
+#line 76 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str24, "SECT_BEG"},
+#line 48 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str25, "CDSTART"},
+#line 66 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str26, "TYPE_IDREF"},
+#line 63 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str27, "ATTLIST_BEG"},
+#line 30 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str28, "SQUOTE"},
+#line 77 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str29, "INCLUDE"},
+#line 55 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str30, "NO"},
+#line 32 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str31, "LBRACKET"},
+#line 50 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str32, "XML_BEG"},
+#line 43 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str33, "PERCENT"},
+#line 71 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str34, "TYPE_NMTOKENS"},
+#line 45 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str35, "COMMENT_END"},
+#line 67 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str36, "TYPE_IDREFS"},
+#line 53 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str37, "STANDALONE"},
+#line 29 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str38, "DQUOTE"},
+#line 78 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str39, "IGNORE"},
+#line 44 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str40, "COMMENT_BEG"},
+#line 80 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str41, "SYSTEM"},
+#line 28 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str42, "X20"},
+#line 68 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str43, "TYPE_ENTITY"},
+#line 52 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str44, "DOCTYPE_BEG"},
+#line 59 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str45, "EMPTY"},
+#line 37 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str46, "STAR"},
+#line 61 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str47, "RPARENSTAR"},
+#line 39 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str48, "LPAREN"},
+#line 54 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str49, "YES"},
+#line 41 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str50, "PIPE"},
+#line 69 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+      {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str51, "TYPE_ENTITIES"},
+#line 51 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
       {(int)(long)&((struct stringpool_xml10_t *)0)->stringpool_xml10_str52, "VERSION"}
     };
 
@@ -345,397 +345,185 @@ in_word_set_xml10 (register const char *str, register unsigned int len)
           switch (key)
             {
               case 0:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[0];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[0];
+                goto compare;
               case 1:
-                if (len == 2)
-                  {
-                    resword = &wordlist_xml10[1];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[1];
+                goto compare;
               case 2:
-                if (len == 8)
-                  {
-                    resword = &wordlist_xml10[2];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[2];
+                goto compare;
               case 5:
-                if (len == 2)
-                  {
-                    resword = &wordlist_xml10[3];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[3];
+                goto compare;
               case 6:
-                if (len == 3)
-                  {
-                    resword = &wordlist_xml10[4];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[4];
+                goto compare;
               case 10:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[5];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[5];
+                goto compare;
               case 11:
-                if (len == 8)
-                  {
-                    resword = &wordlist_xml10[6];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[6];
+                goto compare;
               case 12:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[7];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[7];
+                goto compare;
               case 15:
-                if (len == 2)
-                  {
-                    resword = &wordlist_xml10[8];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[8];
+                goto compare;
               case 16:
-                if (len == 9)
-                  {
-                    resword = &wordlist_xml10[9];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[9];
+                goto compare;
               case 20:
-                if (len == 7)
-                  {
-                    resword = &wordlist_xml10[10];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[10];
+                goto compare;
               case 21:
-                if (len == 6)
-                  {
-                    resword = &wordlist_xml10[11];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[11];
+                goto compare;
               case 22:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[12];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[12];
+                goto compare;
               case 25:
-                if (len == 3)
-                  {
-                    resword = &wordlist_xml10[13];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[13];
+                goto compare;
               case 26:
-                if (len == 8)
-                  {
-                    resword = &wordlist_xml10[14];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[14];
+                goto compare;
               case 30:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[15];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[15];
+                goto compare;
               case 31:
-                if (len == 2)
-                  {
-                    resword = &wordlist_xml10[16];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[16];
+                goto compare;
               case 32:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[17];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[17];
+                goto compare;
               case 35:
-                if (len == 10)
-                  {
-                    resword = &wordlist_xml10[18];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[18];
+                goto compare;
               case 36:
-                if (len == 5)
-                  {
-                    resword = &wordlist_xml10[19];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[19];
+                goto compare;
               case 37:
-                if (len == 5)
-                  {
-                    resword = &wordlist_xml10[20];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[20];
+                goto compare;
               case 40:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[21];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[21];
+                goto compare;
               case 41:
-                if (len == 2)
-                  {
-                    resword = &wordlist_xml10[22];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[22];
+                goto compare;
               case 42:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[23];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[23];
+                goto compare;
               case 45:
-                if (len == 3)
-                  {
-                    resword = &wordlist_xml10[24];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[24];
+                goto compare;
               case 46:
-                if (len == 9)
-                  {
-                    resword = &wordlist_xml10[25];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[25];
+                goto compare;
               case 50:
-                if (len == 5)
-                  {
-                    resword = &wordlist_xml10[26];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[26];
+                goto compare;
               case 51:
-                if (len == 9)
-                  {
-                    resword = &wordlist_xml10[27];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[27];
+                goto compare;
               case 52:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[28];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[28];
+                goto compare;
               case 55:
-                if (len == 7)
-                  {
-                    resword = &wordlist_xml10[29];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[29];
+                goto compare;
               case 56:
-                if (len == 2)
-                  {
-                    resword = &wordlist_xml10[30];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[30];
+                goto compare;
               case 60:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[31];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[31];
+                goto compare;
               case 61:
-                if (len == 5)
-                  {
-                    resword = &wordlist_xml10[32];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[32];
+                goto compare;
               case 62:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[33];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[33];
+                goto compare;
               case 65:
-                if (len == 8)
-                  {
-                    resword = &wordlist_xml10[34];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[34];
+                goto compare;
               case 66:
-                if (len == 3)
-                  {
-                    resword = &wordlist_xml10[35];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[35];
+                goto compare;
               case 70:
-                if (len == 6)
-                  {
-                    resword = &wordlist_xml10[36];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[36];
+                goto compare;
               case 71:
-                if (len == 10)
-                  {
-                    resword = &wordlist_xml10[37];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[37];
+                goto compare;
               case 72:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[38];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[38];
+                goto compare;
               case 75:
-                if (len == 6)
-                  {
-                    resword = &wordlist_xml10[39];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[39];
+                goto compare;
               case 76:
-                if (len == 4)
-                  {
-                    resword = &wordlist_xml10[40];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[40];
+                goto compare;
               case 80:
-                if (len == 6)
-                  {
-                    resword = &wordlist_xml10[41];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[41];
+                goto compare;
               case 82:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[42];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[42];
+                goto compare;
               case 85:
-                if (len == 6)
-                  {
-                    resword = &wordlist_xml10[43];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[43];
+                goto compare;
               case 90:
-                if (len == 9)
-                  {
-                    resword = &wordlist_xml10[44];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[44];
+                goto compare;
               case 95:
-                if (len == 5)
-                  {
-                    resword = &wordlist_xml10[45];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[45];
+                goto compare;
               case 100:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[46];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[46];
+                goto compare;
               case 105:
-                if (len == 2)
-                  {
-                    resword = &wordlist_xml10[47];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[47];
+                goto compare;
               case 110:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[48];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[48];
+                goto compare;
               case 115:
-                if (len == 3)
-                  {
-                    resword = &wordlist_xml10[49];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[49];
+                goto compare;
               case 120:
-                if (len == 1)
-                  {
-                    resword = &wordlist_xml10[50];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[50];
+                goto compare;
               case 125:
-                if (len == 8)
-                  {
-                    resword = &wordlist_xml10[51];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[51];
+                goto compare;
               case 130:
-                if (len == 7)
-                  {
-                    resword = &wordlist_xml10[52];
-                    goto compare;
-                  }
-                break;
+                resword = &wordlist_xml10[52];
+                goto compare;
             }
           return 0;
         compare:
           {
             register const char *s = resword->name + stringpool_xml10;
 
-            if (*str == *s && !memcmp (str + 1, s + 1, len - 1))
+            if (*str == *s && !strncmp (str + 1, s + 1, len - 1) && s[len] == '\0')
               return resword;
           }
         }
     }
   return 0;
 }
-#line 83 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
+#line 85 "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf"
 
 int
 main (int argc, const char** argv)
 {
   for (--argc, ++argv; argc; --argc, ++argv) {
-    const struct s_xml10_token *xml10_token = in_word_set_xml10 (*argv, strlen (*argv));
-    if (xml10_token != NULL) {
+    const struct s_xml10 *xml10 = in_word_set_xml10 (*argv, strlen (*argv));
+    if (xml10 != NULL) {
       printf ("Ok: %s", xml10_token->value);
     } else {
       printf ("Huh? What the f* `%s'?\n", *argv);
