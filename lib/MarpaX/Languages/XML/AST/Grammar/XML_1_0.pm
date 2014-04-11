@@ -40,7 +40,7 @@ foreach (qw/document/) {
 sub new {
   my ($class, %opts) = @_;
 
-  my $self = {buf => undef, mapbeg => 0, origmapend => 0, mapend => 0, maxInternalPos => -1, lastBufNo => 0};
+  my $self = {buf => undef, mapbeg => 0, origmapend => 0, mapend => 0, maxInternalPos => -1, lastBufNo => 0, byteOffset => 0};
 
   bless($self, $class);
 
@@ -79,6 +79,7 @@ sub _donePos {
 	$_[0]->{maxInternalPos} = -1;
 	$_[0]->{origmapend} = 0;
 	$_[0]->{lastBufNo} = 0;
+	$_[0]->{byteOffset} = 0;
     }
 }
 
@@ -132,7 +133,24 @@ sub _canPos {
 		$_[0]->{maxInternalPos} = length($_[0]->{buf}) - 1;
 		$_[0]->{origmapend} = $_[0]->{mapend};
 		$_[0]->{lastBufNo} = 0;
-		return $_[0]->_canPos($_[1], $_[2]);
+                $_[0]->{byteOffset} = 0;
+		if ($_[0]->_canPos($_[1], $_[2])) {
+                  #
+                  # The byte offset should be recomputed only if this is a new buffer
+                  #
+                  if ($_[2] > $_[0]->{mapbeg}) {
+                    my $substring = substr($_[0]->{buf}, 0, pos($_[0]->{buf}));
+                    use bytes;
+                    my $bytes = length($substring);
+                    no bytes;
+                    $_[0]->{byteOffset} = $bytes;
+                  } else {
+                    $_[0]->{byteOffset} = 0;
+                  }
+                  return 1;
+                } else {
+                  return undef;
+                }
 	    }
 	} else {
 	    #
@@ -256,13 +274,13 @@ sub parse {
   my %KEY2TERMINALS_CONDITIONS = ();
   my %KEY_TOKENS_TO_NEXTKEY = ();
   my %SYMBOL_ID = ();
-  my %STATS = ();
   #
   # We instanciate $key manually
   #
   my $level = 0;
   my $key = $self->_progressToKey($recce, $level);
   my $value;
+  my $found;
   my $c0;
 
   return if (! $self->_canPos($stream, $pos));
@@ -277,7 +295,7 @@ sub parse {
       #
       last if (! $self->_isPos($stream, $pos));
 
-      $c0 = substr($self->{buf}, pos($self->{buf}), 1);
+      $c0 = undef;
       #
       # Get expected terminals
       #
@@ -295,7 +313,7 @@ sub parse {
 	  #
 	  # Fill the cached terminals
 	  #
-	  $KEY2TERMINALS{$key} = [ @STRING, @REGEXP ];
+	  $KEY2TERMINALS{$key} = [ \@REGEXP, \@STRING ];
 	  $KEY2LONGEST_STRLENGTH_MINUS_ONE{$key} = $#STRING >= 0 ? ($STRLENGTH{$STRING[0]} - 1) : 0;
       }
 
@@ -314,24 +332,52 @@ sub parse {
       #
       # Match the lexemes, regexps are always first
       # -------------------------------------------
-      foreach (@{$KEY2TERMINALS{$key}}) {
-        #
-        # Every $MATCH{} subroutine return 1 on success, undef on failure
-        # If success, $pos and $value are updated on the stack
-        #
-        # $log->tracef('pos=%6d : internal pos=%6d : trying %s, on HERE>%s<HERE', $pos, pos($self->{buf}), $_, substr($self->{buf}, pos($self->{buf}), 10));
-
-        $STATS{$_} //= {calls => 0, ok => 0};
-        $STATS{$_}->{calls}++;
-        if ($MATCH{$_}($self, $stream, $pos, $c0, $value)) {
-          $STATS{$_}->{ok}++;
-          # $log->tracef('pos=%6d : internal pos=%6d : lexeme_alternative("%s", "%s")', $pos, pos($self->{buf}), $_, $value);
-          $thin_slr->g1_alternative(($SYMBOL_ID{$_} //= $recce->symbol_id($_)));
-          $level += ($LEXEME_LEVEL{$_} //= 0);
-          $thin_slr->g1_lexeme_complete(0, 1);
-          $key = ($KEY_TOKENS_TO_NEXTKEY{"[$level]$key"}->{$_} //= $self->_progressToKey($recce));
-          goto NEXT;
+      $found = '';
+      #
+      # In the vast majority of case, $self->{buf} will contain all the needed data.
+      # We send explicitely $buf in the parameter, so that the $MATCH{} subs will not
+      # have to derefence $self->{buf} the first time
+      #
+      foreach (@{$KEY2TERMINALS{$key}->[1]}) {
+        # $log->tracef('pos=%6d : internal pos=%6d : trying %s, byteOffset=%d', $pos, pos($self->{buf}), $_, $self->{byteOffset});
+        if (MarpaX::Languages::XML::AST::Grammar::XML_1_0::match
+            ($self->{buf},
+             $self->{byteOffset},
+             $STRLENGTH{$_},
+             $STR2GPERFTOK{$_}
+            )
+           ) {
+          $value = $STR{$_};
+          $pos += $STRLENGTH{$_};
+          pos($self->{buf}) += $STRLENGTH{$_};
+          $found = $_;
+          last;
         }
+      }
+      if (! $found) {
+        foreach (@{$KEY2TERMINALS{$key}->[0]}) {
+          #
+          # Every $MATCH{} subroutine return 1 on success, undef on failure
+          # If success, $pos and $value are updated on the stack
+          #
+          # $log->tracef('pos=%6d : internal pos=%6d : trying %s, byteOffset=%d', $pos, pos($self->{buf}), $_, $self->{byteOffset});
+          if ($MATCH{$_}($self, $stream, $pos, $c0, $value)) {
+            $found = $_;
+            last;
+          }
+        }
+      }
+      if ($found) {
+        $thin_slr->g1_alternative(($SYMBOL_ID{$found} //= $recce->symbol_id($found)));
+        $level += ($LEXEME_LEVEL{$found} //= 0);
+        $thin_slr->g1_lexeme_complete(0, 1);
+        $key = ($KEY_TOKENS_TO_NEXTKEY{"[$level]$key"}->{$found} //= $self->_progressToKey($recce));
+        use bytes;
+        my $bytes = length($value);
+        no bytes;
+        # $log->tracef('pos=%6d : internal pos=%6d : \"%s\" is using %d bytes, offset moving from %d to %d', $pos, pos($self->{buf}), $value, $bytes, $self->{byteOffset}, $self->{byteOffset} + $bytes);
+        $self->{byteOffset} += $bytes;
+        goto NEXT;
       }
 
       #
@@ -366,11 +412,6 @@ sub parse {
       print $recce->show_progress();
   }
  novalue:
-  # goto nostats;
-  foreach (sort {$STATS{$b}->{calls} <=> $STATS{$a}->{calls}} keys %STATS) {
-    printf "%20s %10d %10d\n", $_, $STATS{$_}->{calls}, $STATS{$_}->{ok};
-  }
- nostats:
 }
 
 #

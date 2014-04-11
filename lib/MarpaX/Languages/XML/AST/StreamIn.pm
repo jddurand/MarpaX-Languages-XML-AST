@@ -177,7 +177,7 @@ sub fetchc {
 		# Although this is not likely to happen, we prevent deep recursion
 		# by doing the loop ourself
 		#
-		while (($pos >= $self->[ 3]->[-1]) && ! $self->[ 5]) {
+		while (! $self->[ 5] && ($pos >= $self->[ 3]->[-1])) {
 		    $self->_read($self->[ 9] + 1, 1);
 		}
 	    }

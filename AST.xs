@@ -22,15 +22,14 @@ PROTOTYPES: DISABLE
 # The third argument is the wanted token name.
 #
 void
-match(sv, wanted)
-    SV *sv
+match(buf, offset, len, wanted)
+    const char *buf
+    STRLEN offset
+    STRLEN len
     const char *wanted
   PROTOTYPE: $$
   PPCODE:
-    STRLEN len;
-    char *s;
-    s = SvPV(sv, len);
-    const struct s_xml_token *xml_token = in_word_set_xml10(s, len);
+    const struct s_xml_token *xml_token = in_word_set_xml10(buf + offset, len);
     if (xml_token == 0 || strcmp(xml_token->value, wanted) != 0) {
       XSRETURN_UNDEF;
     }
