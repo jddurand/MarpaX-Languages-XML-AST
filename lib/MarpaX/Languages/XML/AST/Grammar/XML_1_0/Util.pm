@@ -8,7 +8,7 @@ package MarpaX::Languages::XML::AST::Grammar::XML_1_0::Util;
 # VERSION
 
 use Exporter 'import';
-our @EXPORT_OK = qw/%MATCH %STR %STRLENGTH/;
+our @EXPORT_OK = qw/%MATCH %STR %STRLENGTH %STR2GPERFTOK/;
 our %EXPORT_TAGS = ('all' => [ @EXPORT_OK ]);
 
 #
@@ -149,6 +149,8 @@ foreach (keys %STR) {
 # If failure:
 # - $pos will have its initial value at return, internal buffer pos() unchanged, and return value is undef
 # - $value may have something, that is irrelevant
+# In any case:
+# - $c0 is filled if needed
 #
 # -------------------------------------------------------------------------------------------------------------
 
@@ -261,7 +263,7 @@ $MATCH{CHARREF} = sub {
 	# Internal position in buffer is already correct
 	return 1;
     }
-    elsif ($_[3] eq '&') {                                           # For speed
+    elsif (($_[3] //= substr($_[0]->{buf}, pos($_[0]->{buf}), 1)) eq '&') {                                           # For speed
 	my ($savPos, $newPos, $savInternalPos) = ($_[2], $_[2], pos($_[0]->{buf}));
 	if (! $_[0]->_canPos($_[1], ++$newPos)) {              # will do a buffer test + pos()
 	    ($_[2], pos($_[0]->{buf})) = ($savPos, $savInternalPos);
@@ -380,6 +382,7 @@ $MATCH{SYSTEMLITERAL} = sub {
     # SYSTEMLITERAL is /"${REG_NOT_DQUOTE}*"/ or /'${REG_NOT_SQUOTE}*'/
     # -----------------------------------------------------------------
 
+    $_[3] //= substr($_[0]->{buf}, pos($_[0]->{buf}), 1);
     if (($_[3] eq '"'  && $_[0]->{buf} =~ m/\G"[^"]*"/gc) ||  # Note the /c modifier
 	($_[3] eq '\'' && $_[0]->{buf} =~ m/\G'[^']*'/gc)) {  # Note the /c modifier
 	$_[4] = $&;                          # $value
@@ -428,8 +431,8 @@ $MATCH{PUBIDLITERAL} = sub {
 
     # ------------------------------------------------------------------------------------
     # PUBIDLITERAL is /"${REG_PUBIDCHAR_NOT_DQUOTE}*"/ or /'${REG_PUBIDCHAR_NOT_SQUOTE}*'/
-
     # ------------------------------------------------------------------------------------
+    $_[3] //= substr($_[0]->{buf}, pos($_[0]->{buf}), 1);
     if (($_[3] eq '"'  && $_[0]->{buf} =~ m/\G"[\x{20}\x{D}\x{A}a-zA-Z0-9\-'()+,.\/:=\?;!\*\#\@\$_\%]*"/gc) ||  # Note the /c modifier
 	($_[3] eq '\'' && $_[0]->{buf} =~ m/\G'[\x{20}\x{D}\x{A}a-zA-Z0-9\-()+,.\/:=\?;!\*\#\@\$_\%]*'/gc)) {   # Note the /c modifier
 	$_[4] = $&;                          # $value
@@ -642,6 +645,7 @@ $MATCH{VERSIONNUM} = sub {
     # VERSIONNUM is /1.${REG_DIGIT}+/
     # -------------------------------
     my ($savPos, $newPos, $savInternalPos) = ($_[2], $_[2], pos($_[0]->{buf}));
+    $_[3] //= substr($_[0]->{buf}, pos($_[0]->{buf}), 1);
     if ($_[3] eq '1' && $_[0]->_canPos($_[1], ++$newPos)) {
 	$_[4] = $_[3];
 	if ($_[0]->{buf} =~ m/\G\./g && $_[0]->_isPos($_[1], ++$newPos)) {
@@ -682,7 +686,7 @@ $MATCH{ENTITYREF} = sub {
     # --------------------------
     my ($savPos, $newPos, $savInternalPos) = ($_[2], $_[2], pos($_[0]->{buf}));
     if ($_[3] eq '&' && $_[0]->_canPos($_[1], ++$newPos)) {
-	my $newc0 = substr($_[0]->{buf}, pos($_[0]->{buf}), 1);
+	my $newc0 = undef;
 	my $name;
 	if ($MATCH{NAME}($_[0], $_[1], $newPos, $newc0, $name)) {
 	    if (substr($_[0]->{buf}, pos($_[0]->{buf}), 1) eq ';') {
@@ -708,8 +712,9 @@ $MATCH{PEREFERENCE} = sub {
     # PEREFERENCE   is /%${NAME};/
     # ----------------------------
     my ($savPos, $newPos, $savInternalPos) = ($_[2], $_[2], pos($_[0]->{buf}));
+    $_[3] //= substr($_[0]->{buf}, pos($_[0]->{buf}), 1);
     if ($_[3] eq '%' && $_[0]->_canPos($_[1], ++$newPos)) {
-	my $newc0 = substr($_[0]->{buf}, pos($_[0]->{buf}), 1);
+	my $newc0 = undef;
 	my $name;
 	if ($MATCH{NAME}($_[0], $_[1], $newPos, $newc0, $name)) {
 	    if (substr($_[0]->{buf}, pos($_[0]->{buf}), 1) eq ';') {
@@ -738,6 +743,7 @@ $MATCH{ATTVALUE} = sub {
     #
     # where Reference is: EntityRef | CharRef
     # ------------------------------------------------------  
+    $_[3] //= substr($_[0]->{buf}, pos($_[0]->{buf}), 1);
     if (($_[3] eq '"'  && $_[0]->{buf} =~ m/\G"(?:[^<&"]|&[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*;|&#[0-9]+;|&#x[0-9a-fA-F]+;)*"/gc) ||  # Note the /c modifier
 	($_[3] eq '\'' && $_[0]->{buf} =~ m/\G'(?:[^<&']|&[:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*;|&#[0-9]+;|&#x[0-9a-fA-F]+;)*'/gc)) {  # Note the /c modifier
 	$_[4] = $&;                          # $value
@@ -752,7 +758,7 @@ $MATCH{ATTVALUE} = sub {
 	    my $dquoteMode = ($_[3] eq '"');
 	    my $lastok = 1;
 	    my $newInternalPos = $savInternalPos + 1;
-	    my $newc0 = substr($_[0]->{buf}, $newInternalPos, 1);
+	    my $newc0 = undef;
 	    my $subTokenName;
 	    my $subTokenValue;
 	    while (1) {
@@ -769,7 +775,7 @@ $MATCH{ATTVALUE} = sub {
 			last;
 		    } else {
 			$newInternalPos += $length;
-			$newc0 = substr($_[0]->{buf}, $newInternalPos, 1);
+			$newc0 = undef;
 			next;
 		    }
 		}
@@ -783,7 +789,7 @@ $MATCH{ATTVALUE} = sub {
 			    $lastok = 0;
 			} else {
 			    $newInternalPos += $length;
-			    $newc0 = substr($_[0]->{buf}, $newInternalPos, 1);
+			    $newc0 = undef;
 			}
 			last;
 		    }
@@ -816,6 +822,7 @@ $MATCH{ENTITYVALUE} = sub {
     # and   EntityRef  is: &${NAME};
     # and   PERference is: %${NAME};
     # ------------------------------------------------------
+    $_[3] //= substr($_[0]->{buf}, pos($_[0]->{buf}), 1);
     if (($_[3] eq '"'  && $_[0]->{buf} =~ m/\G"(?:[^<&"]|[&%][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*;|&#[0-9]+;|&#x[0-9a-fA-F]+;)*"/gc) ||                # Note the /c modifier
 	($_[3] eq '\'' && $_[0]->{buf} =~ m/\G'(?:[^<&']|[&%][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}][:A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]*;|&#[0-9]+;|&#x[0-9a-fA-F]+;)*'/gc)) {                # Note the /c modifier
 	$_[4] = $&;                          # $value
@@ -830,7 +837,7 @@ $MATCH{ENTITYVALUE} = sub {
 	    my $dquoteMode = ($_[3] eq '"');
 	    my $lastok = 1;
 	    my $newInternalPos = $savInternalPos + 1;
-	    my $newc0 = substr($_[0]->{buf}, $newInternalPos, 1);
+	    my $newc0 = undef;
 	    my $subTokenName;
 	    my $subTokenValue;
 	    while (1) {
@@ -847,7 +854,7 @@ $MATCH{ENTITYVALUE} = sub {
 			last;
 		    } else {
 			$newInternalPos += $length;
-			$newc0 = substr($_[0]->{buf}, $newInternalPos, 1);
+			$newc0 = undef;
 			next;
 		    }
 		}
@@ -861,7 +868,7 @@ $MATCH{ENTITYVALUE} = sub {
 			    $lastok = 0;
 			} else {
 			    $newInternalPos += $length;
-			    $newc0 = substr($_[0]->{buf}, $newInternalPos, 1);
+			    $newc0 = undef;
 			}
 			last;
 		    }
@@ -901,11 +908,13 @@ foreach (keys %STR) {
     # my ($self, $stream, $pos, $c0, $valuep) = @_;
     if (MarpaX::Languages::XML::AST::Grammar::XML_1_0::match
         (
-         substr($_[0]->{buf}, pos($_[0]->{buf}), $STRLENGTH{$string}),
+         $_[0]->{buf},
+         $_[0]->{byteOffset},
+         $STRLENGTH{$string},
          $STR2GPERFTOK{$string}
         )
        ) {
-      $_[4] = $string;                           # $value
+      $_[4] = $STR{$string};                     # $value
       $_[2] += $STRLENGTH{$string};              # $pos
       pos($_[0]->{buf}) += $STRLENGTH{$string};  # internal buffer position
     } else {
