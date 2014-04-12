@@ -1,0 +1,84 @@
+%language=ANSI-C
+%compare-lengths
+%switch=1
+%enum
+%define hash-function-name hash_xml10
+%define lookup-function-name in_word_set_xml10
+%define string-pool-name stringpool_xml10
+%define word-array-name wordlist_xml10
+%define length-table-name lengthtable_xml10
+%omit-struct-type
+%{  /* -*- C -*- */
+/*
+  # gperf --language=ANSI-C -l -C --struct-type -C -I -P -S 1 -n xml10.gperf > xml10.c
+  gperf -C --struct-type -P -n xml10.gperf > xml10.c
+  cc -o xml10 xml10.c
+*/
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+%}
+struct s_xml10_token
+{
+  int name;
+  char *value;
+};
+%%
+ , "X20"
+"\"", "DQUOTE"
+', "SQUOTE"
+=, "EQUAL"
+[, "LBRACKET"
+], "RBRACKET"
+<, "TAG_BEG"
+>, "TAG_END"
+?, "QUESTION_MARK"
+*, "STAR"
++, "PLUS"
+(, "LPAREN"
+), "RPAREN"
+|, "PIPE"
+",", "COMMA"
+"%", "PERCENT"
+<!--, "COMMENT_BEG"
+-->, "COMMENT_END"
+<?, "PI_BEG"
+?>, "END"
+<![CDATA[, "CDSTART"
+]]>, "END2"
+<?xml, "XML_BEG"
+version, "VERSION"
+<!DOCTYPE, "DOCTYPE_BEG"
+standalone, "STANDALONE"
+yes, "YES"
+no, "NO"
+</, "ETAG_BEG"
+/>, "EMPTYELEMTAG_END"
+<!ELEMENT, "ELEMENTDECL_BEG"
+EMPTY, "EMPTY"
+ANY, "ANY"
+(*, "RPARENSTAR"
+#PCDATA, "PCDATA"
+<!ATTLIST, "ATTLIST_BEG"
+CDATA, "STRINGTYPE"
+ID, "TYPE_ID"
+IDREF, "TYPE_IDREF"
+IDREFS, "TYPE_IDREFS"
+ENTITY, "TYPE_ENTITY"
+ENTITIES, "TYPE_ENTITIES"
+NMTOKEN, "TYPE_NMTOKEN"
+NMTOKENS, "TYPE_NMTOKENS"
+NOTATION, "NOTATION"
+#REQUIRED, "REQUIRED"
+#IMPLIED, "IMPLIED"
+#FIXED, "FIXED"
+<![, "SECT_BEG"
+INCLUDE, "INCLUDE"
+IGNORE, "IGNORE"
+<!ENTITY, "EDECL_BEG"
+SYSTEM, "SYSTEM"
+PUBLIC, "PUBLIC"
+NDATA, "NDATA"
+encoding, "ENCODING"
+<!NOTATION, "NOTATION_BEG"
+%%
