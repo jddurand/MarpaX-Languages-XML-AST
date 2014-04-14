@@ -2,7 +2,7 @@ package inc::MyDistMakeMaker;
 use Moose;
 use Config;
 use Marpa::R2 2.084000;   # So that we are sure Marpa could build here
-
+use Config::AutoConf;     # Just to make sure Config::AutoConf is loaded if Marpa needs it
 
 extends 'Dist::Zilla::Plugin::MakeMaker::Awesome';
 

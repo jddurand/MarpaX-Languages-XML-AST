@@ -3,7 +3,6 @@ use strict;
 use diagnostics;
 use File::Spec;
 use Archive::Extract;
-use Config::AutoConf;        # Just to make sure Config::AutoConf is loaded if Marpa needs it
 use POSIX qw/EXIT_SUCCESS/;
 use File::Find;
 use File::Basename;
