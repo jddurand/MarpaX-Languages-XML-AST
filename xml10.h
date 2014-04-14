@@ -381,8 +381,7 @@ struct sXmlSymbolId aXml10SymbolId[] = {
   { -1, XML10_COMMA, "COMMA" },
   { -1, XML10_MixedInterior, "MixedInterior" },
   { -1, XML10_NotationTypeInterior, "NotationTypeInterior" },
-  { -1, XML10_EnumerationInterior, "EnumerationInterior" },
-  { -1, XML10_ignoreSectContentsInteriorAny, "ignoreSectContentsInteriorAny" },
+  { -1, XML10_EnumerationInterior, "EnumerationInterior" }
 };
 
 #endif
