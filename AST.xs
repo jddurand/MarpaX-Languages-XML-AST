@@ -2,6 +2,8 @@
 #include "perl.h"
 #include "XSUB.h"
 
+#include "marpa.h"
+
 struct s_xml_token
 {
   int name;

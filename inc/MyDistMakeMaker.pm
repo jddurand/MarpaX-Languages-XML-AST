@@ -3,6 +3,7 @@ use Moose;
 use Config;
 use Marpa::R2 2.084000;   # So that we are sure Marpa could build here
 use Config::AutoConf;     # Just to make sure Config::AutoConf is loaded if Marpa needs it
+use File::Spec;
 
 extends 'Dist::Zilla::Plugin::MakeMaker::Awesome';
 
@@ -11,6 +12,7 @@ override _build_WriteMakefile_args => sub {
 	# Add MYEXTLIB => to WriteMakefile() args
 	%{ super() },
 	MYEXTLIB => 'libmarpa' . $Config{lib_ext},
+        INC  => '-I' . File::Spec->catdir(File::Spec->curdir, 'libmarpa_build')
     }
 };
 
