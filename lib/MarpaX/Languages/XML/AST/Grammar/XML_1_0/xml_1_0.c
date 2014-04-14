@@ -1,4 +1,4 @@
-/* ANSI-C code produced by gperf version 3.0.4 */
+/* ANSI-C code produced by gperf version 3.0.1 */
 /* Command-line: gperf --struct-type -n lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.gperf  */
 /* Computed positions: -k'1,4,$' */
 
@@ -208,9 +208,6 @@ static const struct stringpool_xml10_t stringpool_xml10_contents =
 #define stringpool_xml10 ((const char *) &stringpool_xml10_contents)
 #ifdef __GNUC__
 __inline
-#if defined __GNUC_STDC_INLINE__ || defined __GNUC_GNU_INLINE__
-__attribute__ ((__gnu_inline__))
-#endif
 #endif
 const struct s_xml_token *
 in_word_set_xml10 (register const char *str, register unsigned int len)
