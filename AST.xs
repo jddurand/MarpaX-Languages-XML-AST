@@ -1,24 +1,12 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-
 /* We include marpa_slif.h instead of marpa.h, because it contains  */
 /* the very handy definition of marpa_error_description[], compiled */
 /* in marpa_codes.c                                                 */
 #include "marpa_slif.h"
+#include "xmlTypes.h"
 #include "xml10.h"
-
-typedef struct sXmlToken
-{
-  int name;
-  char *value;
-} sXmlToken_;
-
-typedef struct sXmlSymbolId {
-  Marpa_Symbol_ID symbolId;
-  int symbolIdEnum;
-  const char *name;
-} sXmlSymbolId_;
 
 /*****************
  * _croakIfError *

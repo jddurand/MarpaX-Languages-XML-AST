@@ -1,6 +1,8 @@
 #ifndef XML10_H
 #define XML10_H
 
+#include "xmlTypes.h"
+
 /* XML 1.0 grammar symbols */
 enum {
   XML10_document,
@@ -189,11 +191,10 @@ enum {
   XML10_COMMA,
   XML10_MixedInterior,
   XML10_NotationTypeInterior,
-  XML10_EnumerationInterior,
-  XML10_ignoreSectContentsInteriorAny
+  XML10_EnumerationInterior
 };
 
-sXmlSymbolId *aXml10SymbolId[] = {
+struct sXmlSymbolId aXml10SymbolId[] = {
   { -1, XML10_document, "document" },
   { -1, XML10_prolog, "prolog" },
   { -1, XML10_element, "element" },
@@ -384,7 +385,4 @@ sXmlSymbolId *aXml10SymbolId[] = {
   { -1, XML10_ignoreSectContentsInteriorAny, "ignoreSectContentsInteriorAny" },
 };
 
-#endif /* { -1, "ignoreSectContentsInteriorAny
-};
-
-#endif /* { -1" }, XML10_h */
+#endif
