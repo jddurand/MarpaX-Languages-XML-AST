@@ -1,5 +1,5 @@
 /*
- * Tue Apr 15 11:33:08 2014
+ * Tue Apr 15 11:48:56 2014
  *
  * Generated with:
  * perl GenerateLowLevel.pl --bnf bnf/xml10.bnf --prefix xml10 --output xml10.c
@@ -542,714 +542,360 @@ static void _fillXml10G(g)
     _fillSymbols(g, XML10_NUMBER_OF_SYMBOLS, aXml10SymbolId);
 
     /* Populate the rules */
-    /*
-       :start ::= document
-     */
-    _fillRule(g, 0 /* lhsId */, 1 /* length */, 1 /* rhsIds */);
-    /*
-       document ::= prolog element MiscAny
-     */
-    _fillRule(g, 1 /* lhsId */, 3 /* length */, 2, 3, 4 /* rhsIds */);
-    /*
-       x20 ::= X20
-     */
-    _fillRule(g, 10 /* lhsId */, 1 /* length */, 177 /* rhsIds */);
-    /*
-       Any ::= ANY
-     */
-    _fillRule(g, 100 /* lhsId */, 1 /* length */, 222 /* rhsIds */);
-    /*
-       Mixed ::= Lparen SMaybe Pcdata SMaybe Rparen
-     */
-    _fillRule(g, 101 /* lhsId */, 5 /* length */, 107, 49, 111, 49, 109 /* rhsIds */);
-    /*
-       children ::= seq QuantifierMaybe
-     */
-    _fillRule(g, 102 /* lhsId */, 2 /* length */, 105, 104 /* rhsIds */);
-    /*
-       choice ::= Lparen SMaybe cp ChoiceInteriorMany SMaybe Rparen
-     */
-    _fillRule(g, 103 /* lhsId */, 6 /* length */, 107, 49, 106, 108, 49, 109 /* rhsIds */);
-    /*
-       QuantifierMaybe ::=
-     */
-    _fillRule(g, 104 /* lhsId */, 0 /* length */,  /* rhsIds */);
-    /*
-       seq ::= Lparen SMaybe cp SeqInteriorAny SMaybe Rparen
-     */
-    _fillRule(g, 105 /* lhsId */, 6 /* length */, 107, 49, 106, 110, 49, 109 /* rhsIds */);
-    /*
-       cp ::= seq QuantifierMaybe
-     */
-    _fillRule(g, 106 /* lhsId */, 2 /* length */, 105, 104 /* rhsIds */);
-    /*
-       Lparen ::= LPAREN
-     */
-    _fillRule(g, 107 /* lhsId */, 1 /* length */, 226 /* rhsIds */);
-    /*
-       ChoiceInteriorMany ::= ChoiceInterior +
-     */
-    _fillRule(g, 108 /* lhsId */, 1 /* length */, 187 /* rhsIds */);
-    /*
-       Rparen ::= RPAREN
-     */
-    _fillRule(g, 109 /* lhsId */, 1 /* length */, 227 /* rhsIds */);
-    /*
-       Nmtoken ::= NMTOKEN
-     */
-    _fillRule(g, 11 /* lhsId */, 1 /* length */, 12 /* rhsIds */);
-    /*
-       SeqInteriorAny ::= SeqInterior *
-     */
-    _fillRule(g, 110 /* lhsId */, 1 /* length */, 189 /* rhsIds */);
-    /*
-       Pcdata ::= PCDATA
-     */
-    _fillRule(g, 111 /* lhsId */, 1 /* length */, 254 /* rhsIds */);
-    /*
-       MixedInteriorAny ::= MixedInterior *
-     */
-    _fillRule(g, 112 /* lhsId */, 1 /* length */, 191 /* rhsIds */);
-    /*
-       RparenStar ::= RPARENSTAR
-     */
-    _fillRule(g, 113 /* lhsId */, 1 /* length */, 228 /* rhsIds */);
-    /*
-       AttlistBeg ::= ATTLIST_BEG
-     */
-    _fillRule(g, 114 /* lhsId */, 1 /* length */, 231 /* rhsIds */);
-    /*
-       AttDefAny ::= AttDef *
-     */
-    _fillRule(g, 115 /* lhsId */, 1 /* length */, 117 /* rhsIds */);
-    /*
-       AttlistEnd ::= XTagEnd
-     */
-    _fillRule(g, 116 /* lhsId */, 1 /* length */, 207 /* rhsIds */);
-    /*
-       AttDef ::= WhiteSpace Name WhiteSpace AttType WhiteSpace DefaultDecl
-     */
-    _fillRule(g, 117 /* lhsId */, 6 /* length */, 33, 7, 33, 118, 33, 119 /* rhsIds */);
-    /*
-       AttType ::= EnumeratedType
-     */
-    _fillRule(g, 118 /* lhsId */, 1 /* length */, 122 /* rhsIds */);
-    /*
-       DefaultDecl ::= Fixed WhiteSpace AttValue
-     */
-    _fillRule(g, 119 /* lhsId */, 3 /* length */, 138, 33, 16 /* rhsIds */);
-    /*
-       StringType ::= STRINGTYPE
-     */
-    _fillRule(g, 120 /* lhsId */, 1 /* length */, 123 /* rhsIds */);
-    /*
-       TokenizedType ::= TypeNmtokens
-     */
-    _fillRule(g, 121 /* lhsId */, 1 /* length */, 130 /* rhsIds */);
-    /*
-       EnumeratedType ::= Enumeration
-     */
-    _fillRule(g, 122 /* lhsId */, 1 /* length */, 132 /* rhsIds */);
-    /*
-       TypeId ::= TYPE_ID
-     */
-    _fillRule(g, 124 /* lhsId */, 1 /* length */, 232 /* rhsIds */);
-    /*
-       TypeIdref ::= TYPE_IDREF
-     */
-    _fillRule(g, 125 /* lhsId */, 1 /* length */, 233 /* rhsIds */);
-    /*
-       TypeIdrefs ::= TYPE_IDREFS
-     */
-    _fillRule(g, 126 /* lhsId */, 1 /* length */, 234 /* rhsIds */);
-    /*
-       TypeEntity ::= TYPE_ENTITY
-     */
-    _fillRule(g, 127 /* lhsId */, 1 /* length */, 235 /* rhsIds */);
-    /*
-       TypeEntities ::= TYPE_ENTITIES
-     */
-    _fillRule(g, 128 /* lhsId */, 1 /* length */, 236 /* rhsIds */);
-    /*
-       TypeNmtoken ::= TYPE_NMTOKEN
-     */
-    _fillRule(g, 129 /* lhsId */, 1 /* length */, 237 /* rhsIds */);
-    /*
-       Nmtokens ::= x20 Nmtokens
-     */
-    _fillRule(g, 13 /* lhsId */, 2 /* length */, 10, 13 /* rhsIds */);
-    /*
-       TypeNmtokens ::= TYPE_NMTOKENS
-     */
-    _fillRule(g, 130 /* lhsId */, 1 /* length */, 238 /* rhsIds */);
-    /*
-       NotationType ::= Notation WhiteSpace Lparen SMaybe Name NotationTypeInteriorAny SMaybe Rparen
-     */
-    _fillRule(g, 131 /* lhsId */, 8 /* length */, 133, 33, 107, 49, 7, 134, 49, 109 /* rhsIds */);
-    /*
-       Enumeration ::= Lparen SMaybe Nmtoken EnumerationInteriorAny SMaybe Rparen
-     */
-    _fillRule(g, 132 /* lhsId */, 6 /* length */, 107, 49, 11, 135, 49, 109 /* rhsIds */);
-    /*
-       Notation ::= NOTATION
-     */
-    _fillRule(g, 133 /* lhsId */, 1 /* length */, 239 /* rhsIds */);
-    /*
-       NotationTypeInteriorAny ::= NotationTypeInterior *
-     */
-    _fillRule(g, 134 /* lhsId */, 1 /* length */, 192 /* rhsIds */);
-    /*
-       EnumerationInteriorAny ::= EnumerationInterior *
-     */
-    _fillRule(g, 135 /* lhsId */, 1 /* length */, 193 /* rhsIds */);
-    /*
-       Required ::= REQUIRED
-     */
-    _fillRule(g, 136 /* lhsId */, 1 /* length */, 241 /* rhsIds */);
-    /*
-       Implied ::= IMPLIED
-     */
-    _fillRule(g, 137 /* lhsId */, 1 /* length */, 242 /* rhsIds */);
-    /*
-       Fixed ::= FIXED
-     */
-    _fillRule(g, 138 /* lhsId */, 1 /* length */, 243 /* rhsIds */);
-    /*
-       conditionalSect ::= ignoreSect
-     */
-    _fillRule(g, 139 /* lhsId */, 1 /* length */, 141 /* rhsIds */);
-    /*
-       EntityValue ::= ENTITYVALUE
-     */
-    _fillRule(g, 14 /* lhsId */, 1 /* length */, 15 /* rhsIds */);
-    /*
-       includeSect ::= SectBeg SMaybe Include SMaybe Lbracket extSubsetDecl SectEnd
-     */
-    _fillRule(g, 140 /* lhsId */, 7 /* length */, 142, 49, 143, 49, 61, 74, 144 /* rhsIds */);
-    /*
-       ignoreSect ::= SectBeg SMaybe TOKIgnore SMaybe Lbracket ignoreSectContentsAny SectEnd
-     */
-    _fillRule(g, 141 /* lhsId */, 7 /* length */, 142, 49, 145, 49, 61, 146, 144 /* rhsIds */);
-    /*
-       SectBeg ::= SECT_BEG
-     */
-    _fillRule(g, 142 /* lhsId */, 1 /* length */, 244 /* rhsIds */);
-    /*
-       Include ::= INCLUDE
-     */
-    _fillRule(g, 143 /* lhsId */, 1 /* length */, 246 /* rhsIds */);
-    /*
-       SectEnd ::= SECT_END
-     */
-    _fillRule(g, 144 /* lhsId */, 1 /* length */, 245 /* rhsIds */);
-    /*
-       TOKIgnore ::= IGNORE
-     */
-    _fillRule(g, 145 /* lhsId */, 1 /* length */, 253 /* rhsIds */);
-    /*
-       ignoreSectContentsAny ::= ignoreSectContents *
-     */
-    _fillRule(g, 146 /* lhsId */, 1 /* length */, 147 /* rhsIds */);
-    /*
-       ignoreSectContents ::= Ignore ignoreSectContentsInteriorAny
-     */
-    _fillRule(g, 147 /* lhsId */, 2 /* length */, 148, 149 /* rhsIds */);
-    /*
-       Ignore ::= IGNORE_INTERIOR
-     */
-    _fillRule(g, 148 /* lhsId */, 1 /* length */, 150 /* rhsIds */);
-    /*
-       ignoreSectContentsInteriorAny ::= ignoreSectContentsInterior *
-     */
-    _fillRule(g, 149 /* lhsId */, 1 /* length */, 194 /* rhsIds */);
-    /*
-       CharRef ::= CHARREF
-     */
-    _fillRule(g, 151 /* lhsId */, 1 /* length */, 152 /* rhsIds */);
-    /*
-       Reference ::= CharRef
-     */
-    _fillRule(g, 153 /* lhsId */, 1 /* length */, 151 /* rhsIds */);
-    /*
-       EntityRef ::= ENTITYREF
-     */
-    _fillRule(g, 154 /* lhsId */, 1 /* length */, 155 /* rhsIds */);
-    /*
-       GEDecl ::= EdeclBeg WhiteSpace Name WhiteSpace EntityDef SMaybe EdeclEnd
-     */
-    _fillRule(g, 157 /* lhsId */, 7 /* length */, 159, 33, 7, 33, 160, 49, 161 /* rhsIds */);
-    /*
-       PEDecl ::= EdeclBeg WhiteSpace Percent WhiteSpace Name WhiteSpace PEDef SMaybe EdeclEnd
-     */
-    _fillRule(g, 158 /* lhsId */, 9 /* length */, 159, 33, 162, 33, 7, 33, 163, 49, 161 /* rhsIds */);
-    /*
-       EdeclBeg ::= EDECL_BEG
-     */
-    _fillRule(g, 159 /* lhsId */, 1 /* length */, 247 /* rhsIds */);
-    /*
-       AttValue ::= ATTVALUE
-     */
-    _fillRule(g, 16 /* lhsId */, 1 /* length */, 17 /* rhsIds */);
-    /*
-       EntityDef ::= ExternalID NDataDecl
-     */
-    _fillRule(g, 160 /* lhsId */, 2 /* length */, 64, 164 /* rhsIds */);
-    /*
-       EdeclEnd ::= XTagEnd
-     */
-    _fillRule(g, 161 /* lhsId */, 1 /* length */, 207 /* rhsIds */);
-    /*
-       Percent ::= PERCENT
-     */
-    _fillRule(g, 162 /* lhsId */, 1 /* length */, 248 /* rhsIds */);
-    /*
-       PEDef ::= ExternalID
-     */
-    _fillRule(g, 163 /* lhsId */, 1 /* length */, 64 /* rhsIds */);
-    /*
-       NDataDecl ::= WhiteSpace Ndata WhiteSpace Name
-     */
-    _fillRule(g, 164 /* lhsId */, 4 /* length */, 33, 167, 33, 7 /* rhsIds */);
-    /*
-       System ::= SYSTEM
-     */
-    _fillRule(g, 165 /* lhsId */, 1 /* length */, 249 /* rhsIds */);
-    /*
-       Public ::= PUBLIC
-     */
-    _fillRule(g, 166 /* lhsId */, 1 /* length */, 250 /* rhsIds */);
-    /*
-       Ndata ::= NDATA
-     */
-    _fillRule(g, 167 /* lhsId */, 1 /* length */, 251 /* rhsIds */);
-    /*
-       VersionInfoMaybe ::=
-     */
-    _fillRule(g, 168 /* lhsId */, 0 /* length */,  /* rhsIds */);
-    /*
-       EncodingDecl ::= WhiteSpace Encoding Eq Squote EncName Squote
-     */
-    _fillRule(g, 169 /* lhsId */, 6 /* length */, 33, 171, 52, 53, 172, 53 /* rhsIds */);
-    /*
-       extParsedEnt ::= TextDecl content
-     */
-    _fillRule(g, 170 /* lhsId */, 2 /* length */, 75, 83 /* rhsIds */);
-    /*
-       Encoding ::= ENCODING
-     */
-    _fillRule(g, 171 /* lhsId */, 1 /* length */, 252 /* rhsIds */);
-    /*
-       EncName ::= ENCNAME
-     */
-    _fillRule(g, 172 /* lhsId */, 1 /* length */, 173 /* rhsIds */);
-    /*
-       NotationBeg ::= NOTATION_BEG
-     */
-    _fillRule(g, 174 /* lhsId */, 1 /* length */, 240 /* rhsIds */);
-    /*
-       NotationEnd ::= XTagEnd
-     */
-    _fillRule(g, 175 /* lhsId */, 1 /* length */, 207 /* rhsIds */);
-    /*
-       PublicID ::= Public WhiteSpace PubidLiteral
-     */
-    _fillRule(g, 176 /* lhsId */, 3 /* length */, 166, 33, 20 /* rhsIds */);
-    /*
-       ContentInterior ::= Comment CharDataMaybe
-     */
-    _fillRule(g, 178 /* lhsId */, 2 /* length */, 24, 91 /* rhsIds */);
-    /*
-       intSubsetUnit ::= DeclSep
-     */
-    _fillRule(g, 179 /* lhsId */, 1 /* length */, 65 /* rhsIds */);
-    /*
-       SystemLiteral ::= SYSTEMLITERAL
-     */
-    _fillRule(g, 18 /* lhsId */, 1 /* length */, 19 /* rhsIds */);
-    /*
-       extSubsetDeclUnit ::= DeclSep
-     */
-    _fillRule(g, 180 /* lhsId */, 1 /* length */, 65 /* rhsIds */);
-    /*
-       STagInterior ::= WhiteSpace Attribute
-     */
-    _fillRule(g, 181 /* lhsId */, 2 /* length */, 33, 88 /* rhsIds */);
-    /*
-       EmptyElemTagInterior ::= WhiteSpace Attribute
-     */
-    _fillRule(g, 182 /* lhsId */, 2 /* length */, 33, 88 /* rhsIds */);
-    /*
-       Quantifier ::= Plus
-     */
-    _fillRule(g, 183 /* lhsId */, 1 /* length */, 186 /* rhsIds */);
-    /*
-       QuestionMark ::= QUESTION_MARK
-     */
-    _fillRule(g, 184 /* lhsId */, 1 /* length */, 223 /* rhsIds */);
-    /*
-       Star ::= STAR
-     */
-    _fillRule(g, 185 /* lhsId */, 1 /* length */, 224 /* rhsIds */);
-    /*
-       Plus ::= PLUS
-     */
-    _fillRule(g, 186 /* lhsId */, 1 /* length */, 225 /* rhsIds */);
-    /*
-       ChoiceInterior ::= SMaybe Pipe SMaybe cp
-     */
-    _fillRule(g, 187 /* lhsId */, 4 /* length */, 49, 188, 49, 106 /* rhsIds */);
-    /*
-       Pipe ::= PIPE
-     */
-    _fillRule(g, 188 /* lhsId */, 1 /* length */, 229 /* rhsIds */);
-    /*
-       SeqInterior ::= SMaybe Comma SMaybe cp
-     */
-    _fillRule(g, 189 /* lhsId */, 4 /* length */, 49, 190, 49, 106 /* rhsIds */);
-    /*
-       Comma ::= COMMA
-     */
-    _fillRule(g, 190 /* lhsId */, 1 /* length */, 230 /* rhsIds */);
-    /*
-       MixedInterior ::= SMaybe Pipe SMaybe Name
-     */
-    _fillRule(g, 191 /* lhsId */, 4 /* length */, 49, 188, 49, 7 /* rhsIds */);
-    /*
-       NotationTypeInterior ::= SMaybe Pipe SMaybe Name
-     */
-    _fillRule(g, 192 /* lhsId */, 4 /* length */, 49, 188, 49, 7 /* rhsIds */);
-    /*
-       EnumerationInterior ::= SMaybe Pipe SMaybe Nmtoken
-     */
-    _fillRule(g, 193 /* lhsId */, 4 /* length */, 49, 188, 49, 11 /* rhsIds */);
-    /*
-       ignoreSectContentsInterior ::= SectBeg ignoreSectContents SectEnd Ignore
-     */
-    _fillRule(g, 194 /* lhsId */, 4 /* length */, 142, 147, 144, 148 /* rhsIds */);
-    /*
-       prolog ::= XMLDeclMaybe MiscAny doctypedecl MiscAny
-     */
-    _fillRule(g, 2 /* lhsId */, 4 /* length */, 42, 4, 43, 4 /* rhsIds */);
-    /*
-       PubidLiteral ::= PUBIDLITERAL
-     */
-    _fillRule(g, 20 /* lhsId */, 1 /* length */, 21 /* rhsIds */);
-    /*
-       XTagEnd ::= XTAG_END
-     */
-    _fillRule(g, 207 /* lhsId */, 1 /* length */, 215 /* rhsIds */);
-    /*
-       XTagBeg ::= XTAG_BEG
-     */
-    _fillRule(g, 213 /* lhsId */, 1 /* length */, 214 /* rhsIds */);
-    /*
-       CharData ::= CHARDATA
-     */
-    _fillRule(g, 22 /* lhsId */, 1 /* length */, 23 /* rhsIds */);
-    /*
-       Comment ::= CommentBeg CommentInterior CommentEnd
-     */
-    _fillRule(g, 24 /* lhsId */, 3 /* length */, 25, 26, 27 /* rhsIds */);
-    /*
-       CommentBeg ::= COMMENT_BEG
-     */
-    _fillRule(g, 25 /* lhsId */, 1 /* length */, 196 /* rhsIds */);
-    /*
-       CommentInterior ::= COMMENT
-     */
-    _fillRule(g, 26 /* lhsId */, 1 /* length */, 198 /* rhsIds */);
-    /*
-       CommentEnd ::= COMMENT_END
-     */
-    _fillRule(g, 27 /* lhsId */, 1 /* length */, 197 /* rhsIds */);
-    /*
-       PITarget ::= PITARGET
-     */
-    _fillRule(g, 28 /* lhsId */, 1 /* length */, 29 /* rhsIds */);
-    /*
-       element ::= STag content ETag
-     */
-    _fillRule(g, 3 /* lhsId */, 3 /* length */, 82, 83, 84 /* rhsIds */);
-    /*
-       PI ::= PiBeg PITarget WhiteSpace PiInterior PiEnd
-     */
-    _fillRule(g, 30 /* lhsId */, 5 /* length */, 31, 28, 33, 34, 32 /* rhsIds */);
-    /*
-       PiBeg ::= PI_BEG
-     */
-    _fillRule(g, 31 /* lhsId */, 1 /* length */, 255 /* rhsIds */);
-    /*
-       PiEnd ::= PI_END
-     */
-    _fillRule(g, 32 /* lhsId */, 1 /* length */, 256 /* rhsIds */);
-    /*
-       WhiteSpace ::= S
-     */
-    _fillRule(g, 33 /* lhsId */, 1 /* length */, 195 /* rhsIds */);
-    /*
-       PiInterior ::= PI_INTERIOR
-     */
-    _fillRule(g, 34 /* lhsId */, 1 /* length */, 199 /* rhsIds */);
-    /*
-       CDSect ::= CDStart CData CDEnd
-     */
-    _fillRule(g, 35 /* lhsId */, 3 /* length */, 36, 37, 38 /* rhsIds */);
-    /*
-       CDStart ::= CDSTART
-     */
-    _fillRule(g, 36 /* lhsId */, 1 /* length */, 39 /* rhsIds */);
-    /*
-       CData ::= CDATA
-     */
-    _fillRule(g, 37 /* lhsId */, 1 /* length */, 40 /* rhsIds */);
-    /*
-       CDEnd ::= CDEND
-     */
-    _fillRule(g, 38 /* lhsId */, 1 /* length */, 41 /* rhsIds */);
-    /*
-       MiscAny ::= Misc *
-     */
-    _fillRule(g, 4 /* lhsId */, 1 /* length */, 58 /* rhsIds */);
-    /*
-       XMLDeclMaybe ::=
-     */
-    _fillRule(g, 42 /* lhsId */, 0 /* length */,  /* rhsIds */);
-    /*
-       doctypedecl ::= DoctypeBeg WhiteSpace Name WhiteSpace ExternalID SMaybe Lbracket intSubset Rbracket SMaybe DoctypeEnd
-     */
-    _fillRule(g, 43 /* lhsId */, 11 /* length */, 59, 33, 7, 33, 64, 49, 61, 62, 63, 49, 60 /* rhsIds */);
-    /*
-       XMLDecl ::= XmlBeg VersionInfo EncodingDeclMaybe SDDeclMaybe SMaybe XmlEnd
-     */
-    _fillRule(g, 44 /* lhsId */, 6 /* length */, 45, 46, 47, 48, 49, 50 /* rhsIds */);
-    /*
-       XmlBeg ::= XML_BEG
-     */
-    _fillRule(g, 45 /* lhsId */, 1 /* length */, 200 /* rhsIds */);
-    /*
-       VersionInfo ::= WhiteSpace Version Eq Dquote VersionNum Dquote
-     */
-    _fillRule(g, 46 /* lhsId */, 6 /* length */, 33, 51, 52, 55, 54, 55 /* rhsIds */);
-    /*
-       EncodingDeclMaybe ::=
-     */
-    _fillRule(g, 47 /* lhsId */, 0 /* length */,  /* rhsIds */);
-    /*
-       SDDeclMaybe ::=
-     */
-    _fillRule(g, 48 /* lhsId */, 0 /* length */,  /* rhsIds */);
-    /*
-       SMaybe ::=
-     */
-    _fillRule(g, 49 /* lhsId */, 0 /* length */,  /* rhsIds */);
-    /*
-       Char ::= CHAR
-     */
-    _fillRule(g, 5 /* lhsId */, 1 /* length */, 6 /* rhsIds */);
-    /*
-       XmlEnd ::= XML_END
-     */
-    _fillRule(g, 50 /* lhsId */, 1 /* length */, 201 /* rhsIds */);
-    /*
-       Version ::= VERSION
-     */
-    _fillRule(g, 51 /* lhsId */, 1 /* length */, 202 /* rhsIds */);
-    /*
-       Eq ::= SMaybe Equal SMaybe
-     */
-    _fillRule(g, 52 /* lhsId */, 3 /* length */, 49, 56, 49 /* rhsIds */);
-    /*
-       Squote ::= SQUOTE
-     */
-    _fillRule(g, 53 /* lhsId */, 1 /* length */, 203 /* rhsIds */);
-    /*
-       VersionNum ::= VERSIONNUM
-     */
-    _fillRule(g, 54 /* lhsId */, 1 /* length */, 57 /* rhsIds */);
-    /*
-       Dquote ::= DQUOTE
-     */
-    _fillRule(g, 55 /* lhsId */, 1 /* length */, 204 /* rhsIds */);
-    /*
-       Equal ::= EQUAL
-     */
-    _fillRule(g, 56 /* lhsId */, 1 /* length */, 205 /* rhsIds */);
-    /*
-       Misc ::= WhiteSpace
-     */
-    _fillRule(g, 58 /* lhsId */, 1 /* length */, 33 /* rhsIds */);
-    /*
-       DoctypeBeg ::= DOCTYPE_BEG
-     */
-    _fillRule(g, 59 /* lhsId */, 1 /* length */, 206 /* rhsIds */);
-    /*
-       DoctypeEnd ::= XTagEnd
-     */
-    _fillRule(g, 60 /* lhsId */, 1 /* length */, 207 /* rhsIds */);
-    /*
-       Lbracket ::= LBRACKET
-     */
-    _fillRule(g, 61 /* lhsId */, 1 /* length */, 208 /* rhsIds */);
-    /*
-       intSubset ::= intSubsetUnitAny
-     */
-    _fillRule(g, 62 /* lhsId */, 1 /* length */, 67 /* rhsIds */);
-    /*
-       Rbracket ::= RBRACKET
-     */
-    _fillRule(g, 63 /* lhsId */, 1 /* length */, 209 /* rhsIds */);
-    /*
-       ExternalID ::= Public WhiteSpace PubidLiteral WhiteSpace SystemLiteral
-     */
-    _fillRule(g, 64 /* lhsId */, 5 /* length */, 166, 33, 20, 33, 18 /* rhsIds */);
-    /*
-       DeclSep ::= WhiteSpace
-     */
-    _fillRule(g, 65 /* lhsId */, 1 /* length */, 33 /* rhsIds */);
-    /*
-       PEReference ::= PEREFERENCE
-     */
-    _fillRule(g, 66 /* lhsId */, 1 /* length */, 156 /* rhsIds */);
-    /*
-       intSubsetUnitAny ::= intSubsetUnit *
-     */
-    _fillRule(g, 67 /* lhsId */, 1 /* length */, 179 /* rhsIds */);
-    /*
-       markupdecl ::= Comment
-     */
-    _fillRule(g, 68 /* lhsId */, 1 /* length */, 24 /* rhsIds */);
-    /*
-       elementdecl ::= ElementDeclBeg WhiteSpace Name WhiteSpace contentspec SMaybe ElementDeclEnd
-     */
-    _fillRule(g, 69 /* lhsId */, 7 /* length */, 96, 33, 7, 33, 97, 49, 98 /* rhsIds */);
-    /*
-       Name ::= NAME
-     */
-    _fillRule(g, 7 /* lhsId */, 1 /* length */, 8 /* rhsIds */);
-    /*
-       AttlistDecl ::= AttlistBeg WhiteSpace Name AttDefAny SMaybe AttlistEnd
-     */
-    _fillRule(g, 70 /* lhsId */, 6 /* length */, 114, 33, 7, 115, 49, 116 /* rhsIds */);
-    /*
-       EntityDecl ::= PEDecl
-     */
-    _fillRule(g, 71 /* lhsId */, 1 /* length */, 158 /* rhsIds */);
-    /*
-       NotationDecl ::= NotationBeg WhiteSpace Name WhiteSpace PublicID SMaybe NotationEnd
-     */
-    _fillRule(g, 72 /* lhsId */, 7 /* length */, 174, 33, 7, 33, 176, 49, 175 /* rhsIds */);
-    /*
-       extSubset ::= TextDecl extSubsetDecl
-     */
-    _fillRule(g, 73 /* lhsId */, 2 /* length */, 75, 74 /* rhsIds */);
-    /*
-       extSubsetDecl ::= extSubsetDeclUnitAny
-     */
-    _fillRule(g, 74 /* lhsId */, 1 /* length */, 76 /* rhsIds */);
-    /*
-       TextDecl ::= XmlBeg VersionInfoMaybe EncodingDecl SMaybe XmlEnd
-     */
-    _fillRule(g, 75 /* lhsId */, 5 /* length */, 45, 168, 169, 49, 50 /* rhsIds */);
-    /*
-       extSubsetDeclUnitAny ::= extSubsetDeclUnit *
-     */
-    _fillRule(g, 76 /* lhsId */, 1 /* length */, 180 /* rhsIds */);
-    /*
-       SDDecl ::= WhiteSpace Standalone Eq Dquote No Dquote
-     */
-    _fillRule(g, 77 /* lhsId */, 6 /* length */, 33, 78, 52, 55, 80, 55 /* rhsIds */);
-    /*
-       Standalone ::= STANDALONE
-     */
-    _fillRule(g, 78 /* lhsId */, 1 /* length */, 210 /* rhsIds */);
-    /*
-       Yes ::= YES
-     */
-    _fillRule(g, 79 /* lhsId */, 1 /* length */, 211 /* rhsIds */);
-    /*
-       No ::= NO
-     */
-    _fillRule(g, 80 /* lhsId */, 1 /* length */, 212 /* rhsIds */);
-    /*
-       EmptyElemTag ::= EmptyElemTagBeg Name EmptyElemTagInteriorAny SMaybe EmptyElemTagEnd
-     */
-    _fillRule(g, 81 /* lhsId */, 5 /* length */, 93, 7, 94, 49, 95 /* rhsIds */);
-    /*
-       STag ::= STagBeg Name STagInteriorAny SMaybe STagEnd
-     */
-    _fillRule(g, 82 /* lhsId */, 5 /* length */, 85, 7, 86, 49, 87 /* rhsIds */);
-    /*
-       content ::= CharDataMaybe ContentInteriorAny
-     */
-    _fillRule(g, 83 /* lhsId */, 2 /* length */, 91, 92 /* rhsIds */);
-    /*
-       ETag ::= ETagBeg Name SMaybe ETagEnd
-     */
-    _fillRule(g, 84 /* lhsId */, 4 /* length */, 89, 7, 49, 90 /* rhsIds */);
-    /*
-       STagBeg ::= XTagBeg
-     */
-    _fillRule(g, 85 /* lhsId */, 1 /* length */, 213 /* rhsIds */);
-    /*
-       STagInteriorAny ::= STagInterior *
-     */
-    _fillRule(g, 86 /* lhsId */, 1 /* length */, 181 /* rhsIds */);
-    /*
-       STagEnd ::= STAG_END
-     */
-    _fillRule(g, 87 /* lhsId */, 1 /* length */, 216 /* rhsIds */);
-    /*
-       Attribute ::= Name Eq AttValue
-     */
-    _fillRule(g, 88 /* lhsId */, 3 /* length */, 7, 52, 16 /* rhsIds */);
-    /*
-       ETagBeg ::= ETAG_BEG
-     */
-    _fillRule(g, 89 /* lhsId */, 1 /* length */, 217 /* rhsIds */);
-    /*
-       Names ::= x20 Names
-     */
-    _fillRule(g, 9 /* lhsId */, 2 /* length */, 10, 9 /* rhsIds */);
-    /*
-       ETagEnd ::= ETAG_END
-     */
-    _fillRule(g, 90 /* lhsId */, 1 /* length */, 218 /* rhsIds */);
-    /*
-       CharDataMaybe ::=
-     */
-    _fillRule(g, 91 /* lhsId */, 0 /* length */,  /* rhsIds */);
-    /*
-       ContentInteriorAny ::= ContentInterior *
-     */
-    _fillRule(g, 92 /* lhsId */, 1 /* length */, 178 /* rhsIds */);
-    /*
-       EmptyElemTagBeg ::= XTagBeg
-     */
-    _fillRule(g, 93 /* lhsId */, 1 /* length */, 213 /* rhsIds */);
-    /*
-       EmptyElemTagInteriorAny ::= EmptyElemTagInterior *
-     */
-    _fillRule(g, 94 /* lhsId */, 1 /* length */, 182 /* rhsIds */);
-    /*
-       EmptyElemTagEnd ::= EMPTYELEMTAG_END
-     */
-    _fillRule(g, 95 /* lhsId */, 1 /* length */, 219 /* rhsIds */);
-    /*
-       ElementDeclBeg ::= ELEMENTDECL_BEG
-     */
-    _fillRule(g, 96 /* lhsId */, 1 /* length */, 220 /* rhsIds */);
-    /*
-       contentspec ::= children
-     */
-    _fillRule(g, 97 /* lhsId */, 1 /* length */, 102 /* rhsIds */);
-    /*
-       ElementDeclEnd ::= XTagEnd
-     */
-    _fillRule(g, 98 /* lhsId */, 1 /* length */, 207 /* rhsIds */);
-    /*
-       Empty ::= EMPTY
-     */
-    _fillRule(g, 99 /* lhsId */, 1 /* length */, 221 /* rhsIds */);
+    /* :start ::= document */
+    _fillRule(g, 0 , 1, 1);
+    /* document ::= prolog element MiscAny */
+    _fillRule(g, 1 , 3, 2, 3, 4);
+    /* x20 ::= X20 */
+    _fillRule(g, 10 , 1, 177);
+    /* Any ::= ANY */
+    _fillRule(g, 100 , 1, 222);
+    /* Mixed ::= Lparen SMaybe Pcdata SMaybe Rparen */
+    _fillRule(g, 101 , 5, 107, 49, 111, 49, 109);
+    /* children ::= seq QuantifierMaybe */
+    _fillRule(g, 102 , 2, 105, 104);
+    /* choice ::= Lparen SMaybe cp ChoiceInteriorMany SMaybe Rparen */
+    _fillRule(g, 103 , 6, 107, 49, 106, 108, 49, 109);
+    /* QuantifierMaybe ::= */
+    _fillRule(g, 104 , 0);
+    /* seq ::= Lparen SMaybe cp SeqInteriorAny SMaybe Rparen */
+    _fillRule(g, 105 , 6, 107, 49, 106, 110, 49, 109);
+    /* cp ::= seq QuantifierMaybe */
+    _fillRule(g, 106 , 2, 105, 104);
+    /* Lparen ::= LPAREN */
+    _fillRule(g, 107 , 1, 226);
+    /* ChoiceInteriorMany ::= ChoiceInterior + */
+    _fillRule(g, 108 , 1, 187);
+    /* Rparen ::= RPAREN */
+    _fillRule(g, 109 , 1, 227);
+    /* Nmtoken ::= NMTOKEN */
+    _fillRule(g, 11 , 1, 12);
+    /* SeqInteriorAny ::= SeqInterior * */
+    _fillRule(g, 110 , 1, 189);
+    /* Pcdata ::= PCDATA */
+    _fillRule(g, 111 , 1, 254);
+    /* MixedInteriorAny ::= MixedInterior * */
+    _fillRule(g, 112 , 1, 191);
+    /* RparenStar ::= RPARENSTAR */
+    _fillRule(g, 113 , 1, 228);
+    /* AttlistBeg ::= ATTLIST_BEG */
+    _fillRule(g, 114 , 1, 231);
+    /* AttDefAny ::= AttDef * */
+    _fillRule(g, 115 , 1, 117);
+    /* AttlistEnd ::= XTagEnd */
+    _fillRule(g, 116 , 1, 207);
+    /* AttDef ::= WhiteSpace Name WhiteSpace AttType WhiteSpace DefaultDecl */
+    _fillRule(g, 117 , 6, 33, 7, 33, 118, 33, 119);
+    /* AttType ::= EnumeratedType */
+    _fillRule(g, 118 , 1, 122);
+    /* DefaultDecl ::= Fixed WhiteSpace AttValue */
+    _fillRule(g, 119 , 3, 138, 33, 16);
+    /* StringType ::= STRINGTYPE */
+    _fillRule(g, 120 , 1, 123);
+    /* TokenizedType ::= TypeNmtokens */
+    _fillRule(g, 121 , 1, 130);
+    /* EnumeratedType ::= Enumeration */
+    _fillRule(g, 122 , 1, 132);
+    /* TypeId ::= TYPE_ID */
+    _fillRule(g, 124 , 1, 232);
+    /* TypeIdref ::= TYPE_IDREF */
+    _fillRule(g, 125 , 1, 233);
+    /* TypeIdrefs ::= TYPE_IDREFS */
+    _fillRule(g, 126 , 1, 234);
+    /* TypeEntity ::= TYPE_ENTITY */
+    _fillRule(g, 127 , 1, 235);
+    /* TypeEntities ::= TYPE_ENTITIES */
+    _fillRule(g, 128 , 1, 236);
+    /* TypeNmtoken ::= TYPE_NMTOKEN */
+    _fillRule(g, 129 , 1, 237);
+    /* Nmtokens ::= x20 Nmtokens */
+    _fillRule(g, 13 , 2, 10, 13);
+    /* TypeNmtokens ::= TYPE_NMTOKENS */
+    _fillRule(g, 130 , 1, 238);
+    /* NotationType ::= Notation WhiteSpace Lparen SMaybe Name NotationTypeInteriorAny SMaybe Rparen */
+    _fillRule(g, 131 , 8, 133, 33, 107, 49, 7, 134, 49, 109);
+    /* Enumeration ::= Lparen SMaybe Nmtoken EnumerationInteriorAny SMaybe Rparen */
+    _fillRule(g, 132 , 6, 107, 49, 11, 135, 49, 109);
+    /* Notation ::= NOTATION */
+    _fillRule(g, 133 , 1, 239);
+    /* NotationTypeInteriorAny ::= NotationTypeInterior * */
+    _fillRule(g, 134 , 1, 192);
+    /* EnumerationInteriorAny ::= EnumerationInterior * */
+    _fillRule(g, 135 , 1, 193);
+    /* Required ::= REQUIRED */
+    _fillRule(g, 136 , 1, 241);
+    /* Implied ::= IMPLIED */
+    _fillRule(g, 137 , 1, 242);
+    /* Fixed ::= FIXED */
+    _fillRule(g, 138 , 1, 243);
+    /* conditionalSect ::= ignoreSect */
+    _fillRule(g, 139 , 1, 141);
+    /* EntityValue ::= ENTITYVALUE */
+    _fillRule(g, 14 , 1, 15);
+    /* includeSect ::= SectBeg SMaybe Include SMaybe Lbracket extSubsetDecl SectEnd */
+    _fillRule(g, 140 , 7, 142, 49, 143, 49, 61, 74, 144);
+    /* ignoreSect ::= SectBeg SMaybe TOKIgnore SMaybe Lbracket ignoreSectContentsAny SectEnd */
+    _fillRule(g, 141 , 7, 142, 49, 145, 49, 61, 146, 144);
+    /* SectBeg ::= SECT_BEG */
+    _fillRule(g, 142 , 1, 244);
+    /* Include ::= INCLUDE */
+    _fillRule(g, 143 , 1, 246);
+    /* SectEnd ::= SECT_END */
+    _fillRule(g, 144 , 1, 245);
+    /* TOKIgnore ::= IGNORE */
+    _fillRule(g, 145 , 1, 253);
+    /* ignoreSectContentsAny ::= ignoreSectContents * */
+    _fillRule(g, 146 , 1, 147);
+    /* ignoreSectContents ::= Ignore ignoreSectContentsInteriorAny */
+    _fillRule(g, 147 , 2, 148, 149);
+    /* Ignore ::= IGNORE_INTERIOR */
+    _fillRule(g, 148 , 1, 150);
+    /* ignoreSectContentsInteriorAny ::= ignoreSectContentsInterior * */
+    _fillRule(g, 149 , 1, 194);
+    /* CharRef ::= CHARREF */
+    _fillRule(g, 151 , 1, 152);
+    /* Reference ::= CharRef */
+    _fillRule(g, 153 , 1, 151);
+    /* EntityRef ::= ENTITYREF */
+    _fillRule(g, 154 , 1, 155);
+    /* GEDecl ::= EdeclBeg WhiteSpace Name WhiteSpace EntityDef SMaybe EdeclEnd */
+    _fillRule(g, 157 , 7, 159, 33, 7, 33, 160, 49, 161);
+    /* PEDecl ::= EdeclBeg WhiteSpace Percent WhiteSpace Name WhiteSpace PEDef SMaybe EdeclEnd */
+    _fillRule(g, 158 , 9, 159, 33, 162, 33, 7, 33, 163, 49, 161);
+    /* EdeclBeg ::= EDECL_BEG */
+    _fillRule(g, 159 , 1, 247);
+    /* AttValue ::= ATTVALUE */
+    _fillRule(g, 16 , 1, 17);
+    /* EntityDef ::= ExternalID NDataDecl */
+    _fillRule(g, 160 , 2, 64, 164);
+    /* EdeclEnd ::= XTagEnd */
+    _fillRule(g, 161 , 1, 207);
+    /* Percent ::= PERCENT */
+    _fillRule(g, 162 , 1, 248);
+    /* PEDef ::= ExternalID */
+    _fillRule(g, 163 , 1, 64);
+    /* NDataDecl ::= WhiteSpace Ndata WhiteSpace Name */
+    _fillRule(g, 164 , 4, 33, 167, 33, 7);
+    /* System ::= SYSTEM */
+    _fillRule(g, 165 , 1, 249);
+    /* Public ::= PUBLIC */
+    _fillRule(g, 166 , 1, 250);
+    /* Ndata ::= NDATA */
+    _fillRule(g, 167 , 1, 251);
+    /* VersionInfoMaybe ::= */
+    _fillRule(g, 168 , 0);
+    /* EncodingDecl ::= WhiteSpace Encoding Eq Squote EncName Squote */
+    _fillRule(g, 169 , 6, 33, 171, 52, 53, 172, 53);
+    /* extParsedEnt ::= TextDecl content */
+    _fillRule(g, 170 , 2, 75, 83);
+    /* Encoding ::= ENCODING */
+    _fillRule(g, 171 , 1, 252);
+    /* EncName ::= ENCNAME */
+    _fillRule(g, 172 , 1, 173);
+    /* NotationBeg ::= NOTATION_BEG */
+    _fillRule(g, 174 , 1, 240);
+    /* NotationEnd ::= XTagEnd */
+    _fillRule(g, 175 , 1, 207);
+    /* PublicID ::= Public WhiteSpace PubidLiteral */
+    _fillRule(g, 176 , 3, 166, 33, 20);
+    /* ContentInterior ::= Comment CharDataMaybe */
+    _fillRule(g, 178 , 2, 24, 91);
+    /* intSubsetUnit ::= DeclSep */
+    _fillRule(g, 179 , 1, 65);
+    /* SystemLiteral ::= SYSTEMLITERAL */
+    _fillRule(g, 18 , 1, 19);
+    /* extSubsetDeclUnit ::= DeclSep */
+    _fillRule(g, 180 , 1, 65);
+    /* STagInterior ::= WhiteSpace Attribute */
+    _fillRule(g, 181 , 2, 33, 88);
+    /* EmptyElemTagInterior ::= WhiteSpace Attribute */
+    _fillRule(g, 182 , 2, 33, 88);
+    /* Quantifier ::= Plus */
+    _fillRule(g, 183 , 1, 186);
+    /* QuestionMark ::= QUESTION_MARK */
+    _fillRule(g, 184 , 1, 223);
+    /* Star ::= STAR */
+    _fillRule(g, 185 , 1, 224);
+    /* Plus ::= PLUS */
+    _fillRule(g, 186 , 1, 225);
+    /* ChoiceInterior ::= SMaybe Pipe SMaybe cp */
+    _fillRule(g, 187 , 4, 49, 188, 49, 106);
+    /* Pipe ::= PIPE */
+    _fillRule(g, 188 , 1, 229);
+    /* SeqInterior ::= SMaybe Comma SMaybe cp */
+    _fillRule(g, 189 , 4, 49, 190, 49, 106);
+    /* Comma ::= COMMA */
+    _fillRule(g, 190 , 1, 230);
+    /* MixedInterior ::= SMaybe Pipe SMaybe Name */
+    _fillRule(g, 191 , 4, 49, 188, 49, 7);
+    /* NotationTypeInterior ::= SMaybe Pipe SMaybe Name */
+    _fillRule(g, 192 , 4, 49, 188, 49, 7);
+    /* EnumerationInterior ::= SMaybe Pipe SMaybe Nmtoken */
+    _fillRule(g, 193 , 4, 49, 188, 49, 11);
+    /* ignoreSectContentsInterior ::= SectBeg ignoreSectContents SectEnd Ignore */
+    _fillRule(g, 194 , 4, 142, 147, 144, 148);
+    /* prolog ::= XMLDeclMaybe MiscAny doctypedecl MiscAny */
+    _fillRule(g, 2 , 4, 42, 4, 43, 4);
+    /* PubidLiteral ::= PUBIDLITERAL */
+    _fillRule(g, 20 , 1, 21);
+    /* XTagEnd ::= XTAG_END */
+    _fillRule(g, 207 , 1, 215);
+    /* XTagBeg ::= XTAG_BEG */
+    _fillRule(g, 213 , 1, 214);
+    /* CharData ::= CHARDATA */
+    _fillRule(g, 22 , 1, 23);
+    /* Comment ::= CommentBeg CommentInterior CommentEnd */
+    _fillRule(g, 24 , 3, 25, 26, 27);
+    /* CommentBeg ::= COMMENT_BEG */
+    _fillRule(g, 25 , 1, 196);
+    /* CommentInterior ::= COMMENT */
+    _fillRule(g, 26 , 1, 198);
+    /* CommentEnd ::= COMMENT_END */
+    _fillRule(g, 27 , 1, 197);
+    /* PITarget ::= PITARGET */
+    _fillRule(g, 28 , 1, 29);
+    /* element ::= STag content ETag */
+    _fillRule(g, 3 , 3, 82, 83, 84);
+    /* PI ::= PiBeg PITarget WhiteSpace PiInterior PiEnd */
+    _fillRule(g, 30 , 5, 31, 28, 33, 34, 32);
+    /* PiBeg ::= PI_BEG */
+    _fillRule(g, 31 , 1, 255);
+    /* PiEnd ::= PI_END */
+    _fillRule(g, 32 , 1, 256);
+    /* WhiteSpace ::= S */
+    _fillRule(g, 33 , 1, 195);
+    /* PiInterior ::= PI_INTERIOR */
+    _fillRule(g, 34 , 1, 199);
+    /* CDSect ::= CDStart CData CDEnd */
+    _fillRule(g, 35 , 3, 36, 37, 38);
+    /* CDStart ::= CDSTART */
+    _fillRule(g, 36 , 1, 39);
+    /* CData ::= CDATA */
+    _fillRule(g, 37 , 1, 40);
+    /* CDEnd ::= CDEND */
+    _fillRule(g, 38 , 1, 41);
+    /* MiscAny ::= Misc * */
+    _fillRule(g, 4 , 1, 58);
+    /* XMLDeclMaybe ::= */
+    _fillRule(g, 42 , 0);
+    /* doctypedecl ::= DoctypeBeg WhiteSpace Name WhiteSpace ExternalID SMaybe Lbracket intSubset Rbracket SMaybe DoctypeEnd */
+    _fillRule(g, 43 , 11, 59, 33, 7, 33, 64, 49, 61, 62, 63, 49, 60);
+    /* XMLDecl ::= XmlBeg VersionInfo EncodingDeclMaybe SDDeclMaybe SMaybe XmlEnd */
+    _fillRule(g, 44 , 6, 45, 46, 47, 48, 49, 50);
+    /* XmlBeg ::= XML_BEG */
+    _fillRule(g, 45 , 1, 200);
+    /* VersionInfo ::= WhiteSpace Version Eq Dquote VersionNum Dquote */
+    _fillRule(g, 46 , 6, 33, 51, 52, 55, 54, 55);
+    /* EncodingDeclMaybe ::= */
+    _fillRule(g, 47 , 0);
+    /* SDDeclMaybe ::= */
+    _fillRule(g, 48 , 0);
+    /* SMaybe ::= */
+    _fillRule(g, 49 , 0);
+    /* Char ::= CHAR */
+    _fillRule(g, 5 , 1, 6);
+    /* XmlEnd ::= XML_END */
+    _fillRule(g, 50 , 1, 201);
+    /* Version ::= VERSION */
+    _fillRule(g, 51 , 1, 202);
+    /* Eq ::= SMaybe Equal SMaybe */
+    _fillRule(g, 52 , 3, 49, 56, 49);
+    /* Squote ::= SQUOTE */
+    _fillRule(g, 53 , 1, 203);
+    /* VersionNum ::= VERSIONNUM */
+    _fillRule(g, 54 , 1, 57);
+    /* Dquote ::= DQUOTE */
+    _fillRule(g, 55 , 1, 204);
+    /* Equal ::= EQUAL */
+    _fillRule(g, 56 , 1, 205);
+    /* Misc ::= WhiteSpace */
+    _fillRule(g, 58 , 1, 33);
+    /* DoctypeBeg ::= DOCTYPE_BEG */
+    _fillRule(g, 59 , 1, 206);
+    /* DoctypeEnd ::= XTagEnd */
+    _fillRule(g, 60 , 1, 207);
+    /* Lbracket ::= LBRACKET */
+    _fillRule(g, 61 , 1, 208);
+    /* intSubset ::= intSubsetUnitAny */
+    _fillRule(g, 62 , 1, 67);
+    /* Rbracket ::= RBRACKET */
+    _fillRule(g, 63 , 1, 209);
+    /* ExternalID ::= Public WhiteSpace PubidLiteral WhiteSpace SystemLiteral */
+    _fillRule(g, 64 , 5, 166, 33, 20, 33, 18);
+    /* DeclSep ::= WhiteSpace */
+    _fillRule(g, 65 , 1, 33);
+    /* PEReference ::= PEREFERENCE */
+    _fillRule(g, 66 , 1, 156);
+    /* intSubsetUnitAny ::= intSubsetUnit * */
+    _fillRule(g, 67 , 1, 179);
+    /* markupdecl ::= Comment */
+    _fillRule(g, 68 , 1, 24);
+    /* elementdecl ::= ElementDeclBeg WhiteSpace Name WhiteSpace contentspec SMaybe ElementDeclEnd */
+    _fillRule(g, 69 , 7, 96, 33, 7, 33, 97, 49, 98);
+    /* Name ::= NAME */
+    _fillRule(g, 7 , 1, 8);
+    /* AttlistDecl ::= AttlistBeg WhiteSpace Name AttDefAny SMaybe AttlistEnd */
+    _fillRule(g, 70 , 6, 114, 33, 7, 115, 49, 116);
+    /* EntityDecl ::= PEDecl */
+    _fillRule(g, 71 , 1, 158);
+    /* NotationDecl ::= NotationBeg WhiteSpace Name WhiteSpace PublicID SMaybe NotationEnd */
+    _fillRule(g, 72 , 7, 174, 33, 7, 33, 176, 49, 175);
+    /* extSubset ::= TextDecl extSubsetDecl */
+    _fillRule(g, 73 , 2, 75, 74);
+    /* extSubsetDecl ::= extSubsetDeclUnitAny */
+    _fillRule(g, 74 , 1, 76);
+    /* TextDecl ::= XmlBeg VersionInfoMaybe EncodingDecl SMaybe XmlEnd */
+    _fillRule(g, 75 , 5, 45, 168, 169, 49, 50);
+    /* extSubsetDeclUnitAny ::= extSubsetDeclUnit * */
+    _fillRule(g, 76 , 1, 180);
+    /* SDDecl ::= WhiteSpace Standalone Eq Dquote No Dquote */
+    _fillRule(g, 77 , 6, 33, 78, 52, 55, 80, 55);
+    /* Standalone ::= STANDALONE */
+    _fillRule(g, 78 , 1, 210);
+    /* Yes ::= YES */
+    _fillRule(g, 79 , 1, 211);
+    /* No ::= NO */
+    _fillRule(g, 80 , 1, 212);
+    /* EmptyElemTag ::= EmptyElemTagBeg Name EmptyElemTagInteriorAny SMaybe EmptyElemTagEnd */
+    _fillRule(g, 81 , 5, 93, 7, 94, 49, 95);
+    /* STag ::= STagBeg Name STagInteriorAny SMaybe STagEnd */
+    _fillRule(g, 82 , 5, 85, 7, 86, 49, 87);
+    /* content ::= CharDataMaybe ContentInteriorAny */
+    _fillRule(g, 83 , 2, 91, 92);
+    /* ETag ::= ETagBeg Name SMaybe ETagEnd */
+    _fillRule(g, 84 , 4, 89, 7, 49, 90);
+    /* STagBeg ::= XTagBeg */
+    _fillRule(g, 85 , 1, 213);
+    /* STagInteriorAny ::= STagInterior * */
+    _fillRule(g, 86 , 1, 181);
+    /* STagEnd ::= STAG_END */
+    _fillRule(g, 87 , 1, 216);
+    /* Attribute ::= Name Eq AttValue */
+    _fillRule(g, 88 , 3, 7, 52, 16);
+    /* ETagBeg ::= ETAG_BEG */
+    _fillRule(g, 89 , 1, 217);
+    /* Names ::= x20 Names */
+    _fillRule(g, 9 , 2, 10, 9);
+    /* ETagEnd ::= ETAG_END */
+    _fillRule(g, 90 , 1, 218);
+    /* CharDataMaybe ::= */
+    _fillRule(g, 91 , 0);
+    /* ContentInteriorAny ::= ContentInterior * */
+    _fillRule(g, 92 , 1, 178);
+    /* EmptyElemTagBeg ::= XTagBeg */
+    _fillRule(g, 93 , 1, 213);
+    /* EmptyElemTagInteriorAny ::= EmptyElemTagInterior * */
+    _fillRule(g, 94 , 1, 182);
+    /* EmptyElemTagEnd ::= EMPTYELEMTAG_END */
+    _fillRule(g, 95 , 1, 219);
+    /* ElementDeclBeg ::= ELEMENTDECL_BEG */
+    _fillRule(g, 96 , 1, 220);
+    /* contentspec ::= children */
+    _fillRule(g, 97 , 1, 102);
+    /* ElementDeclEnd ::= XTagEnd */
+    _fillRule(g, 98 , 1, 207);
+    /* Empty ::= EMPTY */
+    _fillRule(g, 99 , 1, 221);
 }
 
 
