@@ -1,5 +1,5 @@
 /*
- * Tue Apr 15 15:02:10 2014
+ * Tue Apr 15 15:29:55 2014
  *
  * Generated with:
  * perl GenerateLowLevel.pl --bnf bnf/xml10.bnf --prefix xml10 --output xml10.c
@@ -2461,6 +2461,12 @@ static void _fillXml10G(g)
                                    };
         _fillRule(g, aXml10SymbolId[XML10_CharRef].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
+
+    /* Fill start symbol */
+    _fillStartSymbol(g, 0)
+
+    /* Precompute grammar */
+    _precomputeG(g)
 }
 
 
