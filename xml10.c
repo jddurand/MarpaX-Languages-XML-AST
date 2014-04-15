@@ -1,13 +1,13 @@
 /*
- * Tue Apr 15 10:57:52 2014
+ * Tue Apr 15 11:00:55 2014
  *
  * Generated with:
  * perl GenerateLowLevel.pl --bnf bnf/xml10.bnf --prefix xml10 --output xml10.c
  *
  */
 
-#ifndef XML10_H
-#define XML10_H
+#ifndef XML10_C
+#define XML10_C
 
 #include "xmlTypes.h"
 
@@ -542,4 +542,4 @@ static void _fillXml10G(g)
 }
 
 
-#endif /* XML10_H */
+#endif /* XML10_C */
