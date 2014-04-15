@@ -1,5 +1,5 @@
 /*
- * Tue Apr 15 15:34:55 2014
+ * Tue Apr 15 15:47:54 2014
  *
  * Generated with:
  * perl GenerateLowLevel.pl --bnf bnf/xml10.bnf --prefix xml10 --output xml10.c
@@ -271,9 +271,10 @@ enum {
     /* 255 */ XML10_PI_BEG                            ,
     /* 256 */ XML10_PI_END                            ,
 };
-static void _fillXml10G(g)
-    Marpa_Grammar g;
+static Marpa_Grammar _xml10CreateGrammar()
 {
+    Marpa_Grammar g;
+
     /* Room to map our enums to real Ids */
     int nbSymbols =  257;
     struct sXmlSymbolId aXml10SymbolId[257] = {
@@ -538,6 +539,9 @@ static void _fillXml10G(g)
         { -1, "PI_BEG"                                , "PI_BEG" }, /* enum: XML10_PI_BEG */
         { -1, "PI_END"                                , "PI_END" }, /* enum: XML10_PI_END */
     };
+
+    /* Create the grammar */
+    _marpaUtilCreateGrammar(&g);
 
     /* Create all the symbols */
     _marpaUtilSetSymbols(g, nbSymbols, aXml10SymbolId);
@@ -2467,6 +2471,8 @@ static void _fillXml10G(g)
 
     /* Precompute grammar */
     _marpaUtilPrecomputeG(g);
+
+    return g;
 }
 
 
