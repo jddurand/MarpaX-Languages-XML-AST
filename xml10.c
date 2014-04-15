@@ -1,5 +1,5 @@
 /*
- * Tue Apr 15 10:35:20 2014
+ * Tue Apr 15 10:36:46 2014
  *
  * Generated with:
  * perl GenerateLowLevel.pl --bnf bnf/xml10.bnf --prefix xml10 --output xml10.c
@@ -269,7 +269,7 @@ enum {
     XML10_prolog                            ,
     XML10_seq                               ,
     XML10_x20                               ,
-}
+};
 struct sXmlSymbolId aXml10SymbolId[] = {
    /*
     * Id, Enum                                    , Name                                    , Description
