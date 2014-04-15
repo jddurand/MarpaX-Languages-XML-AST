@@ -20,14 +20,15 @@ if (! $bnf || ! $prefix || ! $output) {
 
 my %symbols = ();
 my %rules = ();
-doIntrospection($bnf, \%symbols, \%rules);
-doOutput($command, $prefix, $output, \%symbols, \%rules);
+my $startSymbolId = -1;
+doIntrospection($bnf, \%symbols, \%rules, \$startSymbolId);
+doOutput($command, $prefix, $output, \%symbols, \%rules, $startSymbolId);
 exit(EXIT_SUCCESS);
 
 # -----------------------------------------------------------------
 
 sub doIntrospection {
-  my ($bnf, $symbolsp, $rulesp) = @_;
+  my ($bnf, $symbolsp, $rulesp, $startSymbolIdp) = @_;
 
   my $grammar_source = read_file($bnf);
   my $grammar = Marpa::R2::Scanless::G->new({source => \$grammar_source});
@@ -36,26 +37,32 @@ sub doIntrospection {
     my $desc = $grammar->symbol_description($_) || $grammar->symbol_display_form($_);
     my $key = $name;
     $key =~ s/[^a-zA-Z0-9_]/_/g;
-    $symbolsp->{$key} = {name => $name, desc => $desc};
+    $symbolsp->{$key} = {name => $name, desc => $desc, id => $_};
   }
 
+  my $thick_grammar = $grammar->thick_g1_grammar;
+  my $grammar_c = $thick_grammar->[Marpa::R2::Internal::Grammar::C];
   foreach ($grammar->rule_ids()) {
-    my ($lhs_id, @rhs_ids) = $grammar->rule_expand($_);
-    $rulesp->{$lhs_id} = [ @rhs_ids ];
+    my ($lhsId, @rhsIds) = $grammar->rule_expand($_);
+    my $minimum = $grammar_c->sequence_min($_);
+    my $min = defined($minimum) ? (($minimum <= 0) ? 0 : 1) : -1;
+    $rulesp->{$_} = { lhsId => $lhsId, rhsIdp => [ @rhsIds ], desc => $grammar->rule_show($_), min => $min};
   }
+
+  ${$startSymbolIdp} = $grammar_c->start_symbol();
 }
 
 # -----------------------------------------------------------------
 
 sub doOutput {
-  my ($command, $prefix, $output, $symbolsp, $rulesp) = @_;
+  my ($command, $prefix, $output, $symbolsp, $rulesp, $startSymbolId) = @_;
 
   my $fh;
   open($fh, '>', $output) || die "Cannot open $output, $!";
   doOutputHeader($fh, $prefix, $command, $bnf);
-  doOutputEnum($fh, $prefix, $symbolsp, $rulesp);
-  doOutputStructAndSizes($fh, $prefix, $symbolsp, $rulesp);
-  doOutputFillG($fh, $prefix, $symbolsp, $rulesp);
+  my %enum = ();
+  doOutputEnum($fh, $prefix, $symbolsp, $rulesp, \%enum);
+  doOutputFillG($fh, $prefix, $symbolsp, $rulesp, \%enum, $startSymbolId);
   doOutputTailer($fh, $prefix);
   close($fh) || warn "Cannot close $output, $!";
 
@@ -78,8 +85,8 @@ sub doOutputHeader {
  *
  */
 
-#ifndef ${prefix}_H
-#define ${prefix}_H
+#ifndef ${prefix}_C
+#define ${prefix}_C
 
 #include "xmlTypes.h"
 
@@ -95,30 +102,33 @@ sub doOutputTailer {
 
   print $fh <<TAILER;
 
-#endif /* ${prefix}_H */
+#endif /* ${prefix}_C */
 TAILER
 }
 
 # -----------------------------------------------------------------
 
 sub doOutputEnum {
-  my ($fh, $prefix, $symbolsp, $rulesp) = @_;
+  my ($fh, $prefix, $symbolsp, $rulesp, $enump) = @_;
 
   $prefix = uc($prefix);
 
+  print  $fh "/* We do not need all these, just the lexemes, but this is convenient to have the whole list */\n";
   print  $fh "enum {\n";
   my $i = 0;
-  foreach (sort keys %{$symbolsp}) {
+  foreach (sort {$symbolsp->{$a}->{id} <=> $symbolsp->{$b}->{id}} keys %{$symbolsp}) {
     my $enum = "${prefix}_${_}";
-    if ($i++ == 0) {
+    $enump->{$symbolsp->{$_}->{id}} = $enum;
+    if ($i == 0) {
       $enum .= " = 0";
     }
     if ($symbolsp->{$_}->{name} ne $_ ||
         $symbolsp->{$_}->{desc} ne $_) {
-      printf $fh "    %-40s, /* %s (%s) */\n", $enum, $symbolsp->{$_}->{name}, $symbolsp->{$_}->{desc};
+      printf $fh "    /* %3d */ %-40s, /* %s (%s) */\n", $i, $enum, $symbolsp->{$_}->{name}, $symbolsp->{$_}->{desc};
     } else {
-      printf $fh "    %-40s,\n", $enum;
+      printf $fh "    /* %3d */ %-40s,\n", $i, $enum;
     }
+    ++$i;
   }
   print  $fh "};\n";
 }
@@ -126,51 +136,85 @@ sub doOutputEnum {
 # -----------------------------------------------------------------
 
 sub doOutputStructAndSizes {
-  my ($fh, $prefix, $symbolsp, $rulesp) = @_;
+  my ($fh, $prefix, $symbolsp, $rulesp, $enump) = @_;
 
   my $prefixInStruct = lc($prefix);
   $prefixInStruct = ucfirst($prefix);
 
   $prefix = uc($prefix);
 
+  my $nbSymbol = keys %{$symbolsp};
+  print  $fh "    int nbSymbols =  $nbSymbol;\n";
+
   {
     # In a block just for alignement with the printf in the foreach () {}
-    print  $fh "struct sXmlSymbolId a${prefixInStruct}SymbolId[] = {\n";
-    print  $fh "   /*\n";
-    printf $fh "    * %2s, %-40s, %-40s, %s\n", 'Id', 'Enum', 'Name', 'Description';
-    print  $fh "    */\n";
+    print  $fh "    struct sXmlSymbolId a${prefixInStruct}SymbolId[$nbSymbol] = {\n";
+    print  $fh "       /*\n";
+    printf $fh "        * %2s, %-40s, %s\n", 'Id', 'Name', 'Description';
+    print  $fh "        */\n";
   }
-  my $i = 0;
-  foreach (sort keys %{$symbolsp}) {
-    ++$i;
-    my $enum = "${prefix}_${_}";
-    printf $fh "    { %2d, %-40s, %-40s, %s },\n", -1, $enum, "\"$symbolsp->{$_}->{name}\"", "\"$symbolsp->{$_}->{desc}\"";
+  foreach (sort {$symbolsp->{$a}->{id} <=> $symbolsp->{$b}->{id}} keys %{$symbolsp}) {
+    printf $fh "        { %2d, %-40s, %s }, /* enum: %s */\n", -1, "\"$symbolsp->{$_}->{name}\"", "\"$symbolsp->{$_}->{desc}\"", $enump->{$symbolsp->{$_}->{id}};
   }
   {
     # In a block just for alignement with the printf in the foreach () {}
-    print  $fh "};\n";
+    print  $fh "    };\n";
   }
-  print  $fh "\n";
-  print  $fh "#define ${prefix}_NUMBER_OF_SYMBOLS $i\n";
-  print  $fh "\n";
 }
 
 # -----------------------------------------------------------------
 
 sub doOutputFillG {
-  my ($fh, $prefix, $symbolsp, $rulesp) = @_;
+  my ($fh, $prefix, $symbolsp, $rulesp, $enump, $startSymbolId) = @_;
 
   my $prefixInSub = lc($prefix);
-  $prefixInSub = ucfirst($prefix);
-
   $prefix = uc($prefix);
 
   {
     # In a block just for alignement with the printf in the foreach () {}
-    print  $fh "static void _fill${prefixInSub}G(g)\n";
-    print  $fh "    Marpa_Grammar g;\n";
+    print  $fh "static Marpa_Grammar _${prefixInSub}CreateGrammar()\n";
     print  $fh "{\n";
-    print  $fh "    _fillG(g, XML10_NUMBER_OF_SYMBOLS, aXml10SymbolId);\n";
+    print  $fh "    Marpa_Grammar g;\n";
+    print  $fh "\n";
+    print  $fh "    /* Room to map our enums to real Ids */\n";
+    doOutputStructAndSizes(@_);
+    print  $fh "\n";
+    print  $fh "    /* Create the grammar */\n";
+    print  $fh "    _marpaUtilCreateGrammar(&g);\n";
+    print  $fh "\n";
+    print  $fh "    /* Create all the symbols */\n";
+    print  $fh "    _marpaUtilSetSymbols(g, nbSymbols, aXml10SymbolId);\n";
+    print  $fh "\n";
+    print  $fh "    /* Populate the rules */\n";
+  }
+  foreach (sort keys %{$rulesp}) {
+    my ($lhsId, $rhsIdp, $desc, $min) = ("aXml10SymbolId[" . $enump->{$rulesp->{$_}->{lhsId}} . "].symbolId", $rulesp->{$_}->{rhsIdp}, $rulesp->{$_}->{desc}, $rulesp->{$_}->{min});
+    my $numRhs = scalar(@{$rhsIdp});
+    if ($numRhs > 0) {
+      printf $fh "    {\n";
+      printf $fh "        /* %s */\n", $desc;
+      print  $fh "        Marpa_Symbol_ID rhsIds[] = {\n";
+      foreach (0..$#{$rhsIdp}) {
+        printf $fh "                                     aXml10SymbolId[%s].symbolId%s\n", $enump->{$rhsIdp->[$_]}, $_ < $#{$rhsIdp} ? ',' : '' ;
+      }
+      print  $fh "                                   };\n";
+      printf $fh "        _marpaUtilSetRule(g, %s , %d, &(rhsIds[0]), %d, -1, 0, 0);\n", $lhsId, $numRhs, $min;
+      print  $fh "    }\n";
+    } else {
+      printf $fh "    { /* %s */\n", $desc;
+      printf $fh "        _marpaUtilSetRule(g, %s , 0, NULL, %d, -1, 0, 0);\n", $lhsId, $min;
+      print  $fh "    }\n";
+    }
+  }
+  {
+    print  $fh "\n";
+    print  $fh "    /* Set start symbol */\n";
+    printf $fh "    _marpaUtilSetStartSymbol(g, %d);\n", $startSymbolId;
+    print  $fh "\n";
+    print  $fh "    /* Precompute grammar */\n";
+    printf $fh "    _marpaUtilPrecomputeG(g);\n";
+    print  $fh "\n";
+    printf $fh "    return g;\n";
     print  $fh "}\n";
     print  $fh "\n";
   }

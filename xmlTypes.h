@@ -7,7 +7,6 @@
 
 struct sXmlSymbolId {
   Marpa_Symbol_ID symbolId;
-  int symbolIdEnum;
   const char *name;
   const char *desc;
 };

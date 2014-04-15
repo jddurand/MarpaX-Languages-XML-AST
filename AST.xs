@@ -8,7 +8,7 @@ struct s_xml_token
   char *value;
 };
 
-#include "xmlUtil.c"
+#include "marpaUtil.c"
 #include "xml10.c"
 
 /********************************************************
@@ -22,11 +22,8 @@ void
 newG10()
 PPCODE:
 {
-  Marpa_Grammar gXml10;
+  Marpa_Grammar gXml10 = _xml10CreateGrammar();
   SV *sv;
-
-  _createG(&gXml10);
-  _fillXml10G(gXml10);
 
   sv = sv_newmortal();
   sv_setref_pv (sv, "MarpaX::Languages::XML::AST::XML10::G", (void *) gXml10);

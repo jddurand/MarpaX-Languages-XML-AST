@@ -42,6 +42,8 @@ sub new {
 
   my $self = {buf => undef, mapbeg => 0, origmapend => 0, mapend => 0, maxInternalPos => -1, lastBufNo => 0, byteOffset => 0};
 
+  my $newG10 = MarpaX::Languages::XML::AST::newG10();
+
   bless($self, $class);
 
   return $self;
