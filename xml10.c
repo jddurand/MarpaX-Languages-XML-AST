@@ -1,5 +1,5 @@
 /*
- * Tue Apr 15 13:14:45 2014
+ * Tue Apr 15 14:16:34 2014
  *
  * Generated with:
  * perl GenerateLowLevel.pl --bnf bnf/xml10.bnf --prefix xml10 --output xml10.c
@@ -11,6 +11,7 @@
 
 #include "xmlTypes.h"
 
+/* We do not need all these, just the lexemes, but this is convenient to have the whole list */
 enum {
     /*   0 */ XML10___start_ = 0                      , /* [:start] (Internal G1 start symbol) */
     /*   1 */ XML10_document                          ,
@@ -274,7 +275,8 @@ static void _fillXml10G(g)
     Marpa_Grammar g;
 {
     /* Room to map our enums to real Ids */
-    struct sXmlSymbolId aXml10SymbolId[] = {
+    int nbSymbols =  257;
+    struct sXmlSymbolId aXml10SymbolId[257] = {
        /*
         * Id, Name                                    , Description
         */
@@ -536,7 +538,6 @@ static void _fillXml10G(g)
         { -1, "PI_BEG"                                , "PI_BEG" }, /* enum: XML10_PI_BEG */
         { -1, "PI_END"                                , "PI_END" }, /* enum: XML10_PI_END */
     };
-    int nbSymbols =  257;
 
     /* Create all the symbols */
     _fillSymbols(g, nbSymbols, aXml10SymbolId);
