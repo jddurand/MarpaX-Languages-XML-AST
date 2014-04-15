@@ -1,5 +1,5 @@
 /*
- * Tue Apr 15 13:11:29 2014
+ * Tue Apr 15 13:13:30 2014
  *
  * Generated with:
  * perl GenerateLowLevel.pl --bnf bnf/xml10.bnf --prefix xml10 --output xml10.c
@@ -542,63 +542,73 @@ static void _fillXml10G(g)
     _fillSymbols(g, nbSymbols, aXml10SymbolId);
 
     /* Populate the rules */
-    { /* document ::= prolog element MiscAny */
+    {
+        /* document ::= prolog element MiscAny */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_prolog].symbolId,
                                      aXml10SymbolId[XML10_element].symbolId,
                                      aXml10SymbolId[XML10_MiscAny].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_document].symbolId , 3, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_document].symbolId , 3, &(aXml10SymbolId[0]));
     }
-    { /* Char ::= CHAR */
+    {
+        /* Char ::= CHAR */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CHAR].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Char].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Char].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* SystemLiteral ::= SYSTEMLITERAL */
+    {
+        /* SystemLiteral ::= SYSTEMLITERAL */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SYSTEMLITERAL].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_SystemLiteral].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_SystemLiteral].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Reference ::= EntityRef */
+    {
+        /* Reference ::= EntityRef */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EntityRef].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Reference].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Reference].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Reference ::= CharRef */
+    {
+        /* Reference ::= CharRef */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CharRef].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Reference].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Reference].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* EntityRef ::= ENTITYREF */
+    {
+        /* EntityRef ::= ENTITYREF */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ENTITYREF].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EntityRef].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EntityRef].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* PEReference ::= PEREFERENCE */
+    {
+        /* PEReference ::= PEREFERENCE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PEREFERENCE].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_PEReference].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_PEReference].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* EntityDecl ::= GEDecl */
+    {
+        /* EntityDecl ::= GEDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_GEDecl].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EntityDecl].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EntityDecl].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* EntityDecl ::= PEDecl */
+    {
+        /* EntityDecl ::= PEDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PEDecl].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EntityDecl].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EntityDecl].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* GEDecl ::= EdeclBeg WhiteSpace Name WhiteSpace EntityDef SMaybe EdeclEnd */
+    {
+        /* GEDecl ::= EdeclBeg WhiteSpace Name WhiteSpace EntityDef SMaybe EdeclEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EdeclBeg].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
@@ -608,9 +618,10 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_EdeclEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_GEDecl].symbolId , 7, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_GEDecl].symbolId , 7, &(aXml10SymbolId[0]));
     }
-    { /* PEDecl ::= EdeclBeg WhiteSpace Percent WhiteSpace Name WhiteSpace PEDef SMaybe EdeclEnd */
+    {
+        /* PEDecl ::= EdeclBeg WhiteSpace Percent WhiteSpace Name WhiteSpace PEDef SMaybe EdeclEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EdeclBeg].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
@@ -622,54 +633,62 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_EdeclEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_PEDecl].symbolId , 9, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_PEDecl].symbolId , 9, &(aXml10SymbolId[0]));
     }
-    { /* EntityDef ::= EntityValue */
+    {
+        /* EntityDef ::= EntityValue */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EntityValue].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EntityDef].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EntityDef].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* EntityDef ::= ExternalID */
+    {
+        /* EntityDef ::= ExternalID */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ExternalID].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EntityDef].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EntityDef].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* PubidLiteral ::= PUBIDLITERAL */
+    {
+        /* PubidLiteral ::= PUBIDLITERAL */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PUBIDLITERAL].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_PubidLiteral].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_PubidLiteral].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* EntityDef ::= ExternalID NDataDecl */
+    {
+        /* EntityDef ::= ExternalID NDataDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ExternalID].symbolId,
                                      aXml10SymbolId[XML10_NDataDecl].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EntityDef].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EntityDef].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* PEDef ::= EntityValue */
+    {
+        /* PEDef ::= EntityValue */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EntityValue].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_PEDef].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_PEDef].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* PEDef ::= ExternalID */
+    {
+        /* PEDef ::= ExternalID */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ExternalID].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_PEDef].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_PEDef].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* ExternalID ::= System WhiteSpace SystemLiteral */
+    {
+        /* ExternalID ::= System WhiteSpace SystemLiteral */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_System].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_SystemLiteral].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ExternalID].symbolId , 3, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ExternalID].symbolId , 3, &(aXml10SymbolId[0]));
     }
-    { /* ExternalID ::= Public WhiteSpace PubidLiteral WhiteSpace SystemLiteral */
+    {
+        /* ExternalID ::= Public WhiteSpace PubidLiteral WhiteSpace SystemLiteral */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Public].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
@@ -677,18 +696,20 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_SystemLiteral].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ExternalID].symbolId , 5, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ExternalID].symbolId , 5, &(aXml10SymbolId[0]));
     }
-    { /* NDataDecl ::= WhiteSpace Ndata WhiteSpace Name */
+    {
+        /* NDataDecl ::= WhiteSpace Ndata WhiteSpace Name */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Ndata].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Name].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_NDataDecl].symbolId , 4, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_NDataDecl].symbolId , 4, &(aXml10SymbolId[0]));
     }
-    { /* TextDecl ::= XmlBeg VersionInfoMaybe EncodingDecl SMaybe XmlEnd */
+    {
+        /* TextDecl ::= XmlBeg VersionInfoMaybe EncodingDecl SMaybe XmlEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XmlBeg].symbolId,
                                      aXml10SymbolId[XML10_VersionInfoMaybe].symbolId,
@@ -696,22 +717,25 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_XmlEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TextDecl].symbolId , 5, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TextDecl].symbolId , 5, &(aXml10SymbolId[0]));
     }
-    { /* extParsedEnt ::= content */
+    {
+        /* extParsedEnt ::= content */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_content].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_extParsedEnt].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_extParsedEnt].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* extParsedEnt ::= TextDecl content */
+    {
+        /* extParsedEnt ::= TextDecl content */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TextDecl].symbolId,
                                      aXml10SymbolId[XML10_content].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_extParsedEnt].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_extParsedEnt].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* EncodingDecl ::= WhiteSpace Encoding Eq Dquote EncName Dquote */
+    {
+        /* EncodingDecl ::= WhiteSpace Encoding Eq Dquote EncName Dquote */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Encoding].symbolId,
@@ -720,15 +744,17 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_EncName].symbolId,
                                      aXml10SymbolId[XML10_Dquote].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EncodingDecl].symbolId , 6, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EncodingDecl].symbolId , 6, &(aXml10SymbolId[0]));
     }
-    { /* CharData ::= CHARDATA */
+    {
+        /* CharData ::= CHARDATA */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CHARDATA].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_CharData].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_CharData].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* EncodingDecl ::= WhiteSpace Encoding Eq Squote EncName Squote */
+    {
+        /* EncodingDecl ::= WhiteSpace Encoding Eq Squote EncName Squote */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Encoding].symbolId,
@@ -737,15 +763,17 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_EncName].symbolId,
                                      aXml10SymbolId[XML10_Squote].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EncodingDecl].symbolId , 6, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EncodingDecl].symbolId , 6, &(aXml10SymbolId[0]));
     }
-    { /* EncName ::= ENCNAME */
+    {
+        /* EncName ::= ENCNAME */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ENCNAME].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EncName].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EncName].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* NotationDecl ::= NotationBeg WhiteSpace Name WhiteSpace ExternalID SMaybe NotationEnd */
+    {
+        /* NotationDecl ::= NotationBeg WhiteSpace Name WhiteSpace ExternalID SMaybe NotationEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NotationBeg].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
@@ -755,9 +783,10 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_NotationEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_NotationDecl].symbolId , 7, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_NotationDecl].symbolId , 7, &(aXml10SymbolId[0]));
     }
-    { /* NotationDecl ::= NotationBeg WhiteSpace Name WhiteSpace PublicID SMaybe NotationEnd */
+    {
+        /* NotationDecl ::= NotationBeg WhiteSpace Name WhiteSpace PublicID SMaybe NotationEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NotationBeg].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
@@ -767,241 +796,275 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_NotationEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_NotationDecl].symbolId , 7, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_NotationDecl].symbolId , 7, &(aXml10SymbolId[0]));
     }
-    { /* PublicID ::= Public WhiteSpace PubidLiteral */
+    {
+        /* PublicID ::= Public WhiteSpace PubidLiteral */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Public].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_PubidLiteral].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_PublicID].symbolId , 3, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_PublicID].symbolId , 3, &(aXml10SymbolId[0]));
     }
-    { /* x20 ::= X20 */
+    {
+        /* x20 ::= X20 */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_X20].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_x20].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_x20].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* XMLDeclMaybe ::= XMLDecl */
+    {
+        /* XMLDeclMaybe ::= XMLDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XMLDecl].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_XMLDeclMaybe].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_XMLDeclMaybe].symbolId , 1, &(aXml10SymbolId[0]));
     }
     { /* XMLDeclMaybe ::= */
         _fillRule(g, aXml10SymbolId[XML10_XMLDeclMaybe].symbolId , 0, NULL);
     }
-    { /* MiscAny ::= Misc * */
+    {
+        /* MiscAny ::= Misc * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Misc].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_MiscAny].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_MiscAny].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* EncodingDeclMaybe ::= EncodingDecl */
+    {
+        /* EncodingDeclMaybe ::= EncodingDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EncodingDecl].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EncodingDeclMaybe].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EncodingDeclMaybe].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Comment ::= CommentBeg CommentInterior CommentEnd */
+    {
+        /* Comment ::= CommentBeg CommentInterior CommentEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CommentBeg].symbolId,
                                      aXml10SymbolId[XML10_CommentInterior].symbolId,
                                      aXml10SymbolId[XML10_CommentEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Comment].symbolId , 3, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Comment].symbolId , 3, &(aXml10SymbolId[0]));
     }
     { /* EncodingDeclMaybe ::= */
         _fillRule(g, aXml10SymbolId[XML10_EncodingDeclMaybe].symbolId , 0, NULL);
     }
-    { /* SDDeclMaybe ::= SDDecl */
+    {
+        /* SDDeclMaybe ::= SDDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SDDecl].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_SDDeclMaybe].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_SDDeclMaybe].symbolId , 1, &(aXml10SymbolId[0]));
     }
     { /* SDDeclMaybe ::= */
         _fillRule(g, aXml10SymbolId[XML10_SDDeclMaybe].symbolId , 0, NULL);
     }
-    { /* SMaybe ::= WhiteSpace */
+    {
+        /* SMaybe ::= WhiteSpace */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_SMaybe].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_SMaybe].symbolId , 1, &(aXml10SymbolId[0]));
     }
     { /* SMaybe ::= */
         _fillRule(g, aXml10SymbolId[XML10_SMaybe].symbolId , 0, NULL);
     }
-    { /* ContentInterior ::= element CharDataMaybe */
+    {
+        /* ContentInterior ::= element CharDataMaybe */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_element].symbolId,
                                      aXml10SymbolId[XML10_CharDataMaybe].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* ContentInterior ::= Reference CharDataMaybe */
+    {
+        /* ContentInterior ::= Reference CharDataMaybe */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Reference].symbolId,
                                      aXml10SymbolId[XML10_CharDataMaybe].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* ContentInterior ::= CDSect CharDataMaybe */
+    {
+        /* ContentInterior ::= CDSect CharDataMaybe */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CDSect].symbolId,
                                      aXml10SymbolId[XML10_CharDataMaybe].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* ContentInterior ::= PI CharDataMaybe */
+    {
+        /* ContentInterior ::= PI CharDataMaybe */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PI].symbolId,
                                      aXml10SymbolId[XML10_CharDataMaybe].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* ContentInterior ::= Comment CharDataMaybe */
+    {
+        /* ContentInterior ::= Comment CharDataMaybe */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Comment].symbolId,
                                      aXml10SymbolId[XML10_CharDataMaybe].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* PITarget ::= PITARGET */
+    {
+        /* PITarget ::= PITARGET */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PITARGET].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_PITarget].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_PITarget].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* ContentInteriorAny ::= ContentInterior * */
+    {
+        /* ContentInteriorAny ::= ContentInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ContentInterior].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ContentInteriorAny].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ContentInteriorAny].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* intSubsetUnit ::= markupdecl */
+    {
+        /* intSubsetUnit ::= markupdecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_markupdecl].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_intSubsetUnit].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_intSubsetUnit].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* intSubsetUnit ::= DeclSep */
+    {
+        /* intSubsetUnit ::= DeclSep */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_DeclSep].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_intSubsetUnit].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_intSubsetUnit].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* intSubsetUnitAny ::= intSubsetUnit * */
+    {
+        /* intSubsetUnitAny ::= intSubsetUnit * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_intSubsetUnit].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_intSubsetUnitAny].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_intSubsetUnitAny].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* extSubsetDeclUnit ::= markupdecl */
+    {
+        /* extSubsetDeclUnit ::= markupdecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_markupdecl].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_extSubsetDeclUnit].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_extSubsetDeclUnit].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* extSubsetDeclUnit ::= conditionalSect */
+    {
+        /* extSubsetDeclUnit ::= conditionalSect */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_conditionalSect].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_extSubsetDeclUnit].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_extSubsetDeclUnit].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* extSubsetDeclUnit ::= DeclSep */
+    {
+        /* extSubsetDeclUnit ::= DeclSep */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_DeclSep].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_extSubsetDeclUnit].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_extSubsetDeclUnit].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* extSubsetDeclUnitAny ::= extSubsetDeclUnit * */
+    {
+        /* extSubsetDeclUnitAny ::= extSubsetDeclUnit * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_extSubsetDeclUnit].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_extSubsetDeclUnitAny].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_extSubsetDeclUnitAny].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* STagInterior ::= WhiteSpace Attribute */
+    {
+        /* STagInterior ::= WhiteSpace Attribute */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Attribute].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_STagInterior].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_STagInterior].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* STagInteriorAny ::= STagInterior * */
+    {
+        /* STagInteriorAny ::= STagInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_STagInterior].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_STagInteriorAny].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_STagInteriorAny].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* PI ::= PiBeg PITarget PiEnd */
+    {
+        /* PI ::= PiBeg PITarget PiEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PiBeg].symbolId,
                                      aXml10SymbolId[XML10_PITarget].symbolId,
                                      aXml10SymbolId[XML10_PiEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_PI].symbolId , 3, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_PI].symbolId , 3, &(aXml10SymbolId[0]));
     }
-    { /* CharDataMaybe ::= CharData */
+    {
+        /* CharDataMaybe ::= CharData */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CharData].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_CharDataMaybe].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_CharDataMaybe].symbolId , 1, &(aXml10SymbolId[0]));
     }
     { /* CharDataMaybe ::= */
         _fillRule(g, aXml10SymbolId[XML10_CharDataMaybe].symbolId , 0, NULL);
     }
-    { /* EmptyElemTagInterior ::= WhiteSpace Attribute */
+    {
+        /* EmptyElemTagInterior ::= WhiteSpace Attribute */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Attribute].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EmptyElemTagInterior].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EmptyElemTagInterior].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* EmptyElemTagInteriorAny ::= EmptyElemTagInterior * */
+    {
+        /* EmptyElemTagInteriorAny ::= EmptyElemTagInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EmptyElemTagInterior].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EmptyElemTagInteriorAny].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EmptyElemTagInteriorAny].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Quantifier ::= QuestionMark */
+    {
+        /* Quantifier ::= QuestionMark */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_QuestionMark].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Quantifier].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Quantifier].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Quantifier ::= Star */
+    {
+        /* Quantifier ::= Star */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Star].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Quantifier].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Quantifier].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Quantifier ::= Plus */
+    {
+        /* Quantifier ::= Plus */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Plus].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Quantifier].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Quantifier].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* QuantifierMaybe ::= Quantifier */
+    {
+        /* QuantifierMaybe ::= Quantifier */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Quantifier].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_QuantifierMaybe].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_QuantifierMaybe].symbolId , 1, &(aXml10SymbolId[0]));
     }
     { /* QuantifierMaybe ::= */
         _fillRule(g, aXml10SymbolId[XML10_QuantifierMaybe].symbolId , 0, NULL);
     }
-    { /* ChoiceInterior ::= SMaybe Pipe SMaybe cp */
+    {
+        /* ChoiceInterior ::= SMaybe Pipe SMaybe cp */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Pipe].symbolId,
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_cp].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ChoiceInterior].symbolId , 4, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ChoiceInterior].symbolId , 4, &(aXml10SymbolId[0]));
     }
-    { /* PI ::= PiBeg PITarget WhiteSpace PiInterior PiEnd */
+    {
+        /* PI ::= PiBeg PITarget WhiteSpace PiInterior PiEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PiBeg].symbolId,
                                      aXml10SymbolId[XML10_PITarget].symbolId,
@@ -1009,489 +1072,566 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_PiInterior].symbolId,
                                      aXml10SymbolId[XML10_PiEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_PI].symbolId , 5, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_PI].symbolId , 5, &(aXml10SymbolId[0]));
     }
-    { /* ChoiceInteriorMany ::= ChoiceInterior + */
+    {
+        /* ChoiceInteriorMany ::= ChoiceInterior + */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ChoiceInterior].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ChoiceInteriorMany].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ChoiceInteriorMany].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* SeqInterior ::= SMaybe Comma SMaybe cp */
+    {
+        /* SeqInterior ::= SMaybe Comma SMaybe cp */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Comma].symbolId,
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_cp].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_SeqInterior].symbolId , 4, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_SeqInterior].symbolId , 4, &(aXml10SymbolId[0]));
     }
-    { /* SeqInteriorAny ::= SeqInterior * */
+    {
+        /* SeqInteriorAny ::= SeqInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SeqInterior].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_SeqInteriorAny].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_SeqInteriorAny].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* MixedInterior ::= SMaybe Pipe SMaybe Name */
+    {
+        /* MixedInterior ::= SMaybe Pipe SMaybe Name */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Pipe].symbolId,
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Name].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_MixedInterior].symbolId , 4, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_MixedInterior].symbolId , 4, &(aXml10SymbolId[0]));
     }
-    { /* MixedInteriorAny ::= MixedInterior * */
+    {
+        /* MixedInteriorAny ::= MixedInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_MixedInterior].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_MixedInteriorAny].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_MixedInteriorAny].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* AttDefAny ::= AttDef * */
+    {
+        /* AttDefAny ::= AttDef * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_AttDef].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_AttDefAny].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_AttDefAny].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* NotationTypeInterior ::= SMaybe Pipe SMaybe Name */
+    {
+        /* NotationTypeInterior ::= SMaybe Pipe SMaybe Name */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Pipe].symbolId,
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Name].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_NotationTypeInterior].symbolId , 4, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_NotationTypeInterior].symbolId , 4, &(aXml10SymbolId[0]));
     }
-    { /* NotationTypeInteriorAny ::= NotationTypeInterior * */
+    {
+        /* NotationTypeInteriorAny ::= NotationTypeInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NotationTypeInterior].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_NotationTypeInteriorAny].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_NotationTypeInteriorAny].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* EnumerationInterior ::= SMaybe Pipe SMaybe Nmtoken */
+    {
+        /* EnumerationInterior ::= SMaybe Pipe SMaybe Nmtoken */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Pipe].symbolId,
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Nmtoken].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EnumerationInterior].symbolId , 4, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EnumerationInterior].symbolId , 4, &(aXml10SymbolId[0]));
     }
-    { /* EnumerationInteriorAny ::= EnumerationInterior * */
+    {
+        /* EnumerationInteriorAny ::= EnumerationInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EnumerationInterior].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EnumerationInteriorAny].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EnumerationInteriorAny].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* CDSect ::= CDStart CData CDEnd */
+    {
+        /* CDSect ::= CDStart CData CDEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CDStart].symbolId,
                                      aXml10SymbolId[XML10_CData].symbolId,
                                      aXml10SymbolId[XML10_CDEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_CDSect].symbolId , 3, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_CDSect].symbolId , 3, &(aXml10SymbolId[0]));
     }
-    { /* ignoreSectContentsAny ::= ignoreSectContents * */
+    {
+        /* ignoreSectContentsAny ::= ignoreSectContents * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ignoreSectContents].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ignoreSectContentsAny].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ignoreSectContentsAny].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* ignoreSectContentsInterior ::= SectBeg ignoreSectContents SectEnd Ignore */
+    {
+        /* ignoreSectContentsInterior ::= SectBeg ignoreSectContents SectEnd Ignore */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SectBeg].symbolId,
                                      aXml10SymbolId[XML10_ignoreSectContents].symbolId,
                                      aXml10SymbolId[XML10_SectEnd].symbolId,
                                      aXml10SymbolId[XML10_Ignore].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ignoreSectContentsInterior].symbolId , 4, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ignoreSectContentsInterior].symbolId , 4, &(aXml10SymbolId[0]));
     }
-    { /* ignoreSectContentsInteriorAny ::= ignoreSectContentsInterior * */
+    {
+        /* ignoreSectContentsInteriorAny ::= ignoreSectContentsInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ignoreSectContentsInterior].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ignoreSectContentsInteriorAny].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ignoreSectContentsInteriorAny].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* VersionInfoMaybe ::= VersionInfo */
+    {
+        /* VersionInfoMaybe ::= VersionInfo */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_VersionInfo].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_VersionInfoMaybe].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_VersionInfoMaybe].symbolId , 1, &(aXml10SymbolId[0]));
     }
     { /* VersionInfoMaybe ::= */
         _fillRule(g, aXml10SymbolId[XML10_VersionInfoMaybe].symbolId , 0, NULL);
     }
-    { /* WhiteSpace ::= S */
+    {
+        /* WhiteSpace ::= S */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_S].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_WhiteSpace].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_WhiteSpace].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* CommentBeg ::= COMMENT_BEG */
+    {
+        /* CommentBeg ::= COMMENT_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_COMMENT_BEG].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_CommentBeg].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_CommentBeg].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* CommentEnd ::= COMMENT_END */
+    {
+        /* CommentEnd ::= COMMENT_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_COMMENT_END].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_CommentEnd].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_CommentEnd].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* CommentInterior ::= COMMENT */
+    {
+        /* CommentInterior ::= COMMENT */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_COMMENT].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_CommentInterior].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_CommentInterior].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* PiInterior ::= PI_INTERIOR */
+    {
+        /* PiInterior ::= PI_INTERIOR */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PI_INTERIOR].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_PiInterior].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_PiInterior].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* CDStart ::= CDSTART */
+    {
+        /* CDStart ::= CDSTART */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CDSTART].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_CDStart].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_CDStart].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* XmlBeg ::= XML_BEG */
+    {
+        /* XmlBeg ::= XML_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XML_BEG].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_XmlBeg].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_XmlBeg].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* XmlEnd ::= XML_END */
+    {
+        /* XmlEnd ::= XML_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XML_END].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_XmlEnd].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_XmlEnd].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Version ::= VERSION */
+    {
+        /* Version ::= VERSION */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_VERSION].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Version].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Version].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Squote ::= SQUOTE */
+    {
+        /* Squote ::= SQUOTE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SQUOTE].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Squote].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Squote].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Dquote ::= DQUOTE */
+    {
+        /* Dquote ::= DQUOTE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_DQUOTE].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Dquote].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Dquote].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Equal ::= EQUAL */
+    {
+        /* Equal ::= EQUAL */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EQUAL].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Equal].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Equal].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* DoctypeBeg ::= DOCTYPE_BEG */
+    {
+        /* DoctypeBeg ::= DOCTYPE_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_DOCTYPE_BEG].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_DoctypeBeg].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_DoctypeBeg].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* DoctypeEnd ::= XTagEnd */
+    {
+        /* DoctypeEnd ::= XTagEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTagEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_DoctypeEnd].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_DoctypeEnd].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Lbracket ::= LBRACKET */
+    {
+        /* Lbracket ::= LBRACKET */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_LBRACKET].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Lbracket].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Lbracket].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Rbracket ::= RBRACKET */
+    {
+        /* Rbracket ::= RBRACKET */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_RBRACKET].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Rbracket].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Rbracket].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* CData ::= CDATA */
+    {
+        /* CData ::= CDATA */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CDATA].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_CData].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_CData].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Standalone ::= STANDALONE */
+    {
+        /* Standalone ::= STANDALONE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_STANDALONE].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Standalone].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Standalone].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Yes ::= YES */
+    {
+        /* Yes ::= YES */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_YES].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Yes].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Yes].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* No ::= NO */
+    {
+        /* No ::= NO */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NO].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_No].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_No].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* XTagBeg ::= XTAG_BEG */
+    {
+        /* XTagBeg ::= XTAG_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTAG_BEG].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_XTagBeg].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_XTagBeg].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* STagBeg ::= XTagBeg */
+    {
+        /* STagBeg ::= XTagBeg */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTagBeg].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_STagBeg].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_STagBeg].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* XTagEnd ::= XTAG_END */
+    {
+        /* XTagEnd ::= XTAG_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTAG_END].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_XTagEnd].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_XTagEnd].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* STagEnd ::= STAG_END */
+    {
+        /* STagEnd ::= STAG_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_STAG_END].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_STagEnd].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_STagEnd].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* ETagBeg ::= ETAG_BEG */
+    {
+        /* ETagBeg ::= ETAG_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ETAG_BEG].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ETagBeg].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ETagBeg].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* ETagEnd ::= ETAG_END */
+    {
+        /* ETagEnd ::= ETAG_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ETAG_END].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ETagEnd].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ETagEnd].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* EmptyElemTagBeg ::= XTagBeg */
+    {
+        /* EmptyElemTagBeg ::= XTagBeg */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTagBeg].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EmptyElemTagBeg].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EmptyElemTagBeg].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Name ::= NAME */
+    {
+        /* Name ::= NAME */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NAME].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Name].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Name].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* CDEnd ::= CDEND */
+    {
+        /* CDEnd ::= CDEND */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CDEND].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_CDEnd].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_CDEnd].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* EmptyElemTagEnd ::= EMPTYELEMTAG_END */
+    {
+        /* EmptyElemTagEnd ::= EMPTYELEMTAG_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EMPTYELEMTAG_END].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EmptyElemTagEnd].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EmptyElemTagEnd].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* ElementDeclBeg ::= ELEMENTDECL_BEG */
+    {
+        /* ElementDeclBeg ::= ELEMENTDECL_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ELEMENTDECL_BEG].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ElementDeclBeg].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ElementDeclBeg].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* ElementDeclEnd ::= XTagEnd */
+    {
+        /* ElementDeclEnd ::= XTagEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTagEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ElementDeclEnd].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ElementDeclEnd].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Empty ::= EMPTY */
+    {
+        /* Empty ::= EMPTY */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EMPTY].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Empty].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Empty].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Any ::= ANY */
+    {
+        /* Any ::= ANY */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ANY].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Any].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Any].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* QuestionMark ::= QUESTION_MARK */
+    {
+        /* QuestionMark ::= QUESTION_MARK */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_QUESTION_MARK].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_QuestionMark].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_QuestionMark].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Star ::= STAR */
+    {
+        /* Star ::= STAR */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_STAR].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Star].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Star].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Plus ::= PLUS */
+    {
+        /* Plus ::= PLUS */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PLUS].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Plus].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Plus].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Lparen ::= LPAREN */
+    {
+        /* Lparen ::= LPAREN */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_LPAREN].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Lparen].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Lparen].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Rparen ::= RPAREN */
+    {
+        /* Rparen ::= RPAREN */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_RPAREN].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Rparen].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Rparen].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* prolog ::= XMLDeclMaybe MiscAny */
+    {
+        /* prolog ::= XMLDeclMaybe MiscAny */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XMLDeclMaybe].symbolId,
                                      aXml10SymbolId[XML10_MiscAny].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_prolog].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_prolog].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* RparenStar ::= RPARENSTAR */
+    {
+        /* RparenStar ::= RPARENSTAR */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_RPARENSTAR].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_RparenStar].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_RparenStar].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Pipe ::= PIPE */
+    {
+        /* Pipe ::= PIPE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PIPE].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Pipe].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Pipe].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Comma ::= COMMA */
+    {
+        /* Comma ::= COMMA */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_COMMA].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Comma].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Comma].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* AttlistBeg ::= ATTLIST_BEG */
+    {
+        /* AttlistBeg ::= ATTLIST_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ATTLIST_BEG].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_AttlistBeg].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_AttlistBeg].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* AttlistEnd ::= XTagEnd */
+    {
+        /* AttlistEnd ::= XTagEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTagEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_AttlistEnd].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_AttlistEnd].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* TypeId ::= TYPE_ID */
+    {
+        /* TypeId ::= TYPE_ID */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TYPE_ID].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TypeId].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TypeId].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* TypeIdref ::= TYPE_IDREF */
+    {
+        /* TypeIdref ::= TYPE_IDREF */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TYPE_IDREF].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TypeIdref].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TypeIdref].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* TypeIdrefs ::= TYPE_IDREFS */
+    {
+        /* TypeIdrefs ::= TYPE_IDREFS */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TYPE_IDREFS].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TypeIdrefs].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TypeIdrefs].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* TypeEntity ::= TYPE_ENTITY */
+    {
+        /* TypeEntity ::= TYPE_ENTITY */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TYPE_ENTITY].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TypeEntity].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TypeEntity].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* TypeEntities ::= TYPE_ENTITIES */
+    {
+        /* TypeEntities ::= TYPE_ENTITIES */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TYPE_ENTITIES].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TypeEntities].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TypeEntities].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* prolog ::= XMLDeclMaybe MiscAny doctypedecl MiscAny */
+    {
+        /* prolog ::= XMLDeclMaybe MiscAny doctypedecl MiscAny */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XMLDeclMaybe].symbolId,
                                      aXml10SymbolId[XML10_MiscAny].symbolId,
                                      aXml10SymbolId[XML10_doctypedecl].symbolId,
                                      aXml10SymbolId[XML10_MiscAny].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_prolog].symbolId , 4, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_prolog].symbolId , 4, &(aXml10SymbolId[0]));
     }
-    { /* TypeNmtoken ::= TYPE_NMTOKEN */
+    {
+        /* TypeNmtoken ::= TYPE_NMTOKEN */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TYPE_NMTOKEN].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TypeNmtoken].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TypeNmtoken].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* TypeNmtokens ::= TYPE_NMTOKENS */
+    {
+        /* TypeNmtokens ::= TYPE_NMTOKENS */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TYPE_NMTOKENS].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TypeNmtokens].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TypeNmtokens].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Notation ::= NOTATION */
+    {
+        /* Notation ::= NOTATION */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NOTATION].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Notation].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Notation].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* NotationBeg ::= NOTATION_BEG */
+    {
+        /* NotationBeg ::= NOTATION_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NOTATION_BEG].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_NotationBeg].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_NotationBeg].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* NotationEnd ::= XTagEnd */
+    {
+        /* NotationEnd ::= XTagEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTagEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_NotationEnd].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_NotationEnd].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Required ::= REQUIRED */
+    {
+        /* Required ::= REQUIRED */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_REQUIRED].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Required].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Required].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Implied ::= IMPLIED */
+    {
+        /* Implied ::= IMPLIED */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_IMPLIED].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Implied].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Implied].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Fixed ::= FIXED */
+    {
+        /* Fixed ::= FIXED */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_FIXED].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Fixed].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Fixed].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* SectBeg ::= SECT_BEG */
+    {
+        /* SectBeg ::= SECT_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SECT_BEG].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_SectBeg].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_SectBeg].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* SectEnd ::= SECT_END */
+    {
+        /* SectEnd ::= SECT_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SECT_END].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_SectEnd].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_SectEnd].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* XMLDecl ::= XmlBeg VersionInfo EncodingDeclMaybe SDDeclMaybe SMaybe XmlEnd */
+    {
+        /* XMLDecl ::= XmlBeg VersionInfo EncodingDeclMaybe SDDeclMaybe SMaybe XmlEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XmlBeg].symbolId,
                                      aXml10SymbolId[XML10_VersionInfo].symbolId,
@@ -1500,69 +1640,80 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_XmlEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_XMLDecl].symbolId , 6, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_XMLDecl].symbolId , 6, &(aXml10SymbolId[0]));
     }
-    { /* Include ::= INCLUDE */
+    {
+        /* Include ::= INCLUDE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_INCLUDE].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Include].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Include].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* EdeclBeg ::= EDECL_BEG */
+    {
+        /* EdeclBeg ::= EDECL_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EDECL_BEG].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EdeclBeg].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EdeclBeg].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* EdeclEnd ::= XTagEnd */
+    {
+        /* EdeclEnd ::= XTagEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTagEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EdeclEnd].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EdeclEnd].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Percent ::= PERCENT */
+    {
+        /* Percent ::= PERCENT */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PERCENT].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Percent].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Percent].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* System ::= SYSTEM */
+    {
+        /* System ::= SYSTEM */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SYSTEM].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_System].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_System].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Public ::= PUBLIC */
+    {
+        /* Public ::= PUBLIC */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PUBLIC].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Public].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Public].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Ndata ::= NDATA */
+    {
+        /* Ndata ::= NDATA */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NDATA].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Ndata].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Ndata].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Encoding ::= ENCODING */
+    {
+        /* Encoding ::= ENCODING */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ENCODING].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Encoding].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Encoding].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* TOKIgnore ::= IGNORE */
+    {
+        /* TOKIgnore ::= IGNORE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_IGNORE].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TOKIgnore].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TOKIgnore].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Pcdata ::= PCDATA */
+    {
+        /* Pcdata ::= PCDATA */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PCDATA].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Pcdata].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Pcdata].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* VersionInfo ::= WhiteSpace Version Eq Squote VersionNum Squote */
+    {
+        /* VersionInfo ::= WhiteSpace Version Eq Squote VersionNum Squote */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Version].symbolId,
@@ -1571,27 +1722,31 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_VersionNum].symbolId,
                                      aXml10SymbolId[XML10_Squote].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_VersionInfo].symbolId , 6, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_VersionInfo].symbolId , 6, &(aXml10SymbolId[0]));
     }
-    { /* PiBeg ::= PI_BEG */
+    {
+        /* PiBeg ::= PI_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PI_BEG].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_PiBeg].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_PiBeg].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* PiEnd ::= PI_END */
+    {
+        /* PiEnd ::= PI_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PI_END].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_PiEnd].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_PiEnd].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* :start ::= document */
+    {
+        /* :start ::= document */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_document].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10___start_].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10___start_].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* VersionInfo ::= WhiteSpace Version Eq Dquote VersionNum Dquote */
+    {
+        /* VersionInfo ::= WhiteSpace Version Eq Dquote VersionNum Dquote */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Version].symbolId,
@@ -1600,47 +1755,54 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_VersionNum].symbolId,
                                      aXml10SymbolId[XML10_Dquote].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_VersionInfo].symbolId , 6, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_VersionInfo].symbolId , 6, &(aXml10SymbolId[0]));
     }
-    { /* Eq ::= SMaybe Equal SMaybe */
+    {
+        /* Eq ::= SMaybe Equal SMaybe */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Equal].symbolId,
                                      aXml10SymbolId[XML10_SMaybe].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Eq].symbolId , 3, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Eq].symbolId , 3, &(aXml10SymbolId[0]));
     }
-    { /* VersionNum ::= VERSIONNUM */
+    {
+        /* VersionNum ::= VERSIONNUM */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_VERSIONNUM].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_VersionNum].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_VersionNum].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Misc ::= Comment */
+    {
+        /* Misc ::= Comment */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Comment].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Misc].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Misc].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Misc ::= PI */
+    {
+        /* Misc ::= PI */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PI].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Misc].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Misc].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Names ::= Name */
+    {
+        /* Names ::= Name */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Name].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Names].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Names].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Misc ::= WhiteSpace */
+    {
+        /* Misc ::= WhiteSpace */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Misc].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Misc].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* doctypedecl ::= DoctypeBeg WhiteSpace Name SMaybe DoctypeEnd */
+    {
+        /* doctypedecl ::= DoctypeBeg WhiteSpace Name SMaybe DoctypeEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_DoctypeBeg].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
@@ -1648,9 +1810,10 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_DoctypeEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 5, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 5, &(aXml10SymbolId[0]));
     }
-    { /* doctypedecl ::= DoctypeBeg WhiteSpace Name SMaybe Lbracket intSubset Rbracket SMaybe DoctypeEnd */
+    {
+        /* doctypedecl ::= DoctypeBeg WhiteSpace Name SMaybe Lbracket intSubset Rbracket SMaybe DoctypeEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_DoctypeBeg].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
@@ -1662,9 +1825,10 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_DoctypeEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 9, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 9, &(aXml10SymbolId[0]));
     }
-    { /* doctypedecl ::= DoctypeBeg WhiteSpace Name WhiteSpace ExternalID SMaybe DoctypeEnd */
+    {
+        /* doctypedecl ::= DoctypeBeg WhiteSpace Name WhiteSpace ExternalID SMaybe DoctypeEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_DoctypeBeg].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
@@ -1674,9 +1838,10 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_DoctypeEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 7, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 7, &(aXml10SymbolId[0]));
     }
-    { /* doctypedecl ::= DoctypeBeg WhiteSpace Name WhiteSpace ExternalID SMaybe Lbracket intSubset Rbracket SMaybe DoctypeEnd */
+    {
+        /* doctypedecl ::= DoctypeBeg WhiteSpace Name WhiteSpace ExternalID SMaybe Lbracket intSubset Rbracket SMaybe DoctypeEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_DoctypeBeg].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
@@ -1690,89 +1855,103 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_DoctypeEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 11, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 11, &(aXml10SymbolId[0]));
     }
-    { /* DeclSep ::= PEReference */
+    {
+        /* DeclSep ::= PEReference */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PEReference].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_DeclSep].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_DeclSep].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* DeclSep ::= WhiteSpace */
+    {
+        /* DeclSep ::= WhiteSpace */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_DeclSep].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_DeclSep].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* intSubset ::= intSubsetUnitAny */
+    {
+        /* intSubset ::= intSubsetUnitAny */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_intSubsetUnitAny].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_intSubset].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_intSubset].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* markupdecl ::= elementdecl */
+    {
+        /* markupdecl ::= elementdecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_elementdecl].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* markupdecl ::= AttlistDecl */
+    {
+        /* markupdecl ::= AttlistDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_AttlistDecl].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Names ::= x20 Names */
+    {
+        /* Names ::= x20 Names */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_x20].symbolId,
                                      aXml10SymbolId[XML10_Names].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Names].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Names].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* markupdecl ::= EntityDecl */
+    {
+        /* markupdecl ::= EntityDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EntityDecl].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* markupdecl ::= NotationDecl */
+    {
+        /* markupdecl ::= NotationDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NotationDecl].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* markupdecl ::= PI */
+    {
+        /* markupdecl ::= PI */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PI].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* markupdecl ::= Comment */
+    {
+        /* markupdecl ::= Comment */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Comment].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* extSubset ::= extSubsetDecl */
+    {
+        /* extSubset ::= extSubsetDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_extSubsetDecl].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_extSubset].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_extSubset].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* extSubset ::= TextDecl extSubsetDecl */
+    {
+        /* extSubset ::= TextDecl extSubsetDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TextDecl].symbolId,
                                      aXml10SymbolId[XML10_extSubsetDecl].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_extSubset].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_extSubset].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* extSubsetDecl ::= extSubsetDeclUnitAny */
+    {
+        /* extSubsetDecl ::= extSubsetDeclUnitAny */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_extSubsetDeclUnitAny].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_extSubsetDecl].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_extSubsetDecl].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* SDDecl ::= WhiteSpace Standalone Eq Squote Yes Squote */
+    {
+        /* SDDecl ::= WhiteSpace Standalone Eq Squote Yes Squote */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Standalone].symbolId,
@@ -1781,9 +1960,10 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_Yes].symbolId,
                                      aXml10SymbolId[XML10_Squote].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(aXml10SymbolId[0]));
     }
-    { /* SDDecl ::= WhiteSpace Standalone Eq Squote No Squote */
+    {
+        /* SDDecl ::= WhiteSpace Standalone Eq Squote No Squote */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Standalone].symbolId,
@@ -1792,9 +1972,10 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_No].symbolId,
                                      aXml10SymbolId[XML10_Squote].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(aXml10SymbolId[0]));
     }
-    { /* SDDecl ::= WhiteSpace Standalone Eq Dquote Yes Dquote */
+    {
+        /* SDDecl ::= WhiteSpace Standalone Eq Dquote Yes Dquote */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Standalone].symbolId,
@@ -1803,15 +1984,17 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_Yes].symbolId,
                                      aXml10SymbolId[XML10_Dquote].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(aXml10SymbolId[0]));
     }
-    { /* Nmtoken ::= NMTOKEN */
+    {
+        /* Nmtoken ::= NMTOKEN */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NMTOKEN].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Nmtoken].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Nmtoken].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* SDDecl ::= WhiteSpace Standalone Eq Dquote No Dquote */
+    {
+        /* SDDecl ::= WhiteSpace Standalone Eq Dquote No Dquote */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Standalone].symbolId,
@@ -1820,23 +2003,26 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_No].symbolId,
                                      aXml10SymbolId[XML10_Dquote].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(aXml10SymbolId[0]));
     }
-    { /* element ::= EmptyElemTag */
+    {
+        /* element ::= EmptyElemTag */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EmptyElemTag].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_element].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_element].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* element ::= STag content ETag */
+    {
+        /* element ::= STag content ETag */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_STag].symbolId,
                                      aXml10SymbolId[XML10_content].symbolId,
                                      aXml10SymbolId[XML10_ETag].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_element].symbolId , 3, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_element].symbolId , 3, &(aXml10SymbolId[0]));
     }
-    { /* STag ::= STagBeg Name STagInteriorAny SMaybe STagEnd */
+    {
+        /* STag ::= STagBeg Name STagInteriorAny SMaybe STagEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_STagBeg].symbolId,
                                      aXml10SymbolId[XML10_Name].symbolId,
@@ -1844,33 +2030,37 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_STagEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_STag].symbolId , 5, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_STag].symbolId , 5, &(aXml10SymbolId[0]));
     }
-    { /* Attribute ::= Name Eq AttValue */
+    {
+        /* Attribute ::= Name Eq AttValue */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Name].symbolId,
                                      aXml10SymbolId[XML10_Eq].symbolId,
                                      aXml10SymbolId[XML10_AttValue].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Attribute].symbolId , 3, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Attribute].symbolId , 3, &(aXml10SymbolId[0]));
     }
-    { /* ETag ::= ETagBeg Name SMaybe ETagEnd */
+    {
+        /* ETag ::= ETagBeg Name SMaybe ETagEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ETagBeg].symbolId,
                                      aXml10SymbolId[XML10_Name].symbolId,
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_ETagEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ETag].symbolId , 4, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ETag].symbolId , 4, &(aXml10SymbolId[0]));
     }
-    { /* content ::= CharDataMaybe ContentInteriorAny */
+    {
+        /* content ::= CharDataMaybe ContentInteriorAny */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CharDataMaybe].symbolId,
                                      aXml10SymbolId[XML10_ContentInteriorAny].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_content].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_content].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* EmptyElemTag ::= EmptyElemTagBeg Name EmptyElemTagInteriorAny SMaybe EmptyElemTagEnd */
+    {
+        /* EmptyElemTag ::= EmptyElemTagBeg Name EmptyElemTagInteriorAny SMaybe EmptyElemTagEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EmptyElemTagBeg].symbolId,
                                      aXml10SymbolId[XML10_Name].symbolId,
@@ -1878,9 +2068,10 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_EmptyElemTagEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EmptyElemTag].symbolId , 5, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EmptyElemTag].symbolId , 5, &(aXml10SymbolId[0]));
     }
-    { /* elementdecl ::= ElementDeclBeg WhiteSpace Name WhiteSpace contentspec SMaybe ElementDeclEnd */
+    {
+        /* elementdecl ::= ElementDeclBeg WhiteSpace Name WhiteSpace contentspec SMaybe ElementDeclEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ElementDeclBeg].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
@@ -1890,74 +2081,85 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_ElementDeclEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_elementdecl].symbolId , 7, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_elementdecl].symbolId , 7, &(aXml10SymbolId[0]));
     }
-    { /* contentspec ::= Empty */
+    {
+        /* contentspec ::= Empty */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Empty].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* Nmtokens ::= Nmtoken */
+    {
+        /* Nmtokens ::= Nmtoken */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Nmtoken].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Nmtokens].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Nmtokens].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* contentspec ::= Any */
+    {
+        /* contentspec ::= Any */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Any].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* contentspec ::= Mixed */
+    {
+        /* contentspec ::= Mixed */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Mixed].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* contentspec ::= children */
+    {
+        /* contentspec ::= children */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_children].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* children ::= choice QuantifierMaybe */
+    {
+        /* children ::= choice QuantifierMaybe */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_choice].symbolId,
                                      aXml10SymbolId[XML10_QuantifierMaybe].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_children].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_children].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* children ::= seq QuantifierMaybe */
+    {
+        /* children ::= seq QuantifierMaybe */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_seq].symbolId,
                                      aXml10SymbolId[XML10_QuantifierMaybe].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_children].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_children].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* cp ::= Name QuantifierMaybe */
+    {
+        /* cp ::= Name QuantifierMaybe */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Name].symbolId,
                                      aXml10SymbolId[XML10_QuantifierMaybe].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_cp].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_cp].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* cp ::= choice QuantifierMaybe */
+    {
+        /* cp ::= choice QuantifierMaybe */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_choice].symbolId,
                                      aXml10SymbolId[XML10_QuantifierMaybe].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_cp].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_cp].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* cp ::= seq QuantifierMaybe */
+    {
+        /* cp ::= seq QuantifierMaybe */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_seq].symbolId,
                                      aXml10SymbolId[XML10_QuantifierMaybe].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_cp].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_cp].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* choice ::= Lparen SMaybe cp ChoiceInteriorMany SMaybe Rparen */
+    {
+        /* choice ::= Lparen SMaybe cp ChoiceInteriorMany SMaybe Rparen */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Lparen].symbolId,
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
@@ -1966,9 +2168,10 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Rparen].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_choice].symbolId , 6, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_choice].symbolId , 6, &(aXml10SymbolId[0]));
     }
-    { /* seq ::= Lparen SMaybe cp SeqInteriorAny SMaybe Rparen */
+    {
+        /* seq ::= Lparen SMaybe cp SeqInteriorAny SMaybe Rparen */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Lparen].symbolId,
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
@@ -1977,16 +2180,18 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Rparen].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_seq].symbolId , 6, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_seq].symbolId , 6, &(aXml10SymbolId[0]));
     }
-    { /* Nmtokens ::= x20 Nmtokens */
+    {
+        /* Nmtokens ::= x20 Nmtokens */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_x20].symbolId,
                                      aXml10SymbolId[XML10_Nmtokens].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Nmtokens].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Nmtokens].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* Mixed ::= Lparen SMaybe Pcdata MixedInteriorAny SMaybe RparenStar */
+    {
+        /* Mixed ::= Lparen SMaybe Pcdata MixedInteriorAny SMaybe RparenStar */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Lparen].symbolId,
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
@@ -1995,9 +2200,10 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_RparenStar].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Mixed].symbolId , 6, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Mixed].symbolId , 6, &(aXml10SymbolId[0]));
     }
-    { /* Mixed ::= Lparen SMaybe Pcdata SMaybe Rparen */
+    {
+        /* Mixed ::= Lparen SMaybe Pcdata SMaybe Rparen */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Lparen].symbolId,
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
@@ -2005,9 +2211,10 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Rparen].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Mixed].symbolId , 5, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Mixed].symbolId , 5, &(aXml10SymbolId[0]));
     }
-    { /* AttlistDecl ::= AttlistBeg WhiteSpace Name AttDefAny SMaybe AttlistEnd */
+    {
+        /* AttlistDecl ::= AttlistBeg WhiteSpace Name AttDefAny SMaybe AttlistEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_AttlistBeg].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
@@ -2016,9 +2223,10 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_AttlistEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_AttlistDecl].symbolId , 6, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_AttlistDecl].symbolId , 6, &(aXml10SymbolId[0]));
     }
-    { /* AttDef ::= WhiteSpace Name WhiteSpace AttType WhiteSpace DefaultDecl */
+    {
+        /* AttDef ::= WhiteSpace Name WhiteSpace AttType WhiteSpace DefaultDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Name].symbolId,
@@ -2027,93 +2235,108 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_DefaultDecl].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_AttDef].symbolId , 6, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_AttDef].symbolId , 6, &(aXml10SymbolId[0]));
     }
-    { /* AttType ::= StringType */
+    {
+        /* AttType ::= StringType */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_StringType].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_AttType].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_AttType].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* AttType ::= TokenizedType */
+    {
+        /* AttType ::= TokenizedType */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TokenizedType].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_AttType].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_AttType].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* AttType ::= EnumeratedType */
+    {
+        /* AttType ::= EnumeratedType */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EnumeratedType].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_AttType].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_AttType].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* StringType ::= STRINGTYPE */
+    {
+        /* StringType ::= STRINGTYPE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_STRINGTYPE].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_StringType].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_StringType].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* TokenizedType ::= TypeId */
+    {
+        /* TokenizedType ::= TypeId */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TypeId].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* TokenizedType ::= TypeIdref */
+    {
+        /* TokenizedType ::= TypeIdref */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TypeIdref].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* EntityValue ::= ENTITYVALUE */
+    {
+        /* EntityValue ::= ENTITYVALUE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ENTITYVALUE].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EntityValue].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EntityValue].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* TokenizedType ::= TypeIdrefs */
+    {
+        /* TokenizedType ::= TypeIdrefs */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TypeIdrefs].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* TokenizedType ::= TypeEntity */
+    {
+        /* TokenizedType ::= TypeEntity */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TypeEntity].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* TokenizedType ::= TypeEntities */
+    {
+        /* TokenizedType ::= TypeEntities */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TypeEntities].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* TokenizedType ::= TypeNmtoken */
+    {
+        /* TokenizedType ::= TypeNmtoken */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TypeNmtoken].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* TokenizedType ::= TypeNmtokens */
+    {
+        /* TokenizedType ::= TypeNmtokens */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TypeNmtokens].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* EnumeratedType ::= NotationType */
+    {
+        /* EnumeratedType ::= NotationType */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NotationType].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EnumeratedType].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EnumeratedType].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* EnumeratedType ::= Enumeration */
+    {
+        /* EnumeratedType ::= Enumeration */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Enumeration].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_EnumeratedType].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_EnumeratedType].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* NotationType ::= Notation WhiteSpace Lparen SMaybe Name NotationTypeInteriorAny SMaybe Rparen */
+    {
+        /* NotationType ::= Notation WhiteSpace Lparen SMaybe Name NotationTypeInteriorAny SMaybe Rparen */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Notation].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
@@ -2124,9 +2347,10 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Rparen].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_NotationType].symbolId , 8, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_NotationType].symbolId , 8, &(aXml10SymbolId[0]));
     }
-    { /* Enumeration ::= Lparen SMaybe Nmtoken EnumerationInteriorAny SMaybe Rparen */
+    {
+        /* Enumeration ::= Lparen SMaybe Nmtoken EnumerationInteriorAny SMaybe Rparen */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Lparen].symbolId,
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
@@ -2135,53 +2359,61 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Rparen].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Enumeration].symbolId , 6, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Enumeration].symbolId , 6, &(aXml10SymbolId[0]));
     }
-    { /* DefaultDecl ::= Required */
+    {
+        /* DefaultDecl ::= Required */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Required].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* AttValue ::= ATTVALUE */
+    {
+        /* AttValue ::= ATTVALUE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ATTVALUE].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_AttValue].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_AttValue].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* DefaultDecl ::= Implied */
+    {
+        /* DefaultDecl ::= Implied */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Implied].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* DefaultDecl ::= AttValue */
+    {
+        /* DefaultDecl ::= AttValue */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_AttValue].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* DefaultDecl ::= Fixed WhiteSpace AttValue */
+    {
+        /* DefaultDecl ::= Fixed WhiteSpace AttValue */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Fixed].symbolId,
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_AttValue].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 3, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 3, &(aXml10SymbolId[0]));
     }
-    { /* conditionalSect ::= includeSect */
+    {
+        /* conditionalSect ::= includeSect */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_includeSect].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_conditionalSect].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_conditionalSect].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* conditionalSect ::= ignoreSect */
+    {
+        /* conditionalSect ::= ignoreSect */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ignoreSect].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_conditionalSect].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_conditionalSect].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* includeSect ::= SectBeg SMaybe Include SMaybe Lbracket extSubsetDecl SectEnd */
+    {
+        /* includeSect ::= SectBeg SMaybe Include SMaybe Lbracket extSubsetDecl SectEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SectBeg].symbolId,
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
@@ -2191,9 +2423,10 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_extSubsetDecl].symbolId,
                                      aXml10SymbolId[XML10_SectEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_includeSect].symbolId , 7, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_includeSect].symbolId , 7, &(aXml10SymbolId[0]));
     }
-    { /* ignoreSect ::= SectBeg SMaybe TOKIgnore SMaybe Lbracket ignoreSectContentsAny SectEnd */
+    {
+        /* ignoreSect ::= SectBeg SMaybe TOKIgnore SMaybe Lbracket ignoreSectContentsAny SectEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SectBeg].symbolId,
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
@@ -2203,26 +2436,29 @@ static void _fillXml10G(g)
                                      aXml10SymbolId[XML10_ignoreSectContentsAny].symbolId,
                                      aXml10SymbolId[XML10_SectEnd].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ignoreSect].symbolId , 7, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ignoreSect].symbolId , 7, &(aXml10SymbolId[0]));
     }
-    { /* ignoreSectContents ::= Ignore ignoreSectContentsInteriorAny */
+    {
+        /* ignoreSectContents ::= Ignore ignoreSectContentsInteriorAny */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Ignore].symbolId,
                                      aXml10SymbolId[XML10_ignoreSectContentsInteriorAny].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_ignoreSectContents].symbolId , 2, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_ignoreSectContents].symbolId , 2, &(aXml10SymbolId[0]));
     }
-    { /* Ignore ::= IGNORE_INTERIOR */
+    {
+        /* Ignore ::= IGNORE_INTERIOR */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_IGNORE_INTERIOR].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_Ignore].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_Ignore].symbolId , 1, &(aXml10SymbolId[0]));
     }
-    { /* CharRef ::= CHARREF */
+    {
+        /* CharRef ::= CHARREF */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CHARREF].symbolId
                                    };
-        _fillRule(g, aXml10SymbolId[XML10_CharRef].symbolId , 1, &(RhsId[0]));
+        _fillRule(g, aXml10SymbolId[XML10_CharRef].symbolId , 1, &(aXml10SymbolId[0]));
     }
 }
 
