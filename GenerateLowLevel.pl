@@ -172,6 +172,7 @@ sub doOutputFillG {
 
   {
     # In a block just for alignement with the printf in the foreach () {}
+    print  $fh "\n";
     print  $fh "static Marpa_Grammar _${prefixInSub}CreateGrammar()\n";
     print  $fh "{\n";
     print  $fh "    Marpa_Grammar g;\n";
@@ -209,7 +210,7 @@ sub doOutputFillG {
   {
     print  $fh "\n";
     print  $fh "    /* Set start symbol */\n";
-    printf $fh "    _marpaUtilSetStartSymbol(g, %d);\n", $startSymbolId;
+    printf $fh "    _marpaUtilSetStartSymbol(g, aXml10SymbolId[%s].symbolId);\n", $enump->{$startSymbolId};
     print  $fh "\n";
     print  $fh "    /* Precompute grammar */\n";
     printf $fh "    _marpaUtilPrecomputeG(g);\n";
