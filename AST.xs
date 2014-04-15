@@ -7,6 +7,14 @@
 #include "xmlTypes.h"
 #include "xml10.h"
 
+struct s_xml_token
+{
+  int name;
+  char *value;
+};
+
+#include "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.c"
+
 #undef ARRAY_LENGTH
 #define ARRAY_LENGTH(array) (sizeof((array))/sizeof((array)[0]))
 
@@ -112,10 +120,8 @@ match(buf, offset, len, wanted)
     const char *wanted
   PROTOTYPE: $$
   PPCODE:
-    /*
-  const struct s_xml_token *xml_token = NULL;
+    const struct s_xml_token *xml_token = in_word_set_xml10(buf + offset, len);
     if (xml_token == 0 || strcmp(xml_token->value, wanted) != 0) {
       XSRETURN_UNDEF;
     }
-    */
     XSRETURN_YES;

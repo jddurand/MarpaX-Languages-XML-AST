@@ -340,7 +340,7 @@ sub parse {
       #
       foreach (@{$KEY2TERMINALS{$key}->[1]}) {
         # $log->tracef('pos=%6d : internal pos=%6d : trying %s, byteOffset=%d', $pos, pos($self->{buf}), $_, $self->{byteOffset});
-        if (MarpaX::Languages::XML::AST::Grammar::XML_1_0::match
+        if (MarpaX::Languages::XML::AST::match
             ($self->{buf},
              $self->{byteOffset},
              $STRLENGTH{$_},
