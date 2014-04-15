@@ -1,5 +1,5 @@
 /*
- * Tue Apr 15 10:36:46 2014
+ * Tue Apr 15 10:54:08 2014
  *
  * Generated with:
  * perl GenerateLowLevel.pl --bnf bnf/xml10.bnf --prefix xml10 --output xml10.c
@@ -534,5 +534,12 @@ struct sXmlSymbolId aXml10SymbolId[] = {
 };
 
 #define XML10_NUMBER_OF_SYMBOLS 257
+
+static void _fillXml10G(g)
+    Marpa_Grammar g;
+{
+    _fillG(g, XML10_NUMBER_OF_SYMBOLS, aXml10SymbolId);
+}
+
 
 #endif /* XML10_H */
