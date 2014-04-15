@@ -55,6 +55,7 @@ sub doOutput {
   doOutputHeader($fh, $prefix, $command, $bnf);
   doOutputEnum($fh, $prefix, $symbolsp, $rulesp);
   doOutputStructAndSizes($fh, $prefix, $symbolsp, $rulesp);
+  doOutputFillG($fh, $prefix, $symbolsp, $rulesp);
   doOutputTailer($fh, $prefix);
   close($fh) || warn "Cannot close $output, $!";
 
@@ -119,7 +120,7 @@ sub doOutputEnum {
       printf $fh "    %-40s,\n", $enum;
     }
   }
-  print  $fh "}\n";
+  print  $fh "};\n";
 }
 
 # -----------------------------------------------------------------
@@ -151,5 +152,26 @@ sub doOutputStructAndSizes {
   }
   print  $fh "\n";
   print  $fh "#define ${prefix}_NUMBER_OF_SYMBOLS $i\n";
+  print  $fh "\n";
 }
 
+# -----------------------------------------------------------------
+
+sub doOutputFillG {
+  my ($fh, $prefix, $symbolsp, $rulesp) = @_;
+
+  my $prefixInSub = lc($prefix);
+  $prefixInSub = ucfirst($prefix);
+
+  $prefix = uc($prefix);
+
+  {
+    # In a block just for alignement with the printf in the foreach () {}
+    print  $fh "static void _fill${prefixInSub}G(g)\n";
+    print  $fh "    Marpa_Grammar g;\n";
+    print  $fh "{\n";
+    print  $fh "    _fillG(g, XML10_NUMBER_OF_SYMBOLS, aXml10SymbolId);\n";
+    print  $fh "}\n";
+    print  $fh "\n";
+  }
+}
