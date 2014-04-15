@@ -4,8 +4,6 @@
 /* We include marpa_slif.h instead of marpa.h, because it contains  */
 /* very handy definition e.g. marpa_error_description[], etc...     */
 #include "marpa_slif.h"
-#include "xmlTypes.h"
-#include "xml10.h"
 
 struct s_xml_token
 {
@@ -13,7 +11,7 @@ struct s_xml_token
   char *value;
 };
 
-#include "lib/MarpaX/Languages/XML/AST/Grammar/XML_1_0/xml_1_0.c"
+#include "xml10.c"
 
 #undef ARRAY_LENGTH
 #define ARRAY_LENGTH(array) (sizeof((array))/sizeof((array)[0]))

@@ -1,0 +1,339 @@
+inaccessible is ok by default
+
+:start ::=      document
+:default ::= action => [values] bless => ::lhs
+lexeme default = action => [start,length,value] forgiving => 1
+
+#
+# We want to pause at the very beginning
+#
+event '^document' = predicted <document>
+document      ::= prolog element MiscAny
+Char          ::= CHAR
+Name          ::= NAME
+Names         ::= Name
+                | x20 Names
+Nmtoken       ::= NMTOKEN
+Nmtokens      ::= Nmtoken
+                | x20 Nmtokens
+EntityValue   ::= ENTITYVALUE
+AttValue      ::= ATTVALUE
+SystemLiteral ::= SYSTEMLITERAL
+PubidLiteral  ::= PUBIDLITERAL
+CharData      ::= CHARDATA
+Comment       ::= CommentBeg CommentInterior CommentEnd
+PITarget      ::= PITARGET
+PI            ::= PiBeg PITarget               PiEnd
+                | PiBeg PITarget WhiteSpace PiInterior PiEnd
+CDSect        ::= CDStart CData CDEnd
+CDStart       ::= CDSTART
+CData         ::= CDATA
+CDEnd         ::= CDEND
+prolog        ::= XMLDeclMaybe MiscAny
+                | XMLDeclMaybe MiscAny doctypedecl MiscAny
+XMLDecl       ::= XmlBeg VersionInfo EncodingDeclMaybe SDDeclMaybe SMaybe XmlEnd
+VersionInfo   ::= WhiteSpace Version Eq Squote VersionNum Squote
+                | WhiteSpace Version Eq Dquote VersionNum Dquote
+Eq            ::= SMaybe Equal SMaybe
+VersionNum    ::= VERSIONNUM
+Misc          ::= Comment
+                | PI
+                | WhiteSpace
+doctypedecl   ::= DoctypeBeg WhiteSpace Name SMaybe                                     DoctypeEnd
+                | DoctypeBeg WhiteSpace Name SMaybe Lbracket intSubset Rbracket SMaybe DoctypeEnd
+                | DoctypeBeg WhiteSpace Name WhiteSpace ExternalID SMaybe                                     DoctypeEnd
+                | DoctypeBeg WhiteSpace Name WhiteSpace ExternalID SMaybe Lbracket intSubset Rbracket SMaybe DoctypeEnd
+DeclSep       ::= PEReference
+                | WhiteSpace
+intSubset     ::= intSubsetUnitAny
+markupdecl    ::= elementdecl
+                | AttlistDecl
+                | EntityDecl
+                | NotationDecl
+                | PI
+                | Comment
+extSubset     ::=          extSubsetDecl
+                | TextDecl extSubsetDecl
+extSubsetDecl ::= extSubsetDeclUnitAny
+SDDecl        ::= WhiteSpace Standalone Eq Squote Yes Squote
+                | WhiteSpace Standalone Eq Squote No  Squote
+                | WhiteSpace Standalone Eq Dquote Yes Dquote
+                | WhiteSpace Standalone Eq Dquote No  Dquote
+element       ::= EmptyElemTag
+                | STag content ETag
+STag          ::= STagBeg Name STagInteriorAny SMaybe STagEnd
+Attribute     ::= Name Eq AttValue
+ETag          ::= ETagBeg Name SMaybe ETagEnd
+content       ::= CharDataMaybe ContentInteriorAny
+EmptyElemTag  ::= EmptyElemTagBeg Name EmptyElemTagInteriorAny SMaybe EmptyElemTagEnd
+elementdecl   ::= ElementDeclBeg WhiteSpace Name WhiteSpace contentspec SMaybe ElementDeclEnd
+contentspec   ::= Empty
+                | Any
+                | Mixed
+                | children
+children      ::= choice QuantifierMaybe
+                | seq QuantifierMaybe
+cp            ::= Name QuantifierMaybe
+                | choice QuantifierMaybe
+                | seq QuantifierMaybe
+choice        ::= Lparen SMaybe cp ChoiceInteriorMany SMaybe Rparen
+seq           ::= Lparen SMaybe cp SeqInteriorAny SMaybe Rparen
+Mixed         ::= Lparen SMaybe Pcdata MixedInteriorAny SMaybe RparenStar
+                | Lparen SMaybe Pcdata SMaybe Rparen
+AttlistDecl   ::= AttlistBeg WhiteSpace Name AttDefAny SMaybe AttlistEnd
+AttDef        ::= WhiteSpace Name WhiteSpace AttType WhiteSpace DefaultDecl
+AttType       ::= StringType
+                | TokenizedType
+                | EnumeratedType
+StringType    ::= STRINGTYPE
+TokenizedType ::= TypeId
+                | TypeIdref
+                | TypeIdrefs
+                | TypeEntity
+                | TypeEntities
+                | TypeNmtoken
+                | TypeNmtokens
+EnumeratedType ::= NotationType
+                | Enumeration
+NotationType  ::= Notation WhiteSpace Lparen SMaybe Name NotationTypeInteriorAny SMaybe Rparen
+Enumeration   ::= Lparen SMaybe Nmtoken EnumerationInteriorAny SMaybe Rparen
+DefaultDecl   ::= Required
+                | Implied
+                |         AttValue
+                | Fixed WhiteSpace AttValue
+conditionalSect ::= includeSect
+                  | ignoreSect
+includeSect   ::= SectBeg SMaybe Include SMaybe Lbracket extSubsetDecl SectEnd
+ignoreSect    ::= SectBeg SMaybe TOKIgnore SMaybe Lbracket ignoreSectContentsAny SectEnd
+ignoreSectContents ::= Ignore ignoreSectContentsInteriorAny
+Ignore        ::=  IGNORE_INTERIOR
+CharRef       ::= CHARREF
+Reference     ::= EntityRef
+                | CharRef
+EntityRef     ::= ENTITYREF
+PEReference   ::= PEREFERENCE
+EntityDecl    ::= GEDecl
+                | PEDecl
+GEDecl	      ::= EdeclBeg WhiteSpace Name WhiteSpace EntityDef SMaybe EdeclEnd
+PEDecl        ::= EdeclBeg WhiteSpace Percent WhiteSpace Name WhiteSpace PEDef SMaybe EdeclEnd
+EntityDef     ::= EntityValue
+                | ExternalID
+                | ExternalID NDataDecl
+PEDef         ::= EntityValue
+                | ExternalID
+ExternalID    ::= System WhiteSpace SystemLiteral
+                | Public WhiteSpace PubidLiteral WhiteSpace SystemLiteral
+NDataDecl     ::= WhiteSpace Ndata WhiteSpace Name
+TextDecl      ::= XmlBeg VersionInfoMaybe EncodingDecl SMaybe XmlEnd
+extParsedEnt  ::=          content
+                | TextDecl content
+EncodingDecl  ::= WhiteSpace Encoding Eq Dquote EncName Dquote
+                | WhiteSpace Encoding Eq Squote EncName Squote
+EncName       ::= ENCNAME
+NotationDecl  ::= NotationBeg WhiteSpace Name WhiteSpace ExternalID SMaybe NotationEnd
+                | NotationBeg WhiteSpace Name WhiteSpace PublicID   SMaybe NotationEnd
+PublicID      ::= Public WhiteSpace PubidLiteral
+#
+# G1 helpers
+#
+x20      ::= X20
+XMLDeclMaybe ::= XMLDecl
+XMLDeclMaybe ::=
+MiscAny ::= Misc*
+EncodingDeclMaybe ::= EncodingDecl
+EncodingDeclMaybe ::=
+SDDeclMaybe ::= SDDecl
+SDDeclMaybe ::=
+SMaybe ::= WhiteSpace
+SMaybe ::=
+ContentInterior ::= element CharDataMaybe
+                   | Reference CharDataMaybe
+                   | CDSect CharDataMaybe
+                   | PI CharDataMaybe
+                   | Comment CharDataMaybe
+ContentInteriorAny ::= ContentInterior*
+intSubsetUnit ::= markupdecl
+                  | DeclSep
+intSubsetUnitAny ::= intSubsetUnit*
+extSubsetDeclUnit ::= markupdecl
+                     | conditionalSect
+                     | DeclSep
+extSubsetDeclUnitAny ::= extSubsetDeclUnit*
+STagInterior ::= WhiteSpace Attribute
+STagInteriorAny ::= STagInterior*
+CharDataMaybe ::= CharData
+CharDataMaybe ::=
+EmptyElemTagInterior ::= WhiteSpace Attribute
+EmptyElemTagInteriorAny ::= EmptyElemTagInterior*
+Quantifier ::= QuestionMark
+             | Star
+             | Plus
+QuantifierMaybe ::= Quantifier
+QuantifierMaybe ::=
+ChoiceInterior ::= SMaybe Pipe SMaybe cp
+ChoiceInteriorMany ::= ChoiceInterior+
+SeqInterior ::= SMaybe Comma SMaybe cp
+SeqInteriorAny ::= SeqInterior*
+MixedInterior ::= SMaybe Pipe SMaybe Name
+MixedInteriorAny ::= MixedInterior*
+AttDefAny ::= AttDef*
+NotationTypeInterior ::= SMaybe Pipe SMaybe Name
+NotationTypeInteriorAny ::= NotationTypeInterior*
+EnumerationInterior ::= SMaybe Pipe SMaybe Nmtoken
+EnumerationInteriorAny ::= EnumerationInterior*
+ignoreSectContentsAny ::= ignoreSectContents*
+ignoreSectContentsInterior ::= SectBeg ignoreSectContents SectEnd Ignore
+ignoreSectContentsInteriorAny ::= ignoreSectContentsInterior*
+VersionInfoMaybe ::= VersionInfo
+VersionInfoMaybe ::=
+WhiteSpace ::= S
+CommentBeg ::= COMMENT_BEG
+CommentEnd ::= COMMENT_END
+CommentInterior ::= COMMENT
+PiInterior ::= PI_INTERIOR
+XmlBeg ::= XML_BEG
+XmlEnd ::= XML_END
+Version ::= VERSION
+Squote ::= SQUOTE
+Dquote ::= DQUOTE
+Equal ::= EQUAL
+DoctypeBeg ::= DOCTYPE_BEG
+DoctypeEnd ::= XTagEnd
+Lbracket ::= LBRACKET
+Rbracket ::= RBRACKET
+Standalone ::= STANDALONE
+Yes ::= YES
+No ::= NO
+XTagBeg ::= XTAG_BEG
+STagBeg ::= XTagBeg
+XTagEnd ::= XTAG_END
+STagEnd ::= STAG_END
+ETagBeg ::= ETAG_BEG
+ETagEnd ::= ETAG_END
+EmptyElemTagBeg ::= XTagBeg
+EmptyElemTagEnd ::= EMPTYELEMTAG_END
+ElementDeclBeg ::= ELEMENTDECL_BEG
+ElementDeclEnd ::= XTagEnd
+Empty ::= EMPTY
+Any ::= ANY
+QuestionMark ::= QUESTION_MARK
+Star ::= STAR
+Plus ::= PLUS
+Lparen ::= LPAREN
+Rparen ::= RPAREN
+RparenStar ::= RPARENSTAR
+Pipe ::= PIPE
+Comma ::= COMMA
+AttlistBeg ::= ATTLIST_BEG
+AttlistEnd ::= XTagEnd
+TypeId ::= TYPE_ID
+TypeIdref ::= TYPE_IDREF
+TypeIdrefs ::= TYPE_IDREFS
+TypeEntity ::= TYPE_ENTITY
+TypeEntities ::= TYPE_ENTITIES
+TypeNmtoken ::= TYPE_NMTOKEN
+TypeNmtokens ::= TYPE_NMTOKENS
+Notation ::= NOTATION
+NotationBeg ::= NOTATION_BEG
+NotationEnd ::= XTagEnd
+Required ::= REQUIRED
+Implied ::= IMPLIED
+Fixed ::= FIXED
+SectBeg ::= SECT_BEG
+SectEnd ::= SECT_END
+Include ::= INCLUDE
+EdeclBeg ::= EDECL_BEG
+EdeclEnd ::= XTagEnd
+Percent ::= PERCENT
+System ::= SYSTEM
+Public ::= PUBLIC
+Ndata ::= NDATA
+Encoding ::= ENCODING
+TOKIgnore ::= IGNORE
+Pcdata ::= PCDATA
+PiBeg ::= PI_BEG
+PiEnd ::= PI_END
+#
+# Lexemes: they are all dummy, this is taken care in userspace
+# ------------------------------------------------------------
+_DUMMY           ~ [^\s\S]
+X20              ~ _DUMMY
+S                ~ _DUMMY
+NAME             ~ _DUMMY
+CHAR             ~ _DUMMY
+NMTOKEN          ~ _DUMMY
+SYSTEMLITERAL    ~ _DUMMY
+PUBIDLITERAL     ~ _DUMMY
+CHARDATA         ~ _DUMMY
+CDATA            ~ _DUMMY
+COMMENT_BEG      ~ _DUMMY
+COMMENT_END      ~ _DUMMY
+COMMENT          ~ _DUMMY
+PI_BEG           ~ _DUMMY
+PI_END           ~ _DUMMY
+PITARGET         ~ _DUMMY
+PI_INTERIOR      ~ _DUMMY
+CDSTART          ~ _DUMMY
+CDEND            ~ _DUMMY
+XML_BEG          ~ _DUMMY
+XML_END          ~ _DUMMY
+VERSION          ~ _DUMMY
+DQUOTE           ~ _DUMMY
+SQUOTE           ~ _DUMMY
+EQUAL            ~ _DUMMY
+VERSIONNUM       ~ _DUMMY
+DOCTYPE_BEG      ~ _DUMMY
+LBRACKET         ~ _DUMMY
+RBRACKET         ~ _DUMMY
+STANDALONE       ~ _DUMMY
+YES              ~ _DUMMY
+NO               ~ _DUMMY
+XTAG_BEG         ~ _DUMMY
+XTAG_END         ~ _DUMMY
+STAG_END         ~ _DUMMY
+ETAG_END         ~ _DUMMY
+ETAG_BEG         ~ _DUMMY
+EMPTYELEMTAG_END ~ _DUMMY
+ELEMENTDECL_BEG  ~ _DUMMY
+EMPTY            ~ _DUMMY
+ANY              ~ _DUMMY
+QUESTION_MARK    ~ _DUMMY
+STAR             ~ _DUMMY
+PLUS             ~ _DUMMY
+LPAREN           ~ _DUMMY
+RPAREN           ~ _DUMMY
+PIPE             ~ _DUMMY
+COMMA            ~ _DUMMY
+RPARENSTAR       ~ _DUMMY
+PCDATA           ~ _DUMMY
+ATTLIST_BEG      ~ _DUMMY
+STRINGTYPE       ~ _DUMMY
+TYPE_ID          ~ _DUMMY
+TYPE_IDREF       ~ _DUMMY
+TYPE_IDREFS      ~ _DUMMY
+TYPE_ENTITY      ~ _DUMMY
+TYPE_ENTITIES    ~ _DUMMY
+TYPE_NMTOKEN     ~ _DUMMY
+TYPE_NMTOKENS    ~ _DUMMY
+NOTATION         ~ _DUMMY
+REQUIRED         ~ _DUMMY
+IMPLIED          ~ _DUMMY
+FIXED            ~ _DUMMY
+SECT_BEG         ~ _DUMMY
+INCLUDE          ~ _DUMMY
+SECT_END         ~ _DUMMY
+IGNORE           ~ _DUMMY
+IGNORE_INTERIOR  ~ _DUMMY
+CHARREF          ~ _DUMMY
+ENTITYREF        ~ _DUMMY
+PEREFERENCE      ~ _DUMMY
+EDECL_BEG        ~ _DUMMY
+PERCENT          ~ _DUMMY
+SYSTEM           ~ _DUMMY
+PUBLIC           ~ _DUMMY
+NDATA            ~ _DUMMY
+ENCODING         ~ _DUMMY
+ENCNAME          ~ _DUMMY
+NOTATION_BEG     ~ _DUMMY
+ATTVALUE         ~ _DUMMY
+ENTITYVALUE      ~ _DUMMY
