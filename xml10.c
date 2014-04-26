@@ -1,5 +1,5 @@
 /*
- * Tue Apr 15 15:47:54 2014
+ * Sat Apr 26 08:42:58 2014
  *
  * Generated with:
  * perl GenerateLowLevel.pl --bnf bnf/xml10.bnf --prefix xml10 --output xml10.c
@@ -271,6 +271,7 @@ enum {
     /* 255 */ XML10_PI_BEG                            ,
     /* 256 */ XML10_PI_END                            ,
 };
+
 static Marpa_Grammar _xml10CreateGrammar()
 {
     Marpa_Grammar g;
@@ -2467,7 +2468,7 @@ static Marpa_Grammar _xml10CreateGrammar()
     }
 
     /* Set start symbol */
-    _marpaUtilSetStartSymbol(g, 0);
+    _marpaUtilSetStartSymbol(g, aXml10SymbolId[XML10___start_].symbolId);
 
     /* Precompute grammar */
     _marpaUtilPrecomputeG(g);
