@@ -123,6 +123,7 @@ static void _marpaUtilSetStartSymbol(g,
      Marpa_Grammar g;
      Marpa_Symbol_ID symbolId;
 {
+  marpa_g_error_clear(g);
   int result = marpa_g_start_symbol_set(g, symbolId);
   _marpaUtilCroakIfError(marpa_g_error(g, NULL), "marpa_g_start_symbol_set()", result < 0);
 
@@ -134,7 +135,10 @@ static void _marpaUtilSetStartSymbol(g,
 static void _marpaUtilPrecomputeG(g)
      Marpa_Grammar g;
 {
-  int result = marpa_g_precompute(g);
+  int result;
+
+  marpa_g_error_clear(g);
+  result = marpa_g_precompute(g);
   _marpaUtilCroakIfError(marpa_g_error(g, NULL), "marpa_g_precompute()", result < 0);
 }
 
