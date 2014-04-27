@@ -1,5 +1,5 @@
 /*
- * Sun Apr 27 20:53:06 2014
+ * Sun Apr 27 21:03:53 2014
  *
  * Generated with:
  * perl GenerateLowLevel.pl --bnf bnf/xml10.bnf --prefix xml10 --output xml10.c
@@ -9,7 +9,7 @@
 #ifndef XML10_C
 #define XML10_C
 
-#include "xmlTypes.h"
+#include "marpaUtil.h"
 
 /* We do not need all these, just the lexemes, but this is convenient to have the whole list */
 enum {
@@ -278,7 +278,7 @@ static Marpa_Grammar _xml10CreateGrammar()
 
     /* Room to map our enums to real Ids */
     int nbSymbols =  257;
-    struct sXmlSymbolId aXml10SymbolId[257] = {
+    struct sSymbolId aXml10SymbolId[257] = {
        /*
         * Id, Name                                    , Description
         */
