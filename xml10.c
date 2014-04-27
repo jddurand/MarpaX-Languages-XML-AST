@@ -1,17 +1,5 @@
-/*
- * Sun Apr 27 21:52:39 2014
- *
- * Generated with:
- * perl GenerateLowLevel.pl --bnf bnf/xml10.bnf --prefix xml10 --output xml10.c
- *
- */
-
-#ifndef XML10_C
-#define XML10_C
-
+#include "xml10.h"
 #include "marpaUtil.h"
-
-Marpa_Grammar _xml10CreateGrammar();
 
 /* We do not need all these, just the lexemes, but this is convenient to have the whole list */
 enum {
@@ -2478,5 +2466,3 @@ Marpa_Grammar _xml10CreateGrammar()
     return g;
 }
 
-
-#endif /* XML10_C */
