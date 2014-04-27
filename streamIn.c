@@ -87,7 +87,7 @@ static char *_streamIn_sv2Reftype(svInputp)
 static short _streamIn_sv2IsPerlIOb(svInputp)
      SV *svInputp;
 {
-  IO *io;
+  IO *io = NULL;
 
   SvGETMAGIC(svInputp);
   if (SvROK(svInputp)) {
@@ -103,7 +103,7 @@ static short _streamIn_sv2IsPerlIOb(svInputp)
     io = (IO*)svInputp;
   }
 
-  return (io && IoIFP(io)) ? 1 : 0;
+  return ((io != NULL) && IoIFP(io)) ? 1 : 0;
 }
 
 /********************************************/
@@ -232,7 +232,7 @@ static void _streamIn_doneBuffer(self, iWcharBuf)
   /* We want to forget forever buffer at index iWcharBuf. */
   /* Any eventual previous buffer will me removed as well */
 
-  if (iWcharBuf < self->nWcharBuf) {
+  if (self->nWcharBuf > 0 && iWcharBuf < self->nWcharBuf) {
     /* We destroy the (wchar_t *) buffers */
     for (i = 0; i <= iWcharBuf; ++i) {
       Safefree(self->wcharBufpp[i]);
@@ -531,9 +531,21 @@ static void _streamIn_init(self)
 }
 
 /********************************************/
+/* streamIn destructor a-la-C               */
+/********************************************/
+static void streamIn_destroy(selfp)
+     s_streamIn_ **selfp;
+{
+  /* Destroy all internal buffers */
+  _streamIn_doneBuffer(*selfp, (*selfp)->nWcharBuf - 1);
+  Safefree(*selfp);
+  *selfp = NULL;
+}
+
+/********************************************/
 /* streamIn constructor a-la-C              */
 /********************************************/
-static s_streamIn_ *streamInNew(svInputp, bufMaxChars)
+static s_streamIn_ *streamIn_new(svInputp, bufMaxChars)
      SV *svInputp;
      STRLEN bufMaxChars;
 {
@@ -541,6 +553,7 @@ static s_streamIn_ *streamInNew(svInputp, bufMaxChars)
   char *reftype = _streamIn_sv2Reftype(svInputp);
 
   Newx(self, 1, s_streamIn_);
+
   self->svInputp = svInputp;
   self->bufMaxChars = bufMaxChars;
   
@@ -570,8 +583,7 @@ static s_streamIn_ *streamInNew(svInputp, bufMaxChars)
     self->readFuncPtr = _streamIn_readFromScalar;
   }
   else {
-    Safefree(self);
-    self = NULL;
+    streamIn_destroy(&self);
     croak("Invalid input type: must be blessed, an opened file handle, a reference to a scalar, or a scalar");
   }
 
