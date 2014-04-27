@@ -2,6 +2,9 @@
 #include "perl.h"
 #include "XSUB.h"
 
+#include "streamIn.h"
+#include "genericStack.h"
+
 struct s_xml_token
 {
   int name;
@@ -28,6 +31,27 @@ PPCODE:
   sv = sv_newmortal();
   sv_setref_pv (sv, "MarpaX::Languages::XML::AST::XML10::G", (void *) gXml10);
   XPUSHs (sv);
+}
+
+void
+parseG10(newG10, input)
+     SV *newG10;
+     SV *input;
+PPCODE:
+{
+  STRLEN position = 0;
+  s_streamIn_ *streamIn = streamIn_new(input, 0);
+  wchar_t wchar;
+
+  while (streamIn_fetchCharacter(streamIn, position, &wchar) != 0) {
+    fprintf(stderr, "Position %5ld: 0x%lx\n", (unsigned long) position, (unsigned long) wchar);
+    if (position % 10 == 0) {
+      streamIn_doneCharacter(streamIn, position);
+    }
+    position++;
+  }
+
+  streamIn_destroy(&streamIn);
 }
 
 # The first argument should be the buffer. No matter in case of multi-byte stuff, all

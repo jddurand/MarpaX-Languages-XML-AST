@@ -1,5 +1,8 @@
-#ifndef STREAMIN_C
-#define STREAMIN_C
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+
+#include "streamIn.h"
 
 /********************************************************************************/
 /* Convention:                                                                  */
@@ -12,7 +15,6 @@
 /*****************************************************************************/
 /* Generic class handling read-only streaming on buffers that can ONLY go on */
 /*****************************************************************************/
-typedef struct s_streamIn s_streamIn_;
 struct s_streamIn {
   SV            *svInputp;
   short          isTieHandleb;  /* When svInputp is a tied file handle */
@@ -29,12 +31,24 @@ struct s_streamIn {
   short          eofb;
 };
 
+static void  _streamIn_listBuffers(s_streamIn_ *self, const char *prefix);
+static short _streamIn_sv2IsBlessed(SV *svInputp);
+static char *_streamIn_sv2Reftype(SV *svInputp);
+static short _streamIn_sv2IsPerlIOb(SV *svInputp);
+static short _streamIn_sv2TieHandleb(SV *svInputp);
+static void _streamIn_readFromBlessed(s_streamIn_ *self, SV *svTmp);
+static void _streamIn_readFromPerlIO(s_streamIn_ *self, SV *svTmp);
+static void _streamIn_readFromTieHandle(s_streamIn_ *self, SV *svTmp);
+static void _streamIn_readFromScalar(s_streamIn_ *self, SV *svTmp);
+static void _streamIn_doneBuffer(s_streamIn_ *self, Size_t iWcharBuf);
+static void _streamIn_svToWchar(SV *sv, wchar_t **wBufp, STRLEN *svLenp);
+static STRLEN _streamIn_read(s_streamIn_ *self, STRLEN position, short appendModeb);
+static void _streamIn_init(s_streamIn_ *self);
+
 /********************************************/
 /* _streamIn_listBuffers                    */
 /********************************************/
-static void  _streamIn_listBuffers(self, prefix)
-     s_streamIn_ *self;
-     const char *prefix;
+static void  _streamIn_listBuffers(s_streamIn_ *self, const char *prefix)
 {
   Size_t i;
 
@@ -54,8 +68,7 @@ static void  _streamIn_listBuffers(self, prefix)
 /*                                          */
 /* Note: Copied from Scalar-List-Utils-1.38 */
 /********************************************/
-static short _streamIn_sv2IsBlessed(svInputp)
-     SV *svInputp;
+static short _streamIn_sv2IsBlessed(SV *svInputp)
 {
   SvGETMAGIC(svInputp);
   return (SvROK(svInputp) && SvOBJECT(SvRV(svInputp))) ? 1 : 0;
@@ -69,8 +82,7 @@ static short _streamIn_sv2IsBlessed(svInputp)
 /*                                          */
 /* Note: Copied from Scalar-List-Utils-1.38 */
 /********************************************/
-static char *_streamIn_sv2Reftype(svInputp)
-     SV *svInputp;
+static char *_streamIn_sv2Reftype(SV *svInputp)
 {
   SvGETMAGIC(svInputp);
   return SvROK(svInputp) ? (char*)sv_reftype(SvRV(svInputp),FALSE) : (char*)NULL;
@@ -84,8 +96,7 @@ static char *_streamIn_sv2Reftype(svInputp)
 /*                                          */
 /* Adapted from Scalar-List-Utils-1.38      */
 /********************************************/
-static short _streamIn_sv2IsPerlIOb(svInputp)
-     SV *svInputp;
+static short _streamIn_sv2IsPerlIOb(SV *svInputp)
 {
   IO *io = NULL;
 
@@ -112,8 +123,7 @@ static short _streamIn_sv2IsPerlIOb(svInputp)
 /* Input: SV *svInputp                      */
 /* Output: 1 if tied handle, 0 if not       */
 /********************************************/
-static short _streamIn_sv2TieHandleb(svInputp)
-     SV *svInputp;
+static short _streamIn_sv2TieHandleb(SV *svInputp)
 {
   if (! isGV(svInputp) || SvTYPE(svInputp) != SVt_PVIO) {
     return 0;
@@ -126,9 +136,7 @@ static short _streamIn_sv2TieHandleb(svInputp)
 /*                                          */
 /* read using an blessed SV                 */
 /********************************************/
-static void _streamIn_readFromBlessed(self, svTmp)
-     s_streamIn_ *self;
-     SV *svTmp;
+static void _streamIn_readFromBlessed(s_streamIn_ *self, SV *svTmp)
 {
   dSP;
 
@@ -152,9 +160,7 @@ static void _streamIn_readFromBlessed(self, svTmp)
 /*                                          */
 /* read using an blessed SV                 */
 /********************************************/
-static void _streamIn_readFromPerlIO(self, svTmp)
-     s_streamIn_ *self;
-     SV *svTmp;
+static void _streamIn_readFromPerlIO(s_streamIn_ *self, SV *svTmp)
 {
   dSP;
 
@@ -182,9 +188,7 @@ static void _streamIn_readFromPerlIO(self, svTmp)
 /*                                               */
 /* C.f. http://www.perlmonks.org/?node_id=715050 */
 /*************************************************/
-static void _streamIn_readFromTieHandle(self, svTmp)
-     s_streamIn_ *self;
-     SV *svTmp;
+static void _streamIn_readFromTieHandle(s_streamIn_ *self, SV *svTmp)
 {
   IO *io = sv_2io(self->svInputp);
   const MAGIC *mg = SvTIED_mg( (SV *) io, 'q');
@@ -212,9 +216,7 @@ static void _streamIn_readFromTieHandle(self, svTmp)
 /*                                          */
 /* Navigate through a scalar                */
 /********************************************/
-static void _streamIn_readFromScalar(self, svTmp)
-     s_streamIn_ *self;
-     SV *svTmp;
+static void _streamIn_readFromScalar(s_streamIn_ *self, SV *svTmp)
 {
   /* Force EOF flag */
   self->eofb = 1;
@@ -223,9 +225,7 @@ static void _streamIn_readFromScalar(self, svTmp)
 /********************************************/
 /* _streamIn_doneBuffer                     */
 /********************************************/
-static void _streamIn_doneBuffer(self, iWcharBuf)
-     s_streamIn_ *self;
-     Size_t       iWcharBuf;
+static void _streamIn_doneBuffer(s_streamIn_ *self, Size_t iWcharBuf)
 {
   Size_t i, j;
 
@@ -271,11 +271,9 @@ static void _streamIn_doneBuffer(self, iWcharBuf)
 }
 
 /********************************************/
-/* _streamIn_doneCharacter                  */
+/* streamIn_doneCharacter                   */
 /********************************************/
-static void _streamIn_doneCharacter(self, position)
-     s_streamIn_ *self;
-     STRLEN       position;
+void streamIn_doneCharacter(s_streamIn_ *self, STRLEN position)
 {
   Size_t iWcharBuf;
   Size_t iWcharBufToDelete;
@@ -297,7 +295,6 @@ static void _streamIn_doneCharacter(self, position)
   }
   if (foundb == 1) {
     _streamIn_doneBuffer(self, iWcharBufToDelete);
-    _streamIn_listBuffers(self, "After _streamIn_doneBuffer within _streamIn_doneCharacter");
   }
 }
 
@@ -306,10 +303,7 @@ static void _streamIn_doneCharacter(self, position)
 /*                                          */
 /* Adapted from module Lucene version 0.18  */
 /********************************************/
-static void _streamIn_svToWchar(sv, wBufp, svLenp)
-     SV *sv;
-     wchar_t **wBufp;
-     STRLEN *svLenp;
+static void _streamIn_svToWchar(SV *sv, wchar_t **wBufp, STRLEN *svLenp)
 {
   wchar_t* ret;
   // Get string length of argument. This works for PV, NV and IV.
@@ -361,10 +355,7 @@ static void _streamIn_svToWchar(sv, wBufp, svLenp)
 /********************************************/
 /* _streamIn_read                           */
 /********************************************/
-static void _streamIn_read(self, position, appendModeb)
-     s_streamIn_ *self;
-     STRLEN       position;
-     short        appendModeb;
+static STRLEN _streamIn_read(s_streamIn_ *self, STRLEN position, short appendModeb)
 {
   SV *svTmp;
   Size_t iWcharBuf = self->nWcharBuf - 1;
@@ -432,23 +423,19 @@ static void _streamIn_read(self, position, appendModeb)
     self->maxPos = self->lastPos;
   }
 
-  _streamIn_listBuffers(self, "After _streamIn_read");
-
   if (n <= 0) {
     /* Nothing was read - this could have been done before, but happens only once, at EOF */
     _streamIn_doneBuffer(self, iWcharBuf);
-    _streamIn_listBuffers(self, "After _streamIn_doneBuffer within _streamIn_read");
+    n = 0;
   }
-  
+
+  return n;
 }
 
 /********************************************/
-/* _streamIn_fetchCharacter                 */
+/* streamIn_fetchCharacter                  */
 /********************************************/
-static short _streamIn_fetchCharacter(self, position, wcharp)
-     s_streamIn_ *self;
-     STRLEN       position;
-     wchar_t     *wcharp;
+short streamIn_fetchCharacter(s_streamIn_ *self, STRLEN position, wchar_t *wcharp)
 {
   size_t iLastWcharBuf;
   size_t iWcharBuf;
@@ -462,9 +449,11 @@ static short _streamIn_fetchCharacter(self, position, wcharp)
       return 0;
     } else {
       /* Buffer next data */
-      _streamIn_read(self, self->lastPos + 1, 0);
-      _streamIn_listBuffers(self, "After _streamIn_read within _streamIn_fetchCharacter");
-      return _streamIn_fetchCharacter(self, position);
+      if (_streamIn_read(self, self->lastPos + 1, 0) > 0) {;
+	return streamIn_fetchCharacter(self, position, wcharp);
+      } else {
+	return 0;
+      }
     }
   } else {
     if (position < self->mapBegp[0]) {
@@ -512,8 +501,7 @@ static short _streamIn_fetchCharacter(self, position, wcharp)
 /********************************************/
 /* streamIn initialization                  */
 /********************************************/
-static void _streamIn_init(self)
-     s_streamIn_ *self;
+static void _streamIn_init(s_streamIn_ *self)
 {
 
   self->nWcharBuf = 0;
@@ -533,8 +521,7 @@ static void _streamIn_init(self)
 /********************************************/
 /* streamIn destructor a-la-C               */
 /********************************************/
-static void streamIn_destroy(selfp)
-     s_streamIn_ **selfp;
+void streamIn_destroy(s_streamIn_ **selfp)
 {
   /* Destroy all internal buffers */
   _streamIn_doneBuffer(*selfp, (*selfp)->nWcharBuf - 1);
@@ -545,9 +532,7 @@ static void streamIn_destroy(selfp)
 /********************************************/
 /* streamIn constructor a-la-C              */
 /********************************************/
-static s_streamIn_ *streamIn_new(svInputp, bufMaxChars)
-     SV *svInputp;
-     STRLEN bufMaxChars;
+s_streamIn_ *streamIn_new(SV *svInputp, STRLEN bufMaxChars)
 {
   s_streamIn_ *self = NULL;
   char *reftype = _streamIn_sv2Reftype(svInputp);
@@ -591,6 +576,3 @@ static s_streamIn_ *streamIn_new(svInputp, bufMaxChars)
 
   return self;
 }
-
-
-#endif /* STREAMIN_C */
