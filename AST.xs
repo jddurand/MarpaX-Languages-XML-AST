@@ -4,6 +4,7 @@
 
 #include "streamIn.h"
 #include "genericStack.h"
+#include "marpaUtil.h"
 
 struct s_xml_token
 {
@@ -11,7 +12,6 @@ struct s_xml_token
   char *value;
 };
 
-#include "marpaUtil.c"
 #include "xml10.c"
 
 /********************************************************

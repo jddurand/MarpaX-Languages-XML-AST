@@ -88,7 +88,7 @@ sub doOutputHeader {
 #ifndef ${prefix}_C
 #define ${prefix}_C
 
-#include "xmlTypes.h"
+#include "marpaUtil.h"
 
 HEADER
 }
@@ -148,7 +148,7 @@ sub doOutputStructAndSizes {
 
   {
     # In a block just for alignement with the printf in the foreach () {}
-    print  $fh "    struct sXmlSymbolId a${prefixInStruct}SymbolId[$nbSymbol] = {\n";
+    print  $fh "    struct sSymbolId a${prefixInStruct}SymbolId[$nbSymbol] = {\n";
     print  $fh "       /*\n";
     printf $fh "        * %2s, %-40s, %s\n", 'Id', 'Name', 'Description';
     print  $fh "        */\n";

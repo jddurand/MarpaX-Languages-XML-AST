@@ -1,7 +1,10 @@
-#ifndef MARPAUTIL_C
-#define MARPAUTIL_C
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
 
-#include "xmlTypes.h"
+#include "marpaUtil.h"
+/* We include marpa_slif.h because it contains very handy definition e.g. marpa_error_description[], etc... */
+#include "marpa_slif.h"
 
 /********************************************************
  _marpaUtilCroakIfError
@@ -47,15 +50,15 @@ void marpaUtilCreateGrammar(Marpa_Grammar *gp)
 /********************************************************
  marpaUtilSetSymbols
  ********************************************************/
-void marpaUtilSetSymbols(Marpa_Grammar g, int nXmlSymbolId, struct sXmlSymbolId *aXmlSymbolId)
+void marpaUtilSetSymbols(Marpa_Grammar g, int nSymbolId, struct sSymbolId *aSymbolId)
 {
   int i;
   Marpa_Symbol_ID symbolId;
 
-  for (i = 0; i < nXmlSymbolId; i++) {
+  for (i = 0; i < nSymbolId; i++) {
     marpa_g_error_clear(g);
-    aXmlSymbolId[i].symbolId = marpa_g_symbol_new(g);
-    _marpaUtilCroakIfError(marpa_g_error(g, NULL), "marpa_g_symbol_new()", aXmlSymbolId[i].symbolId < 0);
+    aSymbolId[i].symbolId = marpa_g_symbol_new(g);
+    _marpaUtilCroakIfError(marpa_g_error(g, NULL), "marpa_g_symbol_new()", aSymbolId[i].symbolId < 0);
   }
 }
 
@@ -111,5 +114,3 @@ void marpaUtilPrecomputeG(Marpa_Grammar g)
   result = marpa_g_precompute(g);
   _marpaUtilCroakIfError(marpa_g_error(g, NULL), "marpa_g_precompute()", result < 0);
 }
-
-#endif /* MARPAUTIL_C */
