@@ -1,5 +1,5 @@
 /*
- * Sun Apr 27 22:05:34 2014
+ * Sun Apr 27 22:07:42 2014
  *
  * Generated with:
  * perl GenerateLowLevel.pl --bnf bnf/xml10.bnf --prefix xml10 --outputc xml10.c --outputh xml10.h
@@ -11,6 +11,6 @@
 
 #include "marpa.h"
 
-Marpa_Grammar _xml10CreateGrammar();
+Marpa_Grammar xml10CreateGrammar();
 
 #endif /* XML10_H */

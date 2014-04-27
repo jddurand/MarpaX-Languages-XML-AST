@@ -262,7 +262,7 @@ enum {
     /* 256 */ XML10_PI_END                            ,
 };
 
-Marpa_Grammar _xml10CreateGrammar()
+Marpa_Grammar xml10CreateGrammar()
 {
     Marpa_Grammar g;
 
