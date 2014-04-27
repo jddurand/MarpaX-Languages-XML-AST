@@ -9,12 +9,14 @@ use File::Slurp qw/read_file/;
 my $command = "perl $0 " . join(' ', @ARGV);
 my $bnf  = '';
 my $prefix= '';
-my $output = '';
+my $outputc = '';
+my $outputh = '';
 GetOptions('bnf=s'    => \$bnf,
            'prefix=s' => \$prefix,
-           'output=s' => \$output);
-if (! $bnf || ! $prefix || ! $output) {
-  print STDERR "Usage: $^X $0 --bnf grammar.bnf --prefix PREFIX --output output.file\n";
+           'outputc=s' => \$outputc,
+           'outputh=s' => \$outputh);
+if (! $bnf || ! $prefix || ! $outputc || ! $outputh) {
+  print STDERR "Usage: $^X $0 --bnf grammar.bnf --prefix PREFIX --outputc filename.c --outputh filename.h\n";
   exit(EXIT_FAILURE);
 }
 
@@ -22,7 +24,7 @@ my %symbols = ();
 my %rules = ();
 my $startSymbolId = -1;
 doIntrospection($bnf, \%symbols, \%rules, \$startSymbolId);
-doOutput($command, $prefix, $output, \%symbols, \%rules, $startSymbolId);
+doOutput($command, $prefix, $outputc, $outputh, \%symbols, \%rules, $startSymbolId);
 exit(EXIT_SUCCESS);
 
 # -----------------------------------------------------------------
@@ -55,16 +57,18 @@ sub doIntrospection {
 # -----------------------------------------------------------------
 
 sub doOutput {
-  my ($command, $prefix, $output, $symbolsp, $rulesp, $startSymbolId) = @_;
+  my ($command, $prefix, $outputc, $outputh, $symbolsp, $rulesp, $startSymbolId) = @_;
 
-  my $fh;
-  open($fh, '>', $output) || die "Cannot open $output, $!";
-  doOutputHeader($fh, $prefix, $command, $bnf);
+  my ($h, $c);
+  open($h, '>', $outputh) || die "Cannot open $outputh, $!";
+  open($c, '>', $outputc) || die "Cannot open $outputc, $!";
+  doOutputHeader($h, $prefix, $command, $bnf);
   my %enum = ();
-  doOutputEnum($fh, $prefix, $symbolsp, $rulesp, \%enum);
-  doOutputFillG($fh, $prefix, $symbolsp, $rulesp, \%enum, $startSymbolId);
-  doOutputTailer($fh, $prefix);
-  close($fh) || warn "Cannot close $output, $!";
+  doOutputTop($c, $outputh);
+  doOutputEnum($c, $prefix, $symbolsp, $rulesp, \%enum);
+  doOutputFillG($c, $prefix, $symbolsp, $rulesp, \%enum, $startSymbolId);
+  close($h) || warn "Cannot close $outputh, $!";
+  close($c) || warn "Cannot close $outputc, $!";
 
 }
 
@@ -73,6 +77,7 @@ sub doOutput {
 sub doOutputHeader {
   my ($fh, $prefix, $command, $bnf) = @_;
 
+  my $prefixInSub = lc($prefix);
   $prefix = uc($prefix);
 
   my $now = localtime();
@@ -85,25 +90,25 @@ sub doOutputHeader {
  *
  */
 
-#ifndef ${prefix}_C
-#define ${prefix}_C
+#ifndef ${prefix}_H
+#define ${prefix}_H
 
-#include "marpaUtil.h"
+#include "marpa.h"
 
+Marpa_Grammar ${prefixInSub}CreateGrammar();
+
+#endif /* ${prefix}_H */
 HEADER
 }
 
 # -----------------------------------------------------------------
 
-sub doOutputTailer {
-  my ($fh, $prefix) = @_;
+sub doOutputTop {
+  my ($fh, $outputh) = @_;
 
-  $prefix = uc($prefix);
-
-  print $fh <<TAILER;
-
-#endif /* ${prefix}_C */
-TAILER
+  print  $fh "#include \"$outputh\"\n";
+  print  $fh "#include \"marpaUtil.h\"\n";
+  print  $fh "\n";
 }
 
 # -----------------------------------------------------------------
@@ -173,7 +178,7 @@ sub doOutputFillG {
   {
     # In a block just for alignement with the printf in the foreach () {}
     print  $fh "\n";
-    print  $fh "static Marpa_Grammar _${prefixInSub}CreateGrammar()\n";
+    print  $fh "Marpa_Grammar ${prefixInSub}CreateGrammar()\n";
     print  $fh "{\n";
     print  $fh "    Marpa_Grammar g;\n";
     print  $fh "\n";

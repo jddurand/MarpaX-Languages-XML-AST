@@ -4,7 +4,7 @@
 
 #include "streamIn.h"
 #include "genericStack.h"
-#include "marpaUtil.h"
+#include "xml10.h"
 
 struct s_xml_token
 {
@@ -12,7 +12,6 @@ struct s_xml_token
   char *value;
 };
 
-#include "xml10.c"
 
 /********************************************************
                         XS
@@ -25,7 +24,7 @@ void
 newG10()
 PPCODE:
 {
-  Marpa_Grammar gXml10 = _xml10CreateGrammar();
+  Marpa_Grammar gXml10 = xml10CreateGrammar();
   SV *sv;
 
   sv = sv_newmortal();

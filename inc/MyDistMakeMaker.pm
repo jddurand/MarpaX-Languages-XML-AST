@@ -13,7 +13,7 @@ override _build_WriteMakefile_args => sub {
 	%{ super() },
 	MYEXTLIB => 'libmarpa' . $Config{lib_ext},
         INC  => '-I' . File::Spec->catdir(File::Spec->curdir, 'libmarpa_build'),
-        OBJECT    => 'streamIn$(OBJ_EXT) genericStack$(OBJ_EXT) marpaUtil$(OBJ_EXT) AST$(OBJ_EXT)',
+        OBJECT    => 'streamIn$(OBJ_EXT) genericStack$(OBJ_EXT) marpaUtil$(OBJ_EXT) xml10$(OBJ_EXT) AST$(OBJ_EXT)',
     }
 };
 
