@@ -181,10 +181,10 @@ sub doOutputFillG {
     doOutputStructAndSizes(@_);
     print  $fh "\n";
     print  $fh "    /* Create the grammar */\n";
-    print  $fh "    _marpaUtilCreateGrammar(&g);\n";
+    print  $fh "    marpaUtilCreateGrammar(&g);\n";
     print  $fh "\n";
     print  $fh "    /* Create all the symbols */\n";
-    print  $fh "    _marpaUtilSetSymbols(g, nbSymbols, aXml10SymbolId);\n";
+    print  $fh "    marpaUtilSetSymbols(g, nbSymbols, aXml10SymbolId);\n";
     print  $fh "\n";
     print  $fh "    /* Populate the rules */\n";
   }
@@ -199,21 +199,21 @@ sub doOutputFillG {
         printf $fh "                                     aXml10SymbolId[%s].symbolId%s\n", $enump->{$rhsIdp->[$_]}, $_ < $#{$rhsIdp} ? ',' : '' ;
       }
       print  $fh "                                   };\n";
-      printf $fh "        _marpaUtilSetRule(g, %s , %d, &(rhsIds[0]), %d, -1, 0, 0);\n", $lhsId, $numRhs, $min;
+      printf $fh "        marpaUtilSetRule(g, %s , %d, &(rhsIds[0]), %d, -1, 0, 0);\n", $lhsId, $numRhs, $min;
       print  $fh "    }\n";
     } else {
       printf $fh "    { /* %s */\n", $desc;
-      printf $fh "        _marpaUtilSetRule(g, %s , 0, NULL, %d, -1, 0, 0);\n", $lhsId, $min;
+      printf $fh "        marpaUtilSetRule(g, %s , 0, NULL, %d, -1, 0, 0);\n", $lhsId, $min;
       print  $fh "    }\n";
     }
   }
   {
     print  $fh "\n";
     print  $fh "    /* Set start symbol */\n";
-    printf $fh "    _marpaUtilSetStartSymbol(g, aXml10SymbolId[%s].symbolId);\n", $enump->{$startSymbolId};
+    printf $fh "    marpaUtilSetStartSymbol(g, aXml10SymbolId[%s].symbolId);\n", $enump->{$startSymbolId};
     print  $fh "\n";
     print  $fh "    /* Precompute grammar */\n";
-    printf $fh "    _marpaUtilPrecomputeG(g);\n";
+    printf $fh "    marpaUtilPrecomputeG(g);\n";
     print  $fh "\n";
     printf $fh "    return g;\n";
     print  $fh "}\n";

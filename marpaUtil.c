@@ -6,10 +6,7 @@
 /********************************************************
  _marpaUtilCroakIfError
  ********************************************************/
-static void _marpaUtilCroakIfError(errorCode, call, forcedCondition)
-     Marpa_Error_Code errorCode;
-     const char *call;
-     int forcedCondition;
+static void _marpaUtilCroakIfError(Marpa_Error_Code errorCode, const char *call, int forcedCondition)
 {
   if (forcedCondition != 0 || errorCode != MARPA_ERR_NONE) {
     const char *function = (call != NULL) ? call : "<unknown>";
@@ -19,9 +16,9 @@ static void _marpaUtilCroakIfError(errorCode, call, forcedCondition)
 }
 
 /********************************************************
- _marpaUtilCheckVersion - unused
+ marpaUtilCheckVersion - unused
  ********************************************************/
-static void _marpaUtilCheckVersion()
+void marpaUtilCheckVersion()
 {
   unsigned int version[3];
 
@@ -30,10 +27,9 @@ static void _marpaUtilCheckVersion()
 }
 
 /********************************************************
- _marpaUtilCreateGrammar
+ marpaUtilCreateGrammar
  ********************************************************/
-static void _marpaUtilCreateGrammar(gp)
-     Marpa_Grammar *gp;
+void marpaUtilCreateGrammar(Marpa_Grammar *gp)
 {
   Marpa_Config marpa_configuration;
   Marpa_Grammar g;
@@ -49,14 +45,9 @@ static void _marpaUtilCreateGrammar(gp)
 }
 
 /********************************************************
- _marpaUtilSetSymbols
+ marpaUtilSetSymbols
  ********************************************************/
-static void _marpaUtilSetSymbols(g,
-                                 nXmlSymbolId, aXmlSymbolId           /* Symbols */
-                                 )
-     Marpa_Grammar g;
-     int nXmlSymbolId;
-     struct sXmlSymbolId *aXmlSymbolId;
+void marpaUtilSetSymbols(Marpa_Grammar g, int nXmlSymbolId, struct sXmlSymbolId *aXmlSymbolId)
 {
   int i;
   Marpa_Symbol_ID symbolId;
@@ -69,25 +60,9 @@ static void _marpaUtilSetSymbols(g,
 }
 
 /********************************************************
- _marpaUtilSetRule
+ marpaUtilSetRule
  ********************************************************/
-static void _marpaUtilSetRule(g,
-                              lhsId,
-                              numRhs,
-                              rhsIds,
-                              min,
-                              separatorId,
-                              properFlag,
-                              keepFlag
-                              )
-     Marpa_Grammar g;
-     Marpa_Symbol_ID lhsId;
-     int numRhs;
-     Marpa_Symbol_ID *rhsIds;
-     int min;
-     Marpa_Symbol_ID separatorId;
-     short properFlag;
-     short keepFlag;
+void marpaUtilSetRule(Marpa_Grammar g, Marpa_Symbol_ID lhsId, int numRhs, Marpa_Symbol_ID *rhsIds, int min, Marpa_Symbol_ID separatorId, short properFlag, short keepFlag)
 {
   Marpa_Rule_ID ruleId;
 
@@ -115,13 +90,9 @@ static void _marpaUtilSetRule(g,
 }
 
 /********************************************************
- _marpaUtilSetStartSymbol
+ marpaUtilSetStartSymbol
  ********************************************************/
-static void _marpaUtilSetStartSymbol(g,
-                                     symbolId
-                                     )
-     Marpa_Grammar g;
-     Marpa_Symbol_ID symbolId;
+void marpaUtilSetStartSymbol(Marpa_Grammar g, Marpa_Symbol_ID symbolId)
 {
   marpa_g_error_clear(g);
   int result = marpa_g_start_symbol_set(g, symbolId);
@@ -130,10 +101,9 @@ static void _marpaUtilSetStartSymbol(g,
 }
 
 /********************************************************
- _marpaUtilPrecomputeG
+ marpaUtilPrecomputeG
  ********************************************************/
-static void _marpaUtilPrecomputeG(g)
-     Marpa_Grammar g;
+void marpaUtilPrecomputeG(Marpa_Grammar g)
 {
   int result;
 
