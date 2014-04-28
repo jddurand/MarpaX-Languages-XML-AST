@@ -95,7 +95,7 @@ sub doOutputHeader {
 
 #include "marpa.h"
 
-Marpa_Grammar ${prefixInSub}CreateGrammar();
+Marpa_Grammar ${prefixInSub}_createGrammar();
 
 #endif /* ${prefix}_H */
 HEADER
@@ -153,7 +153,7 @@ sub doOutputStructAndSizes {
 
   {
     # In a block just for alignement with the printf in the foreach () {}
-    print  $fh "    struct sSymbolId a${prefixInStruct}SymbolId[$nbSymbol] = {\n";
+    print  $fh "    marpaUtil_symbolId_t a${prefixInStruct}SymbolId[$nbSymbol] = {\n";
     print  $fh "       /*\n";
     printf $fh "        * %2s, %-40s, %s\n", 'Id', 'Name', 'Description';
     print  $fh "        */\n";
@@ -172,13 +172,16 @@ sub doOutputStructAndSizes {
 sub doOutputFillG {
   my ($fh, $prefix, $symbolsp, $rulesp, $enump, $startSymbolId) = @_;
 
+  my $prefixInStruct = lc($prefix);
+  $prefixInStruct = ucfirst($prefix);
+
   my $prefixInSub = lc($prefix);
   $prefix = uc($prefix);
 
   {
     # In a block just for alignement with the printf in the foreach () {}
     print  $fh "\n";
-    print  $fh "Marpa_Grammar ${prefixInSub}CreateGrammar()\n";
+    print  $fh "Marpa_Grammar ${prefixInSub}_createGrammar()\n";
     print  $fh "{\n";
     print  $fh "    Marpa_Grammar g;\n";
     print  $fh "\n";
@@ -186,39 +189,39 @@ sub doOutputFillG {
     doOutputStructAndSizes(@_);
     print  $fh "\n";
     print  $fh "    /* Create the grammar */\n";
-    print  $fh "    marpaUtilCreateGrammar(&g);\n";
+    print  $fh "    marpaUtil_createGrammar(&g);\n";
     print  $fh "\n";
     print  $fh "    /* Create all the symbols */\n";
-    print  $fh "    marpaUtilSetSymbols(g, nbSymbols, aXml10SymbolId);\n";
+    print  $fh "    marpaUtil_setSymbols(g, nbSymbols, a${prefixInStruct}SymbolId);\n";
     print  $fh "\n";
     print  $fh "    /* Populate the rules */\n";
   }
   foreach (sort keys %{$rulesp}) {
-    my ($lhsId, $rhsIdp, $desc, $min) = ("aXml10SymbolId[" . $enump->{$rulesp->{$_}->{lhsId}} . "].symbolId", $rulesp->{$_}->{rhsIdp}, $rulesp->{$_}->{desc}, $rulesp->{$_}->{min});
+    my ($lhsId, $rhsIdp, $desc, $min) = ("a${prefixInStruct}SymbolId[" . $enump->{$rulesp->{$_}->{lhsId}} . "].symbolId", $rulesp->{$_}->{rhsIdp}, $rulesp->{$_}->{desc}, $rulesp->{$_}->{min});
     my $numRhs = scalar(@{$rhsIdp});
     if ($numRhs > 0) {
       printf $fh "    {\n";
       printf $fh "        /* %s */\n", $desc;
       print  $fh "        Marpa_Symbol_ID rhsIds[] = {\n";
       foreach (0..$#{$rhsIdp}) {
-        printf $fh "                                     aXml10SymbolId[%s].symbolId%s\n", $enump->{$rhsIdp->[$_]}, $_ < $#{$rhsIdp} ? ',' : '' ;
+        printf $fh "                                     a${prefixInStruct}SymbolId[%s].symbolId%s\n", $enump->{$rhsIdp->[$_]}, $_ < $#{$rhsIdp} ? ',' : '' ;
       }
       print  $fh "                                   };\n";
-      printf $fh "        marpaUtilSetRule(g, %s , %d, &(rhsIds[0]), %d, -1, 0, 0);\n", $lhsId, $numRhs, $min;
+      printf $fh "        marpaUtil_setRule(g, %s , %d, &(rhsIds[0]), %d, -1, 0, 0);\n", $lhsId, $numRhs, $min;
       print  $fh "    }\n";
     } else {
       printf $fh "    { /* %s */\n", $desc;
-      printf $fh "        marpaUtilSetRule(g, %s , 0, NULL, %d, -1, 0, 0);\n", $lhsId, $min;
+      printf $fh "        marpaUtil_setRule(g, %s , 0, NULL, %d, -1, 0, 0);\n", $lhsId, $min;
       print  $fh "    }\n";
     }
   }
   {
     print  $fh "\n";
     print  $fh "    /* Set start symbol */\n";
-    printf $fh "    marpaUtilSetStartSymbol(g, aXml10SymbolId[%s].symbolId);\n", $enump->{$startSymbolId};
+    printf $fh "    marpaUtil_setStartSymbol(g, a${prefixInStruct}SymbolId[%s].symbolId);\n", $enump->{$startSymbolId};
     print  $fh "\n";
     print  $fh "    /* Precompute grammar */\n";
-    printf $fh "    marpaUtilPrecomputeG(g);\n";
+    printf $fh "    marpaUtil_precomputeG(g);\n";
     print  $fh "\n";
     printf $fh "    return g;\n";
     print  $fh "}\n";

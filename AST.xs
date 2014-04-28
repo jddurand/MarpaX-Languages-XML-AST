@@ -24,7 +24,7 @@ void
 newG10()
 PPCODE:
 {
-  Marpa_Grammar gXml10 = xml10CreateGrammar();
+  Marpa_Grammar gXml10 = xml10_createGrammar();
   SV *sv;
 
   sv = sv_newmortal();
