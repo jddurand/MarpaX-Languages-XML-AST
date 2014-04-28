@@ -16,5 +16,8 @@ void marpaUtil_setRule(Marpa_Grammar g, Marpa_Symbol_ID lhsId, int numRhs, Marpa
 void marpaUtil_setStartSymbol(Marpa_Grammar g, Marpa_Symbol_ID symbolId);
 void marpaUtil_precomputeG(Marpa_Grammar g);
 void marpaUtil_createRegognizer(Marpa_Recognizer *rp, Marpa_Grammar g);
+void marpaUtil_startInput(Marpa_Grammar g, Marpa_Recognizer r);
+void marpaUtil_alternative(Marpa_Grammar g, Marpa_Recognizer r, Marpa_Symbol_ID tokenId, int value, int length);
+void marpaUtil_earlemeComplete(Marpa_Grammar g, Marpa_Recognizer r);
 
 #endif /* MARPAUTIL_H */

@@ -1,33 +1,48 @@
-#ifndef GENERIC_STACK_H
-#define GENERIC_STACK_H
+#ifndef GENERICSTACK_H
+#define GENERICSTACK_H
 
+#include <stddef.h>              /* size_t definition */
+
+/*************************
+   Opaque object pointer
+ *************************/
 typedef struct genericStack genericStack_t;
 
+/*************************
+   Macros
+ *************************/
 #define GENERICSTACK_OPTION_GROW_ON_GET 0x01
 #define GENERICSTACK_OPTION_GROW_ON_SET 0x02
-
 #define GENERICSTACK_OPTION_DEFAULT (GENERICSTACK_OPTION_GROW_ON_GET | GENERICSTACK_OPTION_GROW_ON_SET)
 
-/* Set this define at compile time to get trace callbacks */
-/* #undef GENERICSTACK_DEBUG */
+/*************************
+   Callback types
+ *************************/
+typedef void (*genericStack_failureCallback_t)(const char *file, int line, const char *function, const char *format, ...);
+typedef int  (*genericStack_freeCallback_t)(void *elementPtr);
+typedef int  (*genericStack_copyCallback_t)(void *elementDstPtr, void *elementSrcPtr);
 
-typedef void (*genericStackFailureCallback_t)(const char *file, int line, int errnum, const char *function);
-typedef int  (*genericStackFreeCallback_t)(void *elementPtr);
-typedef int  (*genericStackCopyCallback_t)(void *elementDstPtr, void *elementSrcPtr);
-typedef void (*genericStackTraceCallback_t)(const char *file, int line, const char *function, const char *format, ...);
+/*************************
+   Options
+ *************************/
+typedef struct genericStack_option {
+  unsigned int                   growFlags;
+  genericStack_failureCallback_t genericStack_failureCallbackPtr;
+  genericStack_freeCallback_t    genericStack_freeCallbackPtr;
+  genericStack_copyCallback_t    genericStack_copyCallbackPtr;
+} genericStack_option_t;
 
-genericStack_t *genericStackCreate(size_t                        elementSize,
-				   unsigned int                  options,
-				   genericStackFailureCallback_t genericStackFailureCallbackPtr,
-				   genericStackFreeCallback_t    genericStackFreeCallbackPtr,
-				   genericStackCopyCallback_t    genericStackCopyCallbackPtr,
-				   genericStackTraceCallback_t   genericStackTraceCallbackPtr);
+/*************************
+   Methods
+ *************************/
+genericStack_t *genericStack_new(size_t elementSize, genericStack_option_t *optionp);
 
-size_t genericStackPush(genericStack_t *genericStackPtr, void *elementPtr);
-void  *genericStackPop(genericStack_t *genericStackPtr);
-void  *genericStackGet(genericStack_t *genericStackPtr, unsigned int index);
-size_t genericStackSet(genericStack_t *genericStackPtr, unsigned int index, void *elementPtr);
-void   genericStackFree(genericStack_t **genericStackPtrPtr);
-size_t genericStackSize(genericStack_t *genericStackPtr);
+size_t          genericStack_push   (genericStack_t *genericStackPtr, void *elementPtr);
+void           *genericStack_pop    (genericStack_t *genericStackPtr);
+void           *genericStack_get    (genericStack_t *genericStackPtr, unsigned int index);
+size_t          genericStack_set    (genericStack_t *genericStackPtr, unsigned int index, void *elementPtr);
+size_t          genericStack_size   (genericStack_t *genericStackPtr);
 
-#endif /* GENERIC_STACK_H */
+void            genericStack_destroy(genericStack_t **genericStackPtrPtr);
+
+#endif /* GENERICSTACK_H */

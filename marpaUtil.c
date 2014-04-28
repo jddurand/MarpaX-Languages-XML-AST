@@ -128,3 +128,39 @@ void marpaUtil_createRegognizer(Marpa_Recognizer *rp, Marpa_Grammar g)
 
   *rp = r;
 }
+
+/********************************************************
+ marpaUtil_startInput
+ ********************************************************/
+void marpaUtil_startInput(Marpa_Grammar g, Marpa_Recognizer r)
+{
+  int rc;
+
+  marpa_g_error_clear(g);
+  rc = marpa_r_start_input(r);
+  _marpaUtil_croakIfError(marpa_g_error(g, NULL), "marpa_r_new()", rc < 0);
+}
+
+/********************************************************
+ marpaUtil_alternative
+ ********************************************************/
+void marpaUtil_alternative(Marpa_Grammar g, Marpa_Recognizer r, Marpa_Symbol_ID tokenId, int value, int length)
+{
+  int rc;
+
+  marpa_g_error_clear(g);
+  rc = marpa_r_alternative(r, tokenId, value, length);
+  _check(marpa_g_error((g), NULL), "marpa_r_alternative()", rc != MARPA_ERR_NONE);
+}
+
+/********************************************************
+ marpaUtil_earlemeComplete
+ ********************************************************/
+void marpaUtil_earlemeComplete(Marpa_Grammar g, Marpa_Recognizer r)
+{
+  int rc;
+
+  marpa_g_error_clear(g);
+  rc = marpa_r_earleme_complete(r);
+  _check(marpa_g_error((g), NULL), "marpa_r_earleme_complete()", rc < 0);
+}
