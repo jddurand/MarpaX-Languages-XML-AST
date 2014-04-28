@@ -114,3 +114,17 @@ void marpaUtil_precomputeG(Marpa_Grammar g)
   result = marpa_g_precompute(g);
   _marpaUtil_croakIfError(marpa_g_error(g, NULL), "marpa_g_precompute()", result < 0);
 }
+
+/********************************************************
+ marpaUtil_createRegognizer
+ ********************************************************/
+void marpaUtil_createRegognizer(Marpa_Recognizer *rp, Marpa_Grammar g)
+{
+  Marpa_Recognizer r;
+
+  marpa_g_error_clear(g);
+  r = marpa_r_new(g);
+  _marpaUtil_croakIfError(marpa_g_error(g, NULL), "marpa_r_new()", r == NULL);
+
+  *rp = r;
+}
