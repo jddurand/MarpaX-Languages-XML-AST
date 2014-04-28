@@ -15,9 +15,9 @@ struct genericStack {
   size_t                         allocSize;
   size_t                         stackSize;
   size_t                         elementSize;
-  genericStack_failureCallback_t failureCallback;
-  genericStack_freeCallback_t    freeCallback;
-  genericStack_copyCallback_t    copyCallback;
+  genericStack_failureCallback_t failureCallbackPtr;
+  genericStack_freeCallback_t    freeCallbackPtr;
+  genericStack_copyCallback_t    copyCallbackPtr;
   short                          optionGrowOnSet;
   short                          optionGrowOnGet;
 };
@@ -25,30 +25,30 @@ struct genericStack {
 /*************************
    genericStack_new
  *************************/
-genericStack_t *genericStack_new(size_t elementSize, genericStack_option_t *optionp);
+genericStack_t *genericStack_new(size_t elementSize, genericStack_option_t *optionp)
 {
-  const static char *function = "genericStackCreate";
+  const static char *function = "genericStack_new";
   genericStack_t    *genericStackPtr;
   unsigned int       i;
 
   if (elementSize <= 0) {
-    if (genericStack_failureCallbackPtr != NULL) {
-      (*genericStack_failureCallbackPtr)(__FILE__, __LINE__, function, "%s", "Function parameter check failed");
+    if (optionp != NULL && optionp->genericStack_failureCallbackPtr != NULL) {
+      (*optionp->genericStack_failureCallbackPtr)(__FILE__, __LINE__, function, "%s", "Function parameter check failed");
     }
     return NULL;
   }
 
   genericStackPtr = malloc(sizeof(genericStack_t));
   if (genericStackPtr == NULL) {
-    if (genericStack_failureCallbackPtr != NULL) {
-      (*genericStack_failureCallbackPtr)(__FILE__, __LINE__, function, "%s: %s", "malloc() call failed", strerror(errno));
+    if (optionp != NULL && optionp->genericStack_failureCallbackPtr != NULL) {
+      (*optionp->genericStack_failureCallbackPtr)(__FILE__, __LINE__, function, "%s, %s", "malloc() call failed", strerror(errno));
     }
     return NULL;
   }
   genericStackPtr->buf = malloc(elementSize * STACK_INIT_SIZE);
   if (genericStackPtr->buf == NULL) {
-    if (genericStack_failureCallbackPtr != NULL) {
-      (*genericStack_failureCallbackPtr)(__FILE__, __LINE__, errno, function, "malloc() call failed");
+    if (optionp != NULL && optionp->genericStack_failureCallbackPtr != NULL) {
+      (*optionp->genericStack_failureCallbackPtr)(__FILE__, __LINE__, function, "%s, %s", "malloc() call failed", strerror(errno));
     }
     free(genericStackPtr);
     return NULL;
@@ -57,14 +57,14 @@ genericStack_t *genericStack_new(size_t elementSize, genericStack_option_t *opti
     genericStackPtr->buf[i] = NULL;
   }
 
-  genericStackPtr->allocSize       = STACK_INIT_SIZE;
-  genericStackPtr->stackSize       = 0;
-  genericStackPtr->elementSize     = elementSize;
-  genericStackPtr->copyCallback    = optionp != NULL ? optionp->genericStack_copyCallbackPtr : NULL;
-  genericStackPtr->freeCallback    = optionp != NULL ? optionp->genericStack_freeCallbackPtr : NULL;
-  genericStackPtr->failureCallback = optionp != NULL ? optionp->genericStack_failureCallbackPtr : NULL;
-  genericStackPtr->optionGrowOnGet = optionp != NULL ? (((optionp->growFlags & GENERICSTACK_OPTION_GROW_ON_GET) == GENERICSTACK_OPTION_GROW_ON_GET) ? 1 : 0) : 0;
-  genericStackPtr->optionGrowOnSet = optionp != NULL ? (((optionp->growFlags & GENERICSTACK_OPTION_GROW_ON_SET) == GENERICSTACK_OPTION_GROW_ON_SET) ? 1 : 0) : 0;
+  genericStackPtr->allocSize          = STACK_INIT_SIZE;
+  genericStackPtr->stackSize          = 0;
+  genericStackPtr->elementSize        = elementSize;
+  genericStackPtr->copyCallbackPtr    = optionp != NULL ? optionp->genericStack_copyCallbackPtr : NULL;
+  genericStackPtr->freeCallbackPtr    = optionp != NULL ? optionp->genericStack_freeCallbackPtr : NULL;
+  genericStackPtr->failureCallbackPtr = optionp != NULL ? optionp->genericStack_failureCallbackPtr : NULL;
+  genericStackPtr->optionGrowOnGet    = optionp != NULL ? (((optionp->growFlags & GENERICSTACK_OPTION_GROW_ON_GET) == GENERICSTACK_OPTION_GROW_ON_GET) ? 1 : 0) : 0;
+  genericStackPtr->optionGrowOnSet    = optionp != NULL ? (((optionp->growFlags & GENERICSTACK_OPTION_GROW_ON_SET) == GENERICSTACK_OPTION_GROW_ON_SET) ? 1 : 0) : 0;
 
   return genericStackPtr;
 }
@@ -74,7 +74,7 @@ genericStack_t *genericStack_new(size_t elementSize, genericStack_option_t *opti
  *************************/
 void genericStack_destroy(genericStack_t **genericStackPtrPtr)
 {
-  const static char *function = "genericStackFree()";
+  const static char *function = "genericStack_destroy";
   genericStack_t *genericStackPtr;
   unsigned int i;
 
@@ -89,11 +89,11 @@ void genericStack_destroy(genericStack_t **genericStackPtrPtr)
   /* genericStackPtr->allocSize is always > 0 per def */
   for (i = 0; i < genericStackPtr->allocSize; i++) {
     if (genericStackPtr->buf[i] != NULL) {
-      if (genericStackPtr->freeCallback != NULL) {
-	int errnum = (*(genericStackPtr->freeCallback))(genericStackPtr->buf[i]);
+      if (genericStackPtr->freeCallbackPtr != NULL) {
+	int errnum = (*(genericStackPtr->freeCallbackPtr))(genericStackPtr->buf[i]);
 	if (errnum != 0) {
-	  if (genericStackPtr->failureCallback != NULL) {
-	    (*(genericStackPtr->failureCallback))(__FILE__, __LINE__, errnum, function, "freeCallback() call failed");
+	  if (genericStackPtr->failureCallbackPtr != NULL) {
+	    (*(genericStackPtr->failureCallbackPtr))(__FILE__, __LINE__, function, "%s, error number %d", "freeCallbackPtr() call failed", errnum);
 	  }
 	}
       }
@@ -114,7 +114,7 @@ void genericStack_destroy(genericStack_t **genericStackPtrPtr)
  *************************/
 size_t genericStack_push(genericStack_t *genericStackPtr, void *elementPtr)
 {
-  const static char *function = "genericStackPush()";
+  const static char *function = "genericStack_push";
   unsigned int i;
 
   if (genericStackPtr == NULL) {
@@ -127,8 +127,8 @@ size_t genericStack_push(genericStack_t *genericStackPtr, void *elementPtr)
 
     buf = realloc(genericStackPtr->buf, allocSize * sizeof(void *));
     if (buf == NULL) {
-      if (genericStackPtr->failureCallback != NULL) {
-	(*(genericStackPtr->failureCallback))(__FILE__, __LINE__, errno, function, "realloc() call failed");
+      if (genericStackPtr->failureCallbackPtr != NULL) {
+	(*(genericStackPtr->failureCallbackPtr))(__FILE__, __LINE__, function, "%s, %s", "realloc() call failed", strerror(errno));
       }
       return 0;
     }
@@ -141,17 +141,17 @@ size_t genericStack_push(genericStack_t *genericStackPtr, void *elementPtr)
   if (elementPtr != NULL) {
     void *newElementPtr = malloc(genericStackPtr->elementSize);
     if (newElementPtr == NULL) {
-      if (genericStackPtr->failureCallback != NULL) {
-	(*(genericStackPtr->failureCallback))(__FILE__, __LINE__, errno, function, "malloc() call failed");
+      if (genericStackPtr->failureCallbackPtr != NULL) {
+	(*(genericStackPtr->failureCallbackPtr))(__FILE__, __LINE__, function, "%s, %s", "malloc() call failed", strerror(errno));
       }
       return 0;
     }
     memcpy(newElementPtr, elementPtr, genericStackPtr->elementSize);
-    if (genericStackPtr->copyCallback != NULL) {
-      int errnum = (*(genericStackPtr->copyCallback))(newElementPtr, elementPtr);
+    if (genericStackPtr->copyCallbackPtr != NULL) {
+      int errnum = (*(genericStackPtr->copyCallbackPtr))(newElementPtr, elementPtr);
       if (errnum != 0) {
-	if (genericStackPtr->failureCallback != NULL) {
-	  (*(genericStackPtr->failureCallback))(__FILE__, __LINE__, errnum, function, "copyCallback() call failed");
+	if (genericStackPtr->failureCallbackPtr != NULL) {
+	  (*(genericStackPtr->failureCallbackPtr))(__FILE__, __LINE__, function, "%s, error number %d", "copyCallbackPtr() call failed", errnum);
 	}
       }
     }
@@ -169,7 +169,7 @@ size_t genericStack_push(genericStack_t *genericStackPtr, void *elementPtr)
  *************************/
 void  *genericStack_pop(genericStack_t *genericStackPtr)
 {
-  const static char *function = "genericStackPop()";
+  const static char *function = "genericStack_pop";
   void *value;
 
   if (genericStackPtr == NULL) {
@@ -177,8 +177,8 @@ void  *genericStack_pop(genericStack_t *genericStackPtr)
   }
 
   if (genericStackPtr->stackSize <= 0) {
-    if (genericStackPtr->failureCallback != NULL) {
-      (*(genericStackPtr->failureCallback))(__FILE__, __LINE__, ERANGE, function, "stack is empty");
+    if (genericStackPtr->failureCallbackPtr != NULL) {
+      (*(genericStackPtr->failureCallbackPtr))(__FILE__, __LINE__, function, "%s", "stack is empty");
     }
     return NULL;
   }
@@ -201,19 +201,19 @@ void  *genericStack_pop(genericStack_t *genericStackPtr)
  *************************/
 void  *genericStack_get(genericStack_t *genericStackPtr, unsigned int index)
 {
-  const static char *function = "genericStackGet()";
+  const static char *function = "genericStack_get";
 
   if (genericStackPtr == NULL) {
     return NULL;
   }
   if (index >= genericStackPtr->allocSize && genericStackPtr->optionGrowOnGet == 1) {
     while (index >= genericStackPtr->allocSize) {
-      genericStackPush(genericStackPtr, NULL);
+      genericStack_push(genericStackPtr, NULL);
     }
   }
   if (index >= genericStackPtr->stackSize && genericStackPtr->optionGrowOnGet != 1) {
-    if (genericStackPtr->failureCallback != NULL) {
-      (*(genericStackPtr->failureCallback))(__FILE__, __LINE__, EINVAL, function, "Attempt to get beyond stack size that do not have optionGrowOnGet");
+    if (genericStackPtr->failureCallbackPtr != NULL) {
+      (*(genericStackPtr->failureCallbackPtr))(__FILE__, __LINE__, function, "%s", "Attempt to get beyond stack size that do not have optionGrowOnGet");
     }
     return NULL;
   }
@@ -225,7 +225,7 @@ void  *genericStack_get(genericStack_t *genericStackPtr, unsigned int index)
  *************************/
 size_t genericStack_set(genericStack_t *genericStackPtr, unsigned int index, void *elementPtr)
 {
-  const static char *function = "genericStackSet()";
+  const static char *function = "genericStack_set";
   size_t minStackSize = index+1;
 
   if (genericStackPtr == NULL) {
@@ -233,21 +233,21 @@ size_t genericStack_set(genericStack_t *genericStackPtr, unsigned int index, voi
   }
   if (index >= genericStackPtr->allocSize && genericStackPtr->optionGrowOnSet == 1) {
     while (index >= genericStackPtr->allocSize) {
-      genericStackPush(genericStackPtr, NULL);
+      genericStack_push(genericStackPtr, NULL);
     }
   }
   if (index >= genericStackPtr->stackSize && genericStackPtr->optionGrowOnSet != 1) {
-    if (genericStackPtr->failureCallback != NULL) {
-      (*(genericStackPtr->failureCallback))(__FILE__, __LINE__, EINVAL, function, "Attempt to get beyond stack size that do not have optionGrowOnSet");
+    if (genericStackPtr->failureCallbackPtr != NULL) {
+      (*(genericStackPtr->failureCallbackPtr))(__FILE__, __LINE__, function, "%s", "Attempt to get beyond stack size that do not have optionGrowOnSet");
     }
     return 0;
   }
   if (genericStackPtr->buf[index] != NULL) {
-    if (genericStackPtr->freeCallback != NULL) {
-      int errnum = (*(genericStackPtr->freeCallback))(genericStackPtr->buf[index]);
+    if (genericStackPtr->freeCallbackPtr != NULL) {
+      int errnum = (*(genericStackPtr->freeCallbackPtr))(genericStackPtr->buf[index]);
       if (errnum != 0) {
-	if (genericStackPtr->failureCallback != NULL) {
-	  (*(genericStackPtr->failureCallback))(__FILE__, __LINE__, errnum, function, "freeCallback() call failed");
+	if (genericStackPtr->failureCallbackPtr != NULL) {
+	  (*(genericStackPtr->failureCallbackPtr))(__FILE__, __LINE__, function, "%s, error number %d", "freeCallbackPtr() call failed", errnum);
 	}
       }
     }
@@ -257,17 +257,17 @@ size_t genericStack_set(genericStack_t *genericStackPtr, unsigned int index, voi
   if (elementPtr != NULL) {
     void *newElementPtr = malloc(genericStackPtr->elementSize);
     if (newElementPtr == NULL) {
-      if (genericStackPtr->failureCallback != NULL) {
-	(*(genericStackPtr->failureCallback))(__FILE__, __LINE__, errno, function, "malloc() call failed");
+      if (genericStackPtr->failureCallbackPtr != NULL) {
+	(*(genericStackPtr->failureCallbackPtr))(__FILE__, __LINE__, function, "%s, %s", "malloc() call failed", strerror(errno));
       }
       return 0;
     }
     memcpy(newElementPtr, elementPtr, genericStackPtr->elementSize);
-    if (genericStackPtr->copyCallback != NULL) {
-      int errnum = (*(genericStackPtr->copyCallback))(newElementPtr, elementPtr);
+    if (genericStackPtr->copyCallbackPtr != NULL) {
+      int errnum = (*(genericStackPtr->copyCallbackPtr))(newElementPtr, elementPtr);
       if (errnum != 0) {
-	if (genericStackPtr->failureCallback != NULL) {
-	  (*(genericStackPtr->failureCallback))(__FILE__, __LINE__, errnum, function, "copyCallback() call failed");
+	if (genericStackPtr->failureCallbackPtr != NULL) {
+	  (*(genericStackPtr->failureCallbackPtr))(__FILE__, __LINE__, function, "%s, error number %d", "copyCallbackPtr() call failed", errnum);
 	}
       }
     }

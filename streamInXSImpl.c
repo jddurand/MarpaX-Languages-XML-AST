@@ -99,19 +99,20 @@ static char *_streamIn_sv2Reftype(s_streamIn_ *selfp)
 static short _streamIn_sv2IsPerlIOb(s_streamIn_ *selfp)
 {
   IO *io = NULL;
+  SV *svInputp = selfp->svInputp;
 
-  SvGETMAGIC(selfp->svInputp);
-  if (SvROK(selfp->svInputp)) {
+  SvGETMAGIC(svInputp);
+  if (SvROK(svInputp)) {
     /* deref first */
-    svInputp = SvRV(selfp->svInputp);
+    svInputp = SvRV(svInputp);
   }
 
   /* must be GLOB or IO */
-  if (isGV(selfp->svInputp)) {
-    io = GvIO((GV*)selfp->svInputp);
+  if (isGV(svInputp)) {
+    io = GvIO((GV*)svInputp);
   }
-  else if(SvTYPE(selfp->svInputp) == SVt_PVIO) {
-    io = (IO*)selfp->svInputp;
+  else if(SvTYPE(svInputp) == SVt_PVIO) {
+    io = (IO*)svInputp;
   }
 
   return ((io != NULL) && IoIFP(io)) ? 1 : 0;
@@ -273,7 +274,7 @@ static void _streamIn_doneBuffer(s_streamIn_ *selfp, Size_t iWcharBuf)
 /********************************************/
 /* streamIn_doneCharacter                   */
 /********************************************/
-void streamIn_doneCharacter(s_streamIn_ *selfp, size_t position)
+void streamIn_doneCharacter(s_streamIn_ *selfp, size_t pos)
 {
   STRLEN position = (STRLEN) pos;
   Size_t iWcharBuf;
@@ -438,6 +439,7 @@ static STRLEN _streamIn_read(s_streamIn_ *selfp, STRLEN position, short appendMo
 /********************************************/
 short streamIn_fetchCharacter(s_streamIn_ *selfp, size_t pos, wchar_t *wcharp)
 {
+  const char *function = "streamIn_fetchCharacter";
   STRLEN position = (STRLEN) pos;
   size_t iLastWcharBuf;
   size_t iWcharBuf;
@@ -508,10 +510,10 @@ short streamIn_fetchCharacter(s_streamIn_ *selfp, size_t pos, wchar_t *wcharp)
 /* streamIn initialization                  */
 /* Return 0 on failure, 1 on success        */
 /********************************************/
-static short _streamIn_init(s_streamIn_ *selfp, SV *inputp, streamIn_option_t *optionp);
+static short _streamIn_init(s_streamIn_ *selfp, SV *svInputp, streamIn_option_t *optionp)
 {
   const static char *function = "_streamIn_init";
-  char *reftype = _streamIn_sv2Reftype(svInputp);
+  char *reftype;
 
   selfp->svInputp = svInputp;
   selfp->nWcharBuf = 0;
@@ -521,6 +523,8 @@ static short _streamIn_init(s_streamIn_ *selfp, SV *inputp, streamIn_option_t *o
   selfp->lastPos = 0;
   selfp->maxPos = 0;
   selfp->eofb = 0;
+
+  reftype = _streamIn_sv2Reftype(selfp);
 
   if (optionp != NULL) {
     selfp->bufMaxChars = optionp->bufMaxChars <= 0 ? STREAMIN_DEFAULT_BUFMAXCHARS : optionp->bufMaxChars;
@@ -590,9 +594,7 @@ s_streamIn_ *streamIn_new(void *inputp, streamIn_option_t *optionp)
 
   Newx(selfp, 1, s_streamIn_);
 
-  selfp->svInputp = svInputp;
-  
-  if (_streamIn_init(selfp, (SV *) inputp) == 0) {
+  if (_streamIn_init(selfp, (SV *) inputp, optionp) == 0) {
     streamIn_destroy(&selfp);
     selfp = NULL;
   }
