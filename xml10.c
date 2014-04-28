@@ -268,7 +268,7 @@ Marpa_Grammar xml10CreateGrammar()
 
     /* Room to map our enums to real Ids */
     int nbSymbols =  257;
-    struct sSymbolId aXml10SymbolId[257] = {
+    marpaUtil_symbolId_t aXml10SymbolId[257] = {
        /*
         * Id, Name                                    , Description
         */
@@ -532,10 +532,10 @@ Marpa_Grammar xml10CreateGrammar()
     };
 
     /* Create the grammar */
-    marpaUtilCreateGrammar(&g);
+    marpaUtil_createGrammar(&g);
 
     /* Create all the symbols */
-    marpaUtilSetSymbols(g, nbSymbols, aXml10SymbolId);
+    marpaUtil_setSymbols(g, nbSymbols, aXml10SymbolId);
 
     /* Populate the rules */
     {
@@ -545,63 +545,63 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_element].symbolId,
                                      aXml10SymbolId[XML10_MiscAny].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_document].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_document].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Char ::= CHAR */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CHAR].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Char].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Char].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* SystemLiteral ::= SYSTEMLITERAL */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SYSTEMLITERAL].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_SystemLiteral].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_SystemLiteral].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Reference ::= EntityRef */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EntityRef].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Reference].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Reference].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Reference ::= CharRef */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CharRef].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Reference].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Reference].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EntityRef ::= ENTITYREF */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ENTITYREF].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EntityRef].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EntityRef].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* PEReference ::= PEREFERENCE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PEREFERENCE].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_PEReference].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_PEReference].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EntityDecl ::= GEDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_GEDecl].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EntityDecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EntityDecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EntityDecl ::= PEDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PEDecl].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EntityDecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EntityDecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* GEDecl ::= EdeclBeg WhiteSpace Name WhiteSpace EntityDef SMaybe EdeclEnd */
@@ -614,7 +614,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_EdeclEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_GEDecl].symbolId , 7, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_GEDecl].symbolId , 7, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* PEDecl ::= EdeclBeg WhiteSpace Percent WhiteSpace Name WhiteSpace PEDef SMaybe EdeclEnd */
@@ -629,28 +629,28 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_EdeclEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_PEDecl].symbolId , 9, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_PEDecl].symbolId , 9, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EntityDef ::= EntityValue */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EntityValue].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EntityDef].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EntityDef].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EntityDef ::= ExternalID */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ExternalID].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EntityDef].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EntityDef].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* PubidLiteral ::= PUBIDLITERAL */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PUBIDLITERAL].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_PubidLiteral].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_PubidLiteral].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EntityDef ::= ExternalID NDataDecl */
@@ -658,21 +658,21 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_ExternalID].symbolId,
                                      aXml10SymbolId[XML10_NDataDecl].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EntityDef].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EntityDef].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* PEDef ::= EntityValue */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EntityValue].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_PEDef].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_PEDef].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* PEDef ::= ExternalID */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ExternalID].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_PEDef].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_PEDef].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ExternalID ::= System WhiteSpace SystemLiteral */
@@ -681,7 +681,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_SystemLiteral].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ExternalID].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ExternalID].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ExternalID ::= Public WhiteSpace PubidLiteral WhiteSpace SystemLiteral */
@@ -692,7 +692,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_SystemLiteral].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ExternalID].symbolId , 5, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ExternalID].symbolId , 5, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* NDataDecl ::= WhiteSpace Ndata WhiteSpace Name */
@@ -702,7 +702,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Name].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_NDataDecl].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_NDataDecl].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TextDecl ::= XmlBeg VersionInfoMaybe EncodingDecl SMaybe XmlEnd */
@@ -713,14 +713,14 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_XmlEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TextDecl].symbolId , 5, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TextDecl].symbolId , 5, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* extParsedEnt ::= content */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_content].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_extParsedEnt].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_extParsedEnt].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* extParsedEnt ::= TextDecl content */
@@ -728,7 +728,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_TextDecl].symbolId,
                                      aXml10SymbolId[XML10_content].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_extParsedEnt].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_extParsedEnt].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EncodingDecl ::= WhiteSpace Encoding Eq Dquote EncName Dquote */
@@ -740,14 +740,14 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_EncName].symbolId,
                                      aXml10SymbolId[XML10_Dquote].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EncodingDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EncodingDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* CharData ::= CHARDATA */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CHARDATA].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_CharData].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_CharData].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EncodingDecl ::= WhiteSpace Encoding Eq Squote EncName Squote */
@@ -759,14 +759,14 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_EncName].symbolId,
                                      aXml10SymbolId[XML10_Squote].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EncodingDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EncodingDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EncName ::= ENCNAME */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ENCNAME].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EncName].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EncName].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* NotationDecl ::= NotationBeg WhiteSpace Name WhiteSpace ExternalID SMaybe NotationEnd */
@@ -779,7 +779,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_NotationEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_NotationDecl].symbolId , 7, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_NotationDecl].symbolId , 7, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* NotationDecl ::= NotationBeg WhiteSpace Name WhiteSpace PublicID SMaybe NotationEnd */
@@ -792,7 +792,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_NotationEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_NotationDecl].symbolId , 7, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_NotationDecl].symbolId , 7, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* PublicID ::= Public WhiteSpace PubidLiteral */
@@ -801,38 +801,38 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_PubidLiteral].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_PublicID].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_PublicID].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* x20 ::= X20 */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_X20].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_x20].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_x20].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* XMLDeclMaybe ::= XMLDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XMLDecl].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_XMLDeclMaybe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_XMLDeclMaybe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     { /* XMLDeclMaybe ::= */
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_XMLDeclMaybe].symbolId , 0, NULL, -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_XMLDeclMaybe].symbolId , 0, NULL, -1, -1, 0, 0);
     }
     {
         /* MiscAny ::= Misc * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Misc].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_MiscAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_MiscAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
     }
     {
         /* EncodingDeclMaybe ::= EncodingDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EncodingDecl].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EncodingDeclMaybe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EncodingDeclMaybe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Comment ::= CommentBeg CommentInterior CommentEnd */
@@ -841,30 +841,30 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_CommentInterior].symbolId,
                                      aXml10SymbolId[XML10_CommentEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Comment].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Comment].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
     }
     { /* EncodingDeclMaybe ::= */
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EncodingDeclMaybe].symbolId , 0, NULL, -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EncodingDeclMaybe].symbolId , 0, NULL, -1, -1, 0, 0);
     }
     {
         /* SDDeclMaybe ::= SDDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SDDecl].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_SDDeclMaybe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_SDDeclMaybe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     { /* SDDeclMaybe ::= */
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_SDDeclMaybe].symbolId , 0, NULL, -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_SDDeclMaybe].symbolId , 0, NULL, -1, -1, 0, 0);
     }
     {
         /* SMaybe ::= WhiteSpace */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_SMaybe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_SMaybe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     { /* SMaybe ::= */
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_SMaybe].symbolId , 0, NULL, -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_SMaybe].symbolId , 0, NULL, -1, -1, 0, 0);
     }
     {
         /* ContentInterior ::= element CharDataMaybe */
@@ -872,7 +872,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_element].symbolId,
                                      aXml10SymbolId[XML10_CharDataMaybe].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ContentInterior ::= Reference CharDataMaybe */
@@ -880,7 +880,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_Reference].symbolId,
                                      aXml10SymbolId[XML10_CharDataMaybe].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ContentInterior ::= CDSect CharDataMaybe */
@@ -888,7 +888,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_CDSect].symbolId,
                                      aXml10SymbolId[XML10_CharDataMaybe].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ContentInterior ::= PI CharDataMaybe */
@@ -896,7 +896,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_PI].symbolId,
                                      aXml10SymbolId[XML10_CharDataMaybe].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ContentInterior ::= Comment CharDataMaybe */
@@ -904,70 +904,70 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_Comment].symbolId,
                                      aXml10SymbolId[XML10_CharDataMaybe].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ContentInterior].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* PITarget ::= PITARGET */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PITARGET].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_PITarget].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_PITarget].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ContentInteriorAny ::= ContentInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ContentInterior].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ContentInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ContentInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
     }
     {
         /* intSubsetUnit ::= markupdecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_markupdecl].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_intSubsetUnit].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_intSubsetUnit].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* intSubsetUnit ::= DeclSep */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_DeclSep].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_intSubsetUnit].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_intSubsetUnit].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* intSubsetUnitAny ::= intSubsetUnit * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_intSubsetUnit].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_intSubsetUnitAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_intSubsetUnitAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
     }
     {
         /* extSubsetDeclUnit ::= markupdecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_markupdecl].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_extSubsetDeclUnit].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_extSubsetDeclUnit].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* extSubsetDeclUnit ::= conditionalSect */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_conditionalSect].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_extSubsetDeclUnit].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_extSubsetDeclUnit].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* extSubsetDeclUnit ::= DeclSep */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_DeclSep].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_extSubsetDeclUnit].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_extSubsetDeclUnit].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* extSubsetDeclUnitAny ::= extSubsetDeclUnit * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_extSubsetDeclUnit].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_extSubsetDeclUnitAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_extSubsetDeclUnitAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
     }
     {
         /* STagInterior ::= WhiteSpace Attribute */
@@ -975,14 +975,14 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Attribute].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_STagInterior].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_STagInterior].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* STagInteriorAny ::= STagInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_STagInterior].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_STagInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_STagInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
     }
     {
         /* PI ::= PiBeg PITarget PiEnd */
@@ -991,17 +991,17 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_PITarget].symbolId,
                                      aXml10SymbolId[XML10_PiEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_PI].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_PI].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* CharDataMaybe ::= CharData */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CharData].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_CharDataMaybe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_CharDataMaybe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     { /* CharDataMaybe ::= */
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_CharDataMaybe].symbolId , 0, NULL, -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_CharDataMaybe].symbolId , 0, NULL, -1, -1, 0, 0);
     }
     {
         /* EmptyElemTagInterior ::= WhiteSpace Attribute */
@@ -1009,45 +1009,45 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_Attribute].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EmptyElemTagInterior].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EmptyElemTagInterior].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EmptyElemTagInteriorAny ::= EmptyElemTagInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EmptyElemTagInterior].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EmptyElemTagInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EmptyElemTagInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
     }
     {
         /* Quantifier ::= QuestionMark */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_QuestionMark].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Quantifier].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Quantifier].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Quantifier ::= Star */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Star].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Quantifier].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Quantifier].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Quantifier ::= Plus */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Plus].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Quantifier].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Quantifier].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* QuantifierMaybe ::= Quantifier */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Quantifier].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_QuantifierMaybe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_QuantifierMaybe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     { /* QuantifierMaybe ::= */
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_QuantifierMaybe].symbolId , 0, NULL, -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_QuantifierMaybe].symbolId , 0, NULL, -1, -1, 0, 0);
     }
     {
         /* ChoiceInterior ::= SMaybe Pipe SMaybe cp */
@@ -1057,7 +1057,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_cp].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ChoiceInterior].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ChoiceInterior].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* PI ::= PiBeg PITarget WhiteSpace PiInterior PiEnd */
@@ -1068,14 +1068,14 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_PiInterior].symbolId,
                                      aXml10SymbolId[XML10_PiEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_PI].symbolId , 5, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_PI].symbolId , 5, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ChoiceInteriorMany ::= ChoiceInterior + */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ChoiceInterior].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ChoiceInteriorMany].symbolId , 1, &(rhsIds[0]), 1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ChoiceInteriorMany].symbolId , 1, &(rhsIds[0]), 1, -1, 0, 0);
     }
     {
         /* SeqInterior ::= SMaybe Comma SMaybe cp */
@@ -1085,14 +1085,14 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_cp].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_SeqInterior].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_SeqInterior].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* SeqInteriorAny ::= SeqInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SeqInterior].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_SeqInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_SeqInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
     }
     {
         /* MixedInterior ::= SMaybe Pipe SMaybe Name */
@@ -1102,21 +1102,21 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Name].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_MixedInterior].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_MixedInterior].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* MixedInteriorAny ::= MixedInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_MixedInterior].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_MixedInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_MixedInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
     }
     {
         /* AttDefAny ::= AttDef * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_AttDef].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_AttDefAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_AttDefAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
     }
     {
         /* NotationTypeInterior ::= SMaybe Pipe SMaybe Name */
@@ -1126,14 +1126,14 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Name].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_NotationTypeInterior].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_NotationTypeInterior].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* NotationTypeInteriorAny ::= NotationTypeInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NotationTypeInterior].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_NotationTypeInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_NotationTypeInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
     }
     {
         /* EnumerationInterior ::= SMaybe Pipe SMaybe Nmtoken */
@@ -1143,14 +1143,14 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Nmtoken].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EnumerationInterior].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EnumerationInterior].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EnumerationInteriorAny ::= EnumerationInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EnumerationInterior].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EnumerationInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EnumerationInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
     }
     {
         /* CDSect ::= CDStart CData CDEnd */
@@ -1159,14 +1159,14 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_CData].symbolId,
                                      aXml10SymbolId[XML10_CDEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_CDSect].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_CDSect].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ignoreSectContentsAny ::= ignoreSectContents * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ignoreSectContents].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ignoreSectContentsAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ignoreSectContentsAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
     }
     {
         /* ignoreSectContentsInterior ::= SectBeg ignoreSectContents SectEnd Ignore */
@@ -1176,297 +1176,297 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SectEnd].symbolId,
                                      aXml10SymbolId[XML10_Ignore].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ignoreSectContentsInterior].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ignoreSectContentsInterior].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ignoreSectContentsInteriorAny ::= ignoreSectContentsInterior * */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ignoreSectContentsInterior].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ignoreSectContentsInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ignoreSectContentsInteriorAny].symbolId , 1, &(rhsIds[0]), 0, -1, 0, 0);
     }
     {
         /* VersionInfoMaybe ::= VersionInfo */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_VersionInfo].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_VersionInfoMaybe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_VersionInfoMaybe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     { /* VersionInfoMaybe ::= */
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_VersionInfoMaybe].symbolId , 0, NULL, -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_VersionInfoMaybe].symbolId , 0, NULL, -1, -1, 0, 0);
     }
     {
         /* WhiteSpace ::= S */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_S].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_WhiteSpace].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_WhiteSpace].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* CommentBeg ::= COMMENT_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_COMMENT_BEG].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_CommentBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_CommentBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* CommentEnd ::= COMMENT_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_COMMENT_END].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_CommentEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_CommentEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* CommentInterior ::= COMMENT */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_COMMENT].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_CommentInterior].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_CommentInterior].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* PiInterior ::= PI_INTERIOR */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PI_INTERIOR].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_PiInterior].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_PiInterior].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* CDStart ::= CDSTART */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CDSTART].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_CDStart].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_CDStart].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* XmlBeg ::= XML_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XML_BEG].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_XmlBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_XmlBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* XmlEnd ::= XML_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XML_END].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_XmlEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_XmlEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Version ::= VERSION */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_VERSION].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Version].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Version].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Squote ::= SQUOTE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SQUOTE].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Squote].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Squote].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Dquote ::= DQUOTE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_DQUOTE].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Dquote].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Dquote].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Equal ::= EQUAL */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EQUAL].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Equal].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Equal].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* DoctypeBeg ::= DOCTYPE_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_DOCTYPE_BEG].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_DoctypeBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_DoctypeBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* DoctypeEnd ::= XTagEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTagEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_DoctypeEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_DoctypeEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Lbracket ::= LBRACKET */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_LBRACKET].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Lbracket].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Lbracket].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Rbracket ::= RBRACKET */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_RBRACKET].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Rbracket].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Rbracket].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* CData ::= CDATA */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CDATA].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_CData].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_CData].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Standalone ::= STANDALONE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_STANDALONE].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Standalone].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Standalone].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Yes ::= YES */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_YES].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Yes].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Yes].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* No ::= NO */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NO].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_No].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_No].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* XTagBeg ::= XTAG_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTAG_BEG].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_XTagBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_XTagBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* STagBeg ::= XTagBeg */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTagBeg].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_STagBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_STagBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* XTagEnd ::= XTAG_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTAG_END].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_XTagEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_XTagEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* STagEnd ::= STAG_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_STAG_END].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_STagEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_STagEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ETagBeg ::= ETAG_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ETAG_BEG].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ETagBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ETagBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ETagEnd ::= ETAG_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ETAG_END].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ETagEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ETagEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EmptyElemTagBeg ::= XTagBeg */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTagBeg].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EmptyElemTagBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EmptyElemTagBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Name ::= NAME */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NAME].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Name].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Name].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* CDEnd ::= CDEND */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CDEND].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_CDEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_CDEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EmptyElemTagEnd ::= EMPTYELEMTAG_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EMPTYELEMTAG_END].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EmptyElemTagEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EmptyElemTagEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ElementDeclBeg ::= ELEMENTDECL_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ELEMENTDECL_BEG].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ElementDeclBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ElementDeclBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ElementDeclEnd ::= XTagEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTagEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ElementDeclEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ElementDeclEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Empty ::= EMPTY */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EMPTY].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Empty].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Empty].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Any ::= ANY */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ANY].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Any].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Any].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* QuestionMark ::= QUESTION_MARK */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_QUESTION_MARK].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_QuestionMark].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_QuestionMark].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Star ::= STAR */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_STAR].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Star].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Star].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Plus ::= PLUS */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PLUS].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Plus].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Plus].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Lparen ::= LPAREN */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_LPAREN].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Lparen].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Lparen].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Rparen ::= RPAREN */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_RPAREN].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Rparen].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Rparen].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* prolog ::= XMLDeclMaybe MiscAny */
@@ -1474,77 +1474,77 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_XMLDeclMaybe].symbolId,
                                      aXml10SymbolId[XML10_MiscAny].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_prolog].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_prolog].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* RparenStar ::= RPARENSTAR */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_RPARENSTAR].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_RparenStar].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_RparenStar].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Pipe ::= PIPE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PIPE].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Pipe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Pipe].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Comma ::= COMMA */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_COMMA].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Comma].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Comma].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* AttlistBeg ::= ATTLIST_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ATTLIST_BEG].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_AttlistBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_AttlistBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* AttlistEnd ::= XTagEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTagEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_AttlistEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_AttlistEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TypeId ::= TYPE_ID */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TYPE_ID].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TypeId].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TypeId].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TypeIdref ::= TYPE_IDREF */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TYPE_IDREF].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TypeIdref].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TypeIdref].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TypeIdrefs ::= TYPE_IDREFS */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TYPE_IDREFS].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TypeIdrefs].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TypeIdrefs].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TypeEntity ::= TYPE_ENTITY */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TYPE_ENTITY].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TypeEntity].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TypeEntity].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TypeEntities ::= TYPE_ENTITIES */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TYPE_ENTITIES].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TypeEntities].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TypeEntities].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* prolog ::= XMLDeclMaybe MiscAny doctypedecl MiscAny */
@@ -1554,77 +1554,77 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_doctypedecl].symbolId,
                                      aXml10SymbolId[XML10_MiscAny].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_prolog].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_prolog].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TypeNmtoken ::= TYPE_NMTOKEN */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TYPE_NMTOKEN].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TypeNmtoken].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TypeNmtoken].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TypeNmtokens ::= TYPE_NMTOKENS */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TYPE_NMTOKENS].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TypeNmtokens].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TypeNmtokens].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Notation ::= NOTATION */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NOTATION].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Notation].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Notation].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* NotationBeg ::= NOTATION_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NOTATION_BEG].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_NotationBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_NotationBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* NotationEnd ::= XTagEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTagEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_NotationEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_NotationEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Required ::= REQUIRED */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_REQUIRED].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Required].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Required].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Implied ::= IMPLIED */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_IMPLIED].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Implied].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Implied].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Fixed ::= FIXED */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_FIXED].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Fixed].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Fixed].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* SectBeg ::= SECT_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SECT_BEG].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_SectBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_SectBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* SectEnd ::= SECT_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SECT_END].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_SectEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_SectEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* XMLDecl ::= XmlBeg VersionInfo EncodingDeclMaybe SDDeclMaybe SMaybe XmlEnd */
@@ -1636,77 +1636,77 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_XmlEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_XMLDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_XMLDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Include ::= INCLUDE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_INCLUDE].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Include].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Include].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EdeclBeg ::= EDECL_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EDECL_BEG].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EdeclBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EdeclBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EdeclEnd ::= XTagEnd */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_XTagEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EdeclEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EdeclEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Percent ::= PERCENT */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PERCENT].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Percent].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Percent].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* System ::= SYSTEM */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_SYSTEM].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_System].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_System].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Public ::= PUBLIC */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PUBLIC].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Public].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Public].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Ndata ::= NDATA */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NDATA].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Ndata].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Ndata].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Encoding ::= ENCODING */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ENCODING].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Encoding].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Encoding].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TOKIgnore ::= IGNORE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_IGNORE].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TOKIgnore].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TOKIgnore].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Pcdata ::= PCDATA */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PCDATA].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Pcdata].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Pcdata].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* VersionInfo ::= WhiteSpace Version Eq Squote VersionNum Squote */
@@ -1718,28 +1718,28 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_VersionNum].symbolId,
                                      aXml10SymbolId[XML10_Squote].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_VersionInfo].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_VersionInfo].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* PiBeg ::= PI_BEG */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PI_BEG].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_PiBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_PiBeg].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* PiEnd ::= PI_END */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PI_END].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_PiEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_PiEnd].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* :start ::= document */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_document].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10___start_].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10___start_].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* VersionInfo ::= WhiteSpace Version Eq Dquote VersionNum Dquote */
@@ -1751,7 +1751,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_VersionNum].symbolId,
                                      aXml10SymbolId[XML10_Dquote].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_VersionInfo].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_VersionInfo].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Eq ::= SMaybe Equal SMaybe */
@@ -1760,42 +1760,42 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_Equal].symbolId,
                                      aXml10SymbolId[XML10_SMaybe].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Eq].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Eq].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* VersionNum ::= VERSIONNUM */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_VERSIONNUM].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_VersionNum].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_VersionNum].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Misc ::= Comment */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Comment].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Misc].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Misc].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Misc ::= PI */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PI].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Misc].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Misc].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Names ::= Name */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Name].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Names].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Names].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Misc ::= WhiteSpace */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Misc].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Misc].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* doctypedecl ::= DoctypeBeg WhiteSpace Name SMaybe DoctypeEnd */
@@ -1806,7 +1806,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_DoctypeEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 5, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 5, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* doctypedecl ::= DoctypeBeg WhiteSpace Name SMaybe Lbracket intSubset Rbracket SMaybe DoctypeEnd */
@@ -1821,7 +1821,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_DoctypeEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 9, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 9, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* doctypedecl ::= DoctypeBeg WhiteSpace Name WhiteSpace ExternalID SMaybe DoctypeEnd */
@@ -1834,7 +1834,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_DoctypeEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 7, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 7, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* doctypedecl ::= DoctypeBeg WhiteSpace Name WhiteSpace ExternalID SMaybe Lbracket intSubset Rbracket SMaybe DoctypeEnd */
@@ -1851,42 +1851,42 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_DoctypeEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 11, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_doctypedecl].symbolId , 11, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* DeclSep ::= PEReference */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PEReference].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_DeclSep].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_DeclSep].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* DeclSep ::= WhiteSpace */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_DeclSep].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_DeclSep].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* intSubset ::= intSubsetUnitAny */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_intSubsetUnitAny].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_intSubset].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_intSubset].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* markupdecl ::= elementdecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_elementdecl].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* markupdecl ::= AttlistDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_AttlistDecl].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Names ::= x20 Names */
@@ -1894,42 +1894,42 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_x20].symbolId,
                                      aXml10SymbolId[XML10_Names].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Names].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Names].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* markupdecl ::= EntityDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EntityDecl].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* markupdecl ::= NotationDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NotationDecl].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* markupdecl ::= PI */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_PI].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* markupdecl ::= Comment */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Comment].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_markupdecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* extSubset ::= extSubsetDecl */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_extSubsetDecl].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_extSubset].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_extSubset].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* extSubset ::= TextDecl extSubsetDecl */
@@ -1937,14 +1937,14 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_TextDecl].symbolId,
                                      aXml10SymbolId[XML10_extSubsetDecl].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_extSubset].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_extSubset].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* extSubsetDecl ::= extSubsetDeclUnitAny */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_extSubsetDeclUnitAny].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_extSubsetDecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_extSubsetDecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* SDDecl ::= WhiteSpace Standalone Eq Squote Yes Squote */
@@ -1956,7 +1956,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_Yes].symbolId,
                                      aXml10SymbolId[XML10_Squote].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* SDDecl ::= WhiteSpace Standalone Eq Squote No Squote */
@@ -1968,7 +1968,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_No].symbolId,
                                      aXml10SymbolId[XML10_Squote].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* SDDecl ::= WhiteSpace Standalone Eq Dquote Yes Dquote */
@@ -1980,14 +1980,14 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_Yes].symbolId,
                                      aXml10SymbolId[XML10_Dquote].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Nmtoken ::= NMTOKEN */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NMTOKEN].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Nmtoken].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Nmtoken].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* SDDecl ::= WhiteSpace Standalone Eq Dquote No Dquote */
@@ -1999,14 +1999,14 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_No].symbolId,
                                      aXml10SymbolId[XML10_Dquote].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_SDDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* element ::= EmptyElemTag */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EmptyElemTag].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_element].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_element].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* element ::= STag content ETag */
@@ -2015,7 +2015,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_content].symbolId,
                                      aXml10SymbolId[XML10_ETag].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_element].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_element].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* STag ::= STagBeg Name STagInteriorAny SMaybe STagEnd */
@@ -2026,7 +2026,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_STagEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_STag].symbolId , 5, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_STag].symbolId , 5, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Attribute ::= Name Eq AttValue */
@@ -2035,7 +2035,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_Eq].symbolId,
                                      aXml10SymbolId[XML10_AttValue].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Attribute].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Attribute].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ETag ::= ETagBeg Name SMaybe ETagEnd */
@@ -2045,7 +2045,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_ETagEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ETag].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ETag].symbolId , 4, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* content ::= CharDataMaybe ContentInteriorAny */
@@ -2053,7 +2053,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_CharDataMaybe].symbolId,
                                      aXml10SymbolId[XML10_ContentInteriorAny].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_content].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_content].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EmptyElemTag ::= EmptyElemTagBeg Name EmptyElemTagInteriorAny SMaybe EmptyElemTagEnd */
@@ -2064,7 +2064,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_EmptyElemTagEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EmptyElemTag].symbolId , 5, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EmptyElemTag].symbolId , 5, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* elementdecl ::= ElementDeclBeg WhiteSpace Name WhiteSpace contentspec SMaybe ElementDeclEnd */
@@ -2077,42 +2077,42 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_ElementDeclEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_elementdecl].symbolId , 7, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_elementdecl].symbolId , 7, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* contentspec ::= Empty */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Empty].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Nmtokens ::= Nmtoken */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Nmtoken].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Nmtokens].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Nmtokens].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* contentspec ::= Any */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Any].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* contentspec ::= Mixed */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Mixed].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* contentspec ::= children */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_children].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_contentspec].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* children ::= choice QuantifierMaybe */
@@ -2120,7 +2120,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_choice].symbolId,
                                      aXml10SymbolId[XML10_QuantifierMaybe].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_children].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_children].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* children ::= seq QuantifierMaybe */
@@ -2128,7 +2128,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_seq].symbolId,
                                      aXml10SymbolId[XML10_QuantifierMaybe].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_children].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_children].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* cp ::= Name QuantifierMaybe */
@@ -2136,7 +2136,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_Name].symbolId,
                                      aXml10SymbolId[XML10_QuantifierMaybe].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_cp].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_cp].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* cp ::= choice QuantifierMaybe */
@@ -2144,7 +2144,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_choice].symbolId,
                                      aXml10SymbolId[XML10_QuantifierMaybe].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_cp].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_cp].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* cp ::= seq QuantifierMaybe */
@@ -2152,7 +2152,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_seq].symbolId,
                                      aXml10SymbolId[XML10_QuantifierMaybe].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_cp].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_cp].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* choice ::= Lparen SMaybe cp ChoiceInteriorMany SMaybe Rparen */
@@ -2164,7 +2164,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Rparen].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_choice].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_choice].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* seq ::= Lparen SMaybe cp SeqInteriorAny SMaybe Rparen */
@@ -2176,7 +2176,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Rparen].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_seq].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_seq].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Nmtokens ::= x20 Nmtokens */
@@ -2184,7 +2184,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_x20].symbolId,
                                      aXml10SymbolId[XML10_Nmtokens].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Nmtokens].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Nmtokens].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Mixed ::= Lparen SMaybe Pcdata MixedInteriorAny SMaybe RparenStar */
@@ -2196,7 +2196,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_RparenStar].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Mixed].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Mixed].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Mixed ::= Lparen SMaybe Pcdata SMaybe Rparen */
@@ -2207,7 +2207,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Rparen].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Mixed].symbolId , 5, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Mixed].symbolId , 5, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* AttlistDecl ::= AttlistBeg WhiteSpace Name AttDefAny SMaybe AttlistEnd */
@@ -2219,7 +2219,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_AttlistEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_AttlistDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_AttlistDecl].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* AttDef ::= WhiteSpace Name WhiteSpace AttType WhiteSpace DefaultDecl */
@@ -2231,105 +2231,105 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_DefaultDecl].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_AttDef].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_AttDef].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* AttType ::= StringType */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_StringType].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_AttType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_AttType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* AttType ::= TokenizedType */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TokenizedType].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_AttType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_AttType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* AttType ::= EnumeratedType */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_EnumeratedType].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_AttType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_AttType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* StringType ::= STRINGTYPE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_STRINGTYPE].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_StringType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_StringType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TokenizedType ::= TypeId */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TypeId].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TokenizedType ::= TypeIdref */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TypeIdref].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EntityValue ::= ENTITYVALUE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ENTITYVALUE].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EntityValue].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EntityValue].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TokenizedType ::= TypeIdrefs */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TypeIdrefs].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TokenizedType ::= TypeEntity */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TypeEntity].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TokenizedType ::= TypeEntities */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TypeEntities].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TokenizedType ::= TypeNmtoken */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TypeNmtoken].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* TokenizedType ::= TypeNmtokens */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_TypeNmtokens].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_TokenizedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EnumeratedType ::= NotationType */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_NotationType].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EnumeratedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EnumeratedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* EnumeratedType ::= Enumeration */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Enumeration].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_EnumeratedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_EnumeratedType].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* NotationType ::= Notation WhiteSpace Lparen SMaybe Name NotationTypeInteriorAny SMaybe Rparen */
@@ -2343,7 +2343,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Rparen].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_NotationType].symbolId , 8, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_NotationType].symbolId , 8, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Enumeration ::= Lparen SMaybe Nmtoken EnumerationInteriorAny SMaybe Rparen */
@@ -2355,35 +2355,35 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_SMaybe].symbolId,
                                      aXml10SymbolId[XML10_Rparen].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Enumeration].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Enumeration].symbolId , 6, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* DefaultDecl ::= Required */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Required].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* AttValue ::= ATTVALUE */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ATTVALUE].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_AttValue].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_AttValue].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* DefaultDecl ::= Implied */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_Implied].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* DefaultDecl ::= AttValue */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_AttValue].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* DefaultDecl ::= Fixed WhiteSpace AttValue */
@@ -2392,21 +2392,21 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_WhiteSpace].symbolId,
                                      aXml10SymbolId[XML10_AttValue].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_DefaultDecl].symbolId , 3, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* conditionalSect ::= includeSect */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_includeSect].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_conditionalSect].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_conditionalSect].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* conditionalSect ::= ignoreSect */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_ignoreSect].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_conditionalSect].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_conditionalSect].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* includeSect ::= SectBeg SMaybe Include SMaybe Lbracket extSubsetDecl SectEnd */
@@ -2419,7 +2419,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_extSubsetDecl].symbolId,
                                      aXml10SymbolId[XML10_SectEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_includeSect].symbolId , 7, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_includeSect].symbolId , 7, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ignoreSect ::= SectBeg SMaybe TOKIgnore SMaybe Lbracket ignoreSectContentsAny SectEnd */
@@ -2432,7 +2432,7 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_ignoreSectContentsAny].symbolId,
                                      aXml10SymbolId[XML10_SectEnd].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ignoreSect].symbolId , 7, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ignoreSect].symbolId , 7, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* ignoreSectContents ::= Ignore ignoreSectContentsInteriorAny */
@@ -2440,28 +2440,28 @@ Marpa_Grammar xml10CreateGrammar()
                                      aXml10SymbolId[XML10_Ignore].symbolId,
                                      aXml10SymbolId[XML10_ignoreSectContentsInteriorAny].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_ignoreSectContents].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_ignoreSectContents].symbolId , 2, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* Ignore ::= IGNORE_INTERIOR */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_IGNORE_INTERIOR].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_Ignore].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_Ignore].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
     {
         /* CharRef ::= CHARREF */
         Marpa_Symbol_ID rhsIds[] = {
                                      aXml10SymbolId[XML10_CHARREF].symbolId
                                    };
-        marpaUtilSetRule(g, aXml10SymbolId[XML10_CharRef].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
+        marpaUtil_setRule(g, aXml10SymbolId[XML10_CharRef].symbolId , 1, &(rhsIds[0]), -1, -1, 0, 0);
     }
 
     /* Set start symbol */
-    marpaUtilSetStartSymbol(g, aXml10SymbolId[XML10___start_].symbolId);
+    marpaUtil_setStartSymbol(g, aXml10SymbolId[XML10___start_].symbolId);
 
     /* Precompute grammar */
-    marpaUtilPrecomputeG(g);
+    marpaUtil_precomputeG(g);
 
     return g;
 }
