@@ -150,7 +150,7 @@ void marpaUtil_alternative(Marpa_Grammar g, Marpa_Recognizer r, Marpa_Symbol_ID 
 
   marpa_g_error_clear(g);
   rc = marpa_r_alternative(r, tokenId, value, length);
-  _check(marpa_g_error((g), NULL), "marpa_r_alternative()", rc != MARPA_ERR_NONE);
+  _marpaUtil_croakIfError(marpa_g_error((g), NULL), "marpa_r_alternative()", rc != MARPA_ERR_NONE);
 }
 
 /********************************************************
@@ -162,5 +162,5 @@ void marpaUtil_earlemeComplete(Marpa_Grammar g, Marpa_Recognizer r)
 
   marpa_g_error_clear(g);
   rc = marpa_r_earleme_complete(r);
-  _check(marpa_g_error((g), NULL), "marpa_r_earleme_complete()", rc < 0);
+  _marpaUtil_croakIfError(marpa_g_error((g), NULL), "marpa_r_earleme_complete()", rc < 0);
 }
